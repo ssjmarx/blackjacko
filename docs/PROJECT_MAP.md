@@ -337,6 +337,35 @@ SR text here; the announcer and captions are one string, two sinks.
 - `hide()` — The fade-out half: after the hold, the credit leaves the screen.
 - `renderState()` — Re-render the SR state panel from the registry (debug entries stay silent).
 
+## src/ui/input/bus.ts
+
+The command bus — one vocabulary for the whole table: every input surface
+(buttons, keys, pointers) emits the same commands, and the round driver is
+the only listener that acts on them. Pure routing, no DOM.
+
+- **class CommandBus** — The bus: emit a command, every registered handler hears it once.
+  - `emit(c: Command)` — Broadcast a command to all registered handlers.
+
+## src/ui/input/controls.ts
+
+The control bar — the DOM twin of the felt (goal 4): real buttons with
+visible keyboard chips, SR labels, and one command destination. The round
+driver enables exactly the legal actions; keys respect the same state.
+
+- `mountControls(bus: CommandBus)` — Mount the control bar and wire its keyboard map to the bus.
+
+## src/ui/input/human.ts
+
+HumanStrategy — the felt's Strategy: decisions resolve from the command
+bus, and the control bar is told exactly which actions are legal before
+each promise is awaited. Sync sims never touch this class.
+
+- **class HumanStrategy** — The human at the felt: bus commands in, core decisions out.
+  - `insurance(_view: InsuranceView)` — Await the player's insurance decision (only Y/N are enabled).
+  - `play(view: PlayerView)` — Await the player's action for the active line (legality drives the bar).
+  - `dispose()` — Stop listening (teardown).
+  - `onCommand(c: { kind: string; take?: boolean })` — Route one bus command to a pending insurance or play promise.
+
 ## src/ui/kit.ts
 
 The render kit — the only sanctioned way to create Phaser game objects or

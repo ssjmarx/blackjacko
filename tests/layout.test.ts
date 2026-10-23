@@ -27,6 +27,7 @@ function zonesOf(l: TableLayout): Record<string, Rect> {
     safe: l.safe,
     penBar: l.penBar,
     chipTray: l.chipTray,
+    controls: l.controls,
     dealer: l.dealer,
     shoe: l.shoe,
     player: l.player,
@@ -79,6 +80,8 @@ describe("layout: the ratio sweep", () => {
           // field zones never collide with the chrome bands
           expect(overlaps(l.dealer, l.penBar), where).toBe(false);
           expect(overlaps(l.player, l.chipTray), where).toBe(false);
+          expect(overlaps(l.controls, l.chipTray), where).toBe(false);
+          expect(overlaps(l.player, l.controls), where).toBe(false);
           expect(overlaps(l.countHud, l.chipTray), where).toBe(false);
 
           // line slots live inside the player band; bet spots inside their slot

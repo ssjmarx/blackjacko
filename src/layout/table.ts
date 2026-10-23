@@ -53,6 +53,7 @@ export interface TableLayout {
   safe: Rect;
   penBar: Rect;
   chipTray: Rect;
+  controls: Rect;
   dealer: Rect;
   shoe: Rect;
   player: Rect;
@@ -91,6 +92,7 @@ const LANDSCAPE_DEALER = 0.26;
 const LANDSCAPE_PLAYER = 0.36;
 const PORTRAIT_BAND_AT_REST = 0.5;
 const CONTEXT_COLLAPSE_AT = 4;
+const CONTROLS_H = 56;
 
 /** Clamp a value into [lo, hi]. */
 function clamp(v: number, lo: number, hi: number): number {
@@ -115,8 +117,10 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
   const penBar: Rect = { x: safe.x, y: safe.y, w: safe.w, h: Math.min(PEN_BAR_H, safe.h * 0.06) };
   const trayH = clamp(height * CHIP_TRAY_FRAC, CHIP_TRAY_MIN, CHIP_TRAY_MAX);
   const chipTray: Rect = { x: safe.x, y: safe.y + safe.h - trayH, w: safe.w, h: trayH };
+  const controlsH = Math.min(CONTROLS_H, trayH * 0.8);
+  const controls: Rect = { x: safe.x, y: chipTray.y - controlsH - 6, w: safe.w, h: controlsH };
   const fieldY = penBar.y + penBar.h;
-  const fieldH = chipTray.y - fieldY;
+  const fieldH = controls.y - 6 - fieldY;
 
   // card metrics from the ruled target (10% of screen width, floored)
   const cardW = Math.max(MIN_CARD_W, CARD_TARGET * width);
@@ -177,12 +181,13 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
   metrics.dealerFits = Math.max(2, Math.floor((rowAvail + metrics.dealerGap) / (cardW * (1 + DEALER_GAP))));
 
   // bet spots: inside each line slot (portrait: below the hand; landscape: beside it);
-  // the diameter yields to the slot's tightest dimension on extreme screens
+  // diameter and inset yield to the slot's tightest dimension on extreme screens
   const betSpots: Rect[] = slots.map((s) => {
     const d = Math.min(cardH * 0.5, s.w * 0.5, s.h * 0.6);
+    const inset = Math.min(6, s.w * 0.05, s.h * 0.05);
     return orientation === "portrait"
-      ? { x: s.x + s.w / 2 - d / 2, y: s.y + s.h - d - 6, w: d, h: d }
-      : { x: s.x + s.w - d - 6, y: s.y + s.h / 2 - d / 2, w: d, h: d };
+      ? { x: s.x + s.w / 2 - d / 2, y: s.y + s.h - d - inset, w: d, h: d }
+      : { x: s.x + s.w - d - inset, y: s.y + s.h / 2 - d / 2, w: d, h: d };
   });
 
   // insurance lives in the pit, on the dealer's player-facing side
@@ -250,6 +255,7 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
     safe,
     penBar,
     chipTray,
+    controls,
     dealer,
     shoe,
     player,

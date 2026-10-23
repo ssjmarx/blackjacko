@@ -49,3 +49,17 @@ export const CARD_STACK = {
   maxShoe: 416,
 } as const;
 
+/** Animation kit timings (ms) — the composable tween durations. */
+export const ANIM = {
+  place: 260,
+  stagger: 90,
+  flip: 280,
+  flash: 450,
+} as const;
+
+/** Tony's Backroom (spec S9 era 1): the pt4 table's stakes. */
+export const TONYS = {
+  bankroll: 200,
+  betUnits: 1,
+} as const;
+

@@ -24,6 +24,39 @@
         height: 100%;
         display: block;
       }
+      .bj-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #10241b;
+        color: #f5f0e1;
+        border: 1px solid #2f6b4f;
+        border-radius: 6px;
+        padding: 8px 14px;
+        font: 600 15px system-ui, sans-serif;
+        cursor: pointer;
+      }
+      .bj-btn kbd {
+        background: #f5f0e1;
+        color: #10241b;
+        border-radius: 4px;
+        padding: 1px 6px;
+        font: 700 13px monospace;
+      }
+      .bj-btn:not(:disabled):hover {
+        border-color: #f5f0e1;
+      }
+      .bj-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      #bj-controls {
+        position: fixed;
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+        z-index: 35;
+      }
       .sr-only {
         position: absolute;
         width: 1px;
