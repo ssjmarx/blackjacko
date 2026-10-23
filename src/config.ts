@@ -30,3 +30,16 @@ export const CAPTIONS = {
   maxWidthPct: 0.8,
 } as const;
 
+/** The lower-third credit (television style, spec E9): fade timings. */
+export const LOWER_THIRD = {
+  inMs: 600,
+  holdMs: 5000,
+  outMs: 800,
+} as const;
+
+/** The count-true stacks (ruled): pixels of stripe per card, deck vs shoe. */
+export const CARD_STACK = {
+  deckPx: 1,
+  shoePx: 2,
+} as const;
+

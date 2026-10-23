@@ -25,10 +25,22 @@ function fail(msg: string): never {
   process.exit(1);
 }
 
+// back normalization (deck-specific, ruled): the English backs outline in
+// navy/colored strokes while every face outlines in black — rewrite all back
+// strokes to black so the deck reads uniformly. Idempotent; revisit if a
+// future deck's back art carries multi-color stroke work.
+function normalizeBack(file: string): void {
+  const p = join(OUT, file);
+  const src = readFileSync(p, "utf8");
+  const fixed = src.replace(/stroke:#[0-9a-fA-F]{3,6}/g, "stroke:#000000");
+  if (fixed !== src) writeFileSync(p, fixed);
+}
+
 if (!existsSync(SRC)) {
   const populated = existsSync(OUT) && readdirSync(OUT).filter((f) => f.endsWith(".svg")).length >= EXPECTED.length;
   if (!populated) fail(`source folder missing and ${OUT} is not populated — nothing to build from`);
   console.log("build-deck: source already consumed; rebuilding manifest + calibration from the moved files");
+  for (const b of BACKS) normalizeBack(b);
 }
 
 if (existsSync(SRC)) {
@@ -46,6 +58,7 @@ if (existsSync(SRC)) {
 
   mkdirSync(OUT, { recursive: true });
   for (const f of EXPECTED) cpSync(join(SRC, f), join(OUT, f));
+  for (const b of BACKS) normalizeBack(b);
   rmSync(SRC, { recursive: true });
 }
 
@@ -72,7 +85,12 @@ RANK_FILES.forEach((r, ri) => {
 const manifest = {
   id: "english",
   name: "English Pattern (PLUS)",
-  credit: "English pattern playing cards · Loren Osborn · CC0 · via Wikimedia Commons",
+  credit: {
+    name: "English Pattern playing Cards",
+    author: "Loren Osborn",
+    license: "CC0",
+    source: "via Wikimedia Commons",
+  },
   page: { width: pw, height: ph },
   aspect: ph / pw,
   faces,

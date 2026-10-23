@@ -1,7 +1,12 @@
 {
   "id": "english",
   "name": "English Pattern (PLUS)",
-  "credit": "English pattern playing cards · Loren Osborn · CC0 · via Wikimedia Commons",
+  "credit": {
+    "name": "English Pattern playing Cards",
+    "author": "Loren Osborn",
+    "license": "CC0",
+    "source": "via Wikimedia Commons"
+  },
   "page": {
     "width": 361.5,
     "height": 541.5

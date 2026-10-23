@@ -138,6 +138,9 @@ function parseFile(path: string): ParseResult {
       // definition lines end with "{" (body open) or "(" (multi-line signature)
       const trimmed = line.trim()
       if (!trimmed.endsWith("{") && !trimmed.endsWith("(")) continue
+      // arrow callbacks (`setTimeout(() => {`) end with "{" too — a real
+      // definition in this codebase never contains "=>"
+      if (trimmed.includes("=>")) continue
       const docLine = docAbove(lines, i)
       if (docLine === undefined) {
         return { kind: "undocumented", where: `${path}:${i + 1} — method ${name} has no one-liner` }

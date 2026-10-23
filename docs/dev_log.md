@@ -230,6 +230,38 @@ provenance; the law lives in the spec and the roadmap.
   matches its name; then the felt proof at `npm run dev` (A♠ + backs +
   credit). That closes pt3.
 
+## Entry #10 — 2026-10-22 · pt3 amendment — the credit, the stacks, the outline
+
+- **Calibration PASSED** (human-confirmed) — pt3's identity law holds.
+- **Back outlines normalized (ruled):** the English backs outlined navy/
+  colored while every face outlines black — `build-deck.ts` now rewrites all
+  back strokes to `#000000` post-move (idempotent, pipeline-persistent; all
+  four backs verified 2 strokes → black).
+- **The lower-third credit, per eyeball rulings:** hugs the lower-left edge
+  (solver zone moved, law-tested); renders the structured four-line credit
+  (name/author/license/source — manifest fields restructured, `Deck.
+  creditLines()` added); television fade (in 600ms, hold 5s, out 800ms —
+  `config.LOWER_THIRD`); **once per session** — resizes reposition it
+  silently, never re-animate (the re-animation bug the eyeball caught).
+- **The count-true stacks (ruled):** `src/ui/cardstack.ts` — a deck stacks
+  straight up and a shoe lays its cards down, drawn from the actual card
+  count (deck 1px/card, shoe 2px/card — `config.CARD_STACK`), white
+  outlines as the estimation stripes. The player reads the remaining count
+  by sight. Identical stripes are one SR fact ("Shoe: N cards remaining."),
+  not one entry per card. The four-back fan from the pt3 draft is retired —
+  neither visual is a hand fan.
+- Live counts wire to the engine (`Shoe.remaining()`) in pt4; pt3 draws
+  true static counts (Tony's deck at 52, a 104-card shoe-row sample).
+- Gate: typecheck + **112/112 tests** (9 files — the lower-third left-edge
+  law and structured-credit assertions joined) + audit (PROJECT_MAP now 28
+  modules) + `a11y-lint: kit law holds` (7 files) + build clean. The
+  docstring auditor gained an arrow-callback guard (`setTimeout(() => {`)
+  — a real definition never contains "=>".
+- Eyes pending: the credit behavior (fade in/hold/fade out once, left edge,
+  four lines; resize = silent reposition) + the two stacks. That closes the
+  pt3 amendment.
+
+
 
 ## Entry #8 — 2026-10-22 · two menu rulings while the pt2 eyeball runs
 

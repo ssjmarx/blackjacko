@@ -127,6 +127,12 @@ describe("layout: rulings", () => {
     expect(solveTable(767, 768).orientation).toBe("portrait");
   });
 
+  it("the lower third hugs the lower-left edge (television credit)", () => {
+    const l = solveTable(1280, 720);
+    expect(l.lowerThird.x).toBe(l.safe.x);
+    expect(l.lowerThird.y + l.lowerThird.h).toBeLessThanOrEqual(l.chipTray.y);
+  });
+
   it("goldens: canonical sizes", () => {
     const desktop = solveTable(1280, 720);
     expect(desktop.metrics.cardW).toBe(128);

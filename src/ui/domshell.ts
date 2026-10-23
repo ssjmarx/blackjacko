@@ -4,7 +4,7 @@
  * SR text here; the announcer and captions are one string, two sinks.
  */
 import type { Rect, TableLayout } from "../layout/table.ts";
-import { CAPTIONS } from "../config.ts";
+import { CAPTIONS, LOWER_THIRD } from "../config.ts";
 
 interface Entry {
   role: string;
@@ -19,7 +19,7 @@ const state = {
   lowerThird: null as HTMLElement | null,
   objects: new Map<string, Entry>(),
   captionTimer: undefined as ReturnType<typeof setTimeout> | undefined,
-  creditTimer: undefined as ReturnType<typeof setTimeout> | undefined,
+  creditShown: false,
 };
 
 /** Grab the shell elements and create the captions band; safe to re-call. */
@@ -152,7 +152,7 @@ export function clearProbes(): void {
   state.probes = null;
 }
 
-/** Show the lower-third credit band, positioned from the solved layout. */
+/** Show the lower-third credit once; later calls reposition it silently. */
 export function showLowerThird(text: string, l: TableLayout): void {
   if (!state.lowerThird) {
     state.lowerThird = document.createElement("div");
@@ -160,17 +160,18 @@ export function showLowerThird(text: string, l: TableLayout): void {
     Object.assign(state.lowerThird.style, {
       position: "fixed",
       display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: "flex-start",
+      justifyContent: "flex-start",
       background: "rgba(0, 0, 0, 0.78)",
       color: "#f5f0e1",
-      font: "italic 600 20px/1.2 Georgia, serif",
-      textAlign: "center",
-      padding: "0 18px",
+      font: "italic 600 20px/1.4 Georgia, serif",
+      textAlign: "left",
+      whiteSpace: "pre-line",
+      padding: "10px 16px",
       borderRadius: "4px",
       zIndex: "45",
       opacity: "0",
-      transition: "opacity 600ms ease",
+      transition: `opacity ${LOWER_THIRD.inMs}ms ease`,
       pointerEvents: "none",
     });
     document.body.appendChild(state.lowerThird);
@@ -182,15 +183,26 @@ export function showLowerThird(text: string, l: TableLayout): void {
     width: `${b.w}px`,
     height: `${b.h}px`,
   });
+  if (state.creditShown) return;
+  state.creditShown = true;
   state.lowerThird.textContent = text;
-  const reveal = (): void => {
-    if (state.lowerThird) state.lowerThird.style.opacity = "1";
-  };
   requestAnimationFrame(reveal);
-  if (state.creditTimer) clearTimeout(state.creditTimer);
-  state.creditTimer = setTimeout(() => {
-    if (state.lowerThird) state.lowerThird.style.opacity = "0";
-  }, 7000);
+  setTimeout(hide, LOWER_THIRD.inMs + LOWER_THIRD.holdMs);
+}
+
+/** The fade-in half of the television credit. */
+function reveal(): void {
+  if (state.lowerThird) state.lowerThird.style.opacity = "1";
+}
+
+/** The fade-out half: after the hold, the credit leaves the screen. */
+function hide(): void {
+  if (!state.lowerThird) return;
+  state.lowerThird.style.transition = `opacity ${LOWER_THIRD.outMs}ms ease`;
+  state.lowerThird.style.opacity = "0";
+  setTimeout(() => {
+    if (state.lowerThird) state.lowerThird.style.display = "none";
+  }, LOWER_THIRD.outMs);
 }
 
 /** Re-render the SR state panel from the registry (debug entries stay silent). */

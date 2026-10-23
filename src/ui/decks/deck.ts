@@ -4,11 +4,19 @@
  * and the large-number option slot in without touching the felt.
  */
 
+/** The structured deck credit — the four lower-third lines (spec E8/E9). */
+export interface DeckCredit {
+  name: string;
+  author: string;
+  license: string;
+  source: string;
+}
+
 /** A deck's generated manifest (emitted by scripts/build-deck.ts). */
 export interface DeckManifest {
   id: string;
   name: string;
-  credit: string;
+  credit: DeckCredit;
   page: { width: number; height: number };
   aspect: number;
   /** card byte (as a string key) -> art file name */
@@ -22,16 +30,18 @@ export interface DeckFrame {
   file: string;
 }
 
-/** The deck as the felt sees it: byte-addressed art plus its credit line. */
+/** The deck as the felt sees it: byte-addressed art plus its credit lines. */
 export interface Deck {
   id: string;
   name: string;
-  credit: string;
+  credit: DeckCredit;
   /** native height over width — cards render at this aspect, fit in their box */
   aspect: number;
   backCount: number;
   faceFor(card: number): DeckFrame;
   backFor(index: number): DeckFrame;
+  /** The credit as printed lines: name, author, license, source. */
+  creditLines(): string[];
 }
 
 /** Build a Deck from its manifest; art paths resolve against the deck dir. */
@@ -47,5 +57,6 @@ export function deckFromManifest(dir: string, m: DeckManifest): Deck {
       key: `${m.id}:back${index % m.backs.length}`,
       file: `${dir}/${m.backs[index % m.backs.length]}`,
     }),
+    creditLines: () => [m.credit.name, m.credit.author, m.credit.license, m.credit.source],
   };
 }

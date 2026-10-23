@@ -5,11 +5,12 @@
  */
 import Phaser from "phaser";
 import { solveTable, type Rect, type TableLayout } from "../layout/table.ts";
-import { DEBUG, FELT } from "../config.ts";
+import { CARD_STACK, DEBUG, FELT } from "../config.ts";
 import { destroy, rect, text } from "../ui/kit.ts";
 import { announce, showLowerThird } from "../ui/domshell.ts";
 import { englishDeck } from "../ui/decks/english.ts";
-import { backSprite, cardSprite } from "../ui/cardart.ts";
+import { cardSprite } from "../ui/cardart.ts";
+import { deckStack, shoeRow } from "../ui/cardstack.ts";
 import type { Deck } from "../ui/decks/deck.ts";
 
 /** Debug zone colors (canvas numbers) — readable ink on the felt, debug-only. */
@@ -64,6 +65,10 @@ export class FeltScene extends Phaser.Scene {
     this.reflow(this.scale.gameSize.width, this.scale.gameSize.height);
     this.scale.on("resize", (size: Phaser.Structs.Size) => this.reflow(size.width, size.height));
     announce("Welcome to blackjacko. Tony's Backroom: one deck, dealer stands on all 17s, blackjack pays 3 to 2.");
+    if (this.deck && this.layout) {
+      showLowerThird(this.deck.creditLines().join("\n"), this.layout);
+      announce(`Deck: ${this.deck.creditLines().join(". ")}.`);
+    }
     if (this.deck) this.proveDeck();
   }
 
@@ -79,7 +84,7 @@ export class FeltScene extends Phaser.Scene {
     if (this.deck) this.proveDeck();
   }
 
-  /** The pt3 proof: A♠ in the dealer zone, the backs in the shoe, the credit. */
+  /** The pt3 proof: A♠ in the dealer zone, the count-true stack, the row form. */
   private proveDeck(): void {
     const l = this.layout;
     const d = this.deck;
@@ -92,14 +97,17 @@ export class FeltScene extends Phaser.Scene {
     };
     const ace = cardSprite(this, d, 0, aceBox, { id: "proof ace of spades", debug: true });
     this.cards.push({ obj: ace, id: "proof ace of spades" });
-    for (let i = 0; i < d.backCount; i++) {
-      const b = backSprite(this, d, i, l.shoe, { id: `proof back ${i + 1}`, debug: true });
-      b.setDepth(10 + i);
-      b.setAngle((i - 1.5) * 3);
-      this.cards.push({ obj: b, id: `proof back ${i + 1}` });
-    }
-    showLowerThird(d.credit, l);
-    announce(`Deck: ${d.credit}.`);
+    const stack = deckStack(this, d, 52, l.shoe, CARD_STACK.deckPx, { id: "proof deck stack", debug: true });
+    for (const img of stack) this.cards.push({ obj: img, id: "proof deck stack" });
+    const rowBox: Rect = {
+      x: l.safe.x + l.safe.w * 0.15,
+      y: l.dealer.y + l.dealer.h + 12,
+      w: l.safe.w * 0.7,
+      h: l.metrics.cardH * 0.8,
+    };
+    const row = shoeRow(this, d, 104, rowBox, CARD_STACK.shoePx, { id: "proof shoe row", debug: true });
+    for (const img of row) this.cards.push({ obj: img, id: "proof shoe row" });
+    showLowerThird(d.creditLines().join("\n"), l);
   }
 
   /** Update the size/axis readout (flips with the aspect, per goal 1). */

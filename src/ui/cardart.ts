@@ -10,7 +10,7 @@ import { image } from "./kit.ts";
 import type { Deck } from "./decks/deck.ts";
 
 /** Fit the deck's native aspect inside a box; returns the centered rect. */
-function fitIn(box: Rect, aspect: number): Rect {
+export function fitIn(box: Rect, aspect: number): Rect {
   const w = Math.min(box.w, box.h / aspect);
   return { x: box.x + (box.w - w) / 2, y: box.y + (box.h - w * aspect) / 2, w, h: w * aspect };
 }

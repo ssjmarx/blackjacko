@@ -35,12 +35,14 @@ describe("english deck manifest", () => {
     for (const b of manifest.backs) expect(onDisk.has(b), b).toBe(true);
   });
 
-  it("records the native page, aspect, and credit", () => {
+  it("records the native page, aspect, and structured credit", () => {
     expect(manifest.page.width).toBeCloseTo(361.5);
     expect(manifest.page.height).toBeCloseTo(541.5);
     expect(manifest.aspect).toBeCloseTo(541.5 / 361.5);
-    expect(manifest.credit).toMatch(/Loren Osborn/);
-    expect(manifest.credit).toMatch(/CC0/);
+    expect(manifest.credit.name).toBe("English Pattern playing Cards");
+    expect(manifest.credit.author).toMatch(/Loren Osborn/);
+    expect(manifest.credit.license).toBe("CC0");
+    expect(manifest.credit.source).toMatch(/Wikimedia/);
   });
 
   it("deckFromManifest resolves bytes and wraps back indexes", () => {

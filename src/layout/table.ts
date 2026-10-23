@@ -238,8 +238,8 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
     };
   }
 
-  // transient band: the deck credit's lower third
-  const lowerThird: Rect = { x: safe.x + safe.w * 0.1, y: chipTray.y - 76, w: safe.w * 0.8, h: 64 };
+  // transient band: the deck credit hugs the lower-left (television credit)
+  const lowerThird: Rect = { x: safe.x, y: chipTray.y - 76, w: safe.w * 0.45, h: 64 };
 
   return {
     width,

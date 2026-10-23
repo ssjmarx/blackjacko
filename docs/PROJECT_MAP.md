@@ -210,7 +210,7 @@ zones, the DOM probes, and the size/axis readout, live on every resize.
   - `preload()` — Load the deck's art files before the scene boots.
   - `create()` — Boot the felt: camera background, the readout, and the resize hook.
   - `reflow(w: number, h: number)` — Re-solve the table and repaint every debug zone for the viewport.
-  - `proveDeck()` — The pt3 proof: A♠ in the dealer zone, the backs in the shoe, the credit.
+  - `proveDeck()` — The pt3 proof: A♠ in the dealer zone, the count-true stack, the row form.
   - `paintReadout(w: number, h: number)` — Update the size/axis readout (flips with the aspect, per goal 1).
   - `paintZones()` — Draw the debug zone overlay: one outlined, labeled rect per zone.
 
@@ -291,6 +291,15 @@ fit within the solver's card box; registry cleanup rides through the kit.
 - `cardSprite(…)` — Create a face-up card sprite for a card byte, fit inside the solver's box.
 - `backSprite(…)` — Create a face-down back sprite (deck index wraps across the back set).
 
+## src/ui/cardstack.ts
+
+The count-true card visuals (ruled): a deck stacks straight up, a shoe lays
+its cards down — drawn from the actual card count, one white-outlined stripe
+per card. Identical stripes are one SR fact, not one per card.
+
+- `deckStack(…)` — Create a vertical deck stack of `count` backs; stripe per card, bottom-anchored.
+- `shoeRow(…)` — Create a horizontal shoe row of `count` laid-down backs; stripe per card.
+
 ## src/ui/decks/deck.ts
 
 The Deck contract — swappable card art (spec E8/E9). A deck is pure data:
@@ -322,7 +331,9 @@ SR text here; the announcer and captions are one string, two sinks.
 - `setStateSummary(text: string)` — Replace the SR state panel summary text.
 - `showProbes(l: TableLayout)` — (Debug) Draw dashed probe divs for every zone, proving the shared solve.
 - `clearProbes()` — Remove the debug probe divs.
-- `showLowerThird(text: string, l: TableLayout)` — Show the lower-third credit band, positioned from the solved layout.
+- `showLowerThird(text: string, l: TableLayout)` — Show the lower-third credit once; later calls reposition it silently.
+- `reveal()` — The fade-in half of the television credit.
+- `hide()` — The fade-out half: after the hold, the credit leaves the screen.
 - `renderState()` — Re-render the SR state panel from the registry (debug entries stay silent).
 
 ## src/ui/kit.ts
