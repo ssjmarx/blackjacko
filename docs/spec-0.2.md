@@ -303,6 +303,20 @@ So it’s a proper balanced count — TC is plain `RC ÷ decks remaining`, ident
 
 **E5 — S12 pseudocode:** two touch-ups — `true_count()` drops the MONKEY special case; `PitBoss` cm2 line becomes `flat_lock = first_wager_of_current_shoe`.
 
+**E7 — Sp21 index transcription exists (extends E4, ruling 2026-10-22):** the
+human transcribed a Spanish 21 I18 + Fab 4 set into `docs/sp21-i18.md`.
+Source: Katarina Walker's *The Pro's Guide to Spanish 21 and Australian
+Pontoon*, adjusted **+4** to the game's balanced Monkey count; specific to
+**8-deck games with redoubling** (the only ruleset the human has personally
+seen in person); simmed in Casino Verite; marked **needs verification** —
+perfecting them is a possible future research task (E4's empirical-derivation
+offer stands as the perfecting path). Conventions: every index is "and
+above"; X = any 10-value; one rescue row ("FORFEIT A DD 12 VS 8 AT 1"); the
+"STAND 17 VS A AT 2" row is the post-hit hard-17 rule (surrender 17 v A is
+otherwise standard). Until wired into the engine, E4's basic-strategy-only
+deferral holds; wiring + verifying these rows is 0.10.0 THE SPANISH TABLES
+work.
+
 **E6 — S6 chip catalog superseded (roster ruling 2026-10-22):** the S6 table
 above is replaced by the ruled 12-chip POC roster below. All rarities are
 SPECULATIVE — a per-chip battery assigns each chip to Common / Uncommon /

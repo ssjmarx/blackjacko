@@ -234,8 +234,9 @@ lane (E3, both tracked): El Cortijo (6D H17), Marquesa (8D S17 + redouble —
 the best game in the game). Monkey count in the HUD; the Sp21 promo pool
 variants (6-card Charlie, PP's 10-value = J/Q/K, 48-card Hot Hand draws);
 Match the Dealer natively; the count-in-hand strategy card ships as-is. The
-E4 offer stands open: derive Sp21 indices empirically via the exact engine
-(`scripts/sp21-probe.ts` lineage) — optional, by ruling.
+transcribed Sp21 index set (E7, `docs/sp21-i18.md` — Walker, +4-adjusted,
+needs verification) wires into the engine here, alongside E4's empirical
+derivation as the perfecting path — by ruling at the gate.
 **Exit tests:** ☐ either lane's clear unlocks the next era; both = tracked
 completion ☐ the Monkey count display matches the locked tags on-screen ☐
 Sp21 promo variants fire correctly in vitest ☐ harness: Sp21 lane EV vs
@@ -294,7 +295,9 @@ nothing unattributed ships ☐ tagged, exported, playable. Done means done.
 - **Save storage** — due at 0.4.0 (localStorage vs downloadable file).
 - **Assets + licensing plan** — due before 0.6.0 (already ruled deferred
   until this plan exists; CC0 card set is the S11 assumption).
-- **Sp21 index derivation** (E4) — optional, after 0.10.0, by ruling.
+- **Sp21 index derivation** (E4) — optional perfecting path, after 0.10.0, by
+  ruling. The transcribed Walker set (E7, `docs/sp21-i18.md`) needs
+  verification first — its battery is part of 0.10.0.
 
 **The danger list (the project's tripwires):**
 

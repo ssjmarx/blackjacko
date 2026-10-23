@@ -110,6 +110,28 @@ provenance; the law lives in the spec and the roadmap.
   0.2s).
 - Gate green: typecheck + 81 tests + audit (17 modules).
 
+## Entry #5 — 2026-10-22 · Sp21 index transcription + provenance
+
+- The human added a 23-row Spanish 21 I18 + Fab 4 transcription to the docs —
+  now `docs/sp21-i18.md` (renamed from `SP21 I18.md`; no spaces in doc
+  filenames, per the spec-0.2.md precedent). Content: 8 doubles, 10 stands
+  (including the post-hit hard-17 v A stand/hit rule), 1 rescue row
+  ("FORFEIT A DD 12 VS 8 AT 1"), 3 surrenders.
+- Provenance ruled and recorded in the file header + spec erratum **E7**:
+  source Katarina Walker's *The Pro's Guide to Spanish 21 and Australian
+  Pontoon*, adjusted **+4** to the game's balanced Monkey count; specific to
+  **8-deck redouble games** (the only ruleset the human has personally seen
+  in person); simmed in Casino Verite; **needs verification** — perfecting
+  the set is a possible future research task (E4's empirical-derivation
+  offer stands as the perfecting path).
+- Conventions ruled: every index is implicitly "and above"; X = any 10-value
+  card; the 17 v A row is the post-hit rule (surrender 17 v A is otherwise
+  standard — "ploppies HATE this play but it's correct").
+- Engine impact: none yet — E4's basic-strategy-only deferral holds until the
+  rows wire in during 0.10.0 (roadmap scope updated). The presentation-law
+  erratum at the FELT gate becomes E8 (E7 now taken).
+
+
 
 - Evidence filed: `docs/evidence/battery_b3.txt` — the BACKOFF chip-tuning
   battery + per-chip ablation (Godot 4.3 export). Design input for promo
