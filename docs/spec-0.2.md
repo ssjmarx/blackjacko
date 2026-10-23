@@ -302,3 +302,59 @@ So it’s a proper balanced count — TC is plain `RC ÷ decks remaining`, ident
 **E4 — S13 Sp21 indexes:** deferred. Era-5 Sp21 strategy card ships with basic strategy only, no deviation rows. One offer for later since transcription is a slog: once the sim harness is running, we can *derive* Sp21 indices empirically — sweep each decision’s EV across TC thresholds and find the crossovers, machine-generated like Schlesinger did it. Optional, when we get there.
 
 **E5 — S12 pseudocode:** two touch-ups — `true_count()` drops the MONKEY special case; `PitBoss` cm2 line becomes `flat_lock = first_wager_of_current_shoe`.
+
+**E6 — S6 chip catalog superseded (roster ruling 2026-10-22):** the S6 table
+above is replaced by the ruled 12-chip POC roster below. All rarities are
+SPECULATIVE — a per-chip battery assigns each chip to Common / Uncommon /
+Rare from measured EV (S14 #2 extended: the battery owns rarity assignment;
+S4's ~70/25/5 weights govern drop rates only). Dropped from the catalog:
+Five-Card Charlie, Double Anything, Surrender Anywhere, Burning Question, Ten
+Density, The Illustrious, Boring Bob, Team Player, Cold Deck. The B3
+battery's Godot-era chips (New Shoe Who Dis, Housekeeping, The Inside Job,
+Golden Chip, Room Service, Baker's Dozen, Bolt Cutter) are confirmed retired.
+
+| # | Chip | Tier | Cat | Hook | Scope | Effect |
+|---|---|---|---|---|---|---|
+| 1 | Hot Hand | I/II/III (C/U/R) | Shoe | pre-deal | G | Remove 3 / 5 / 8 lows from next 20; count updates |
+| 2 | Airbag | C | Money | on-lose | L | Line loses only this chip (all staked Airbags) |
+| 3 | Mulligan | I/II (C/U) | Action | action | L | Discard-and-rehit 1× / 2× per hand; discard is seen |
+| 4 | Insurance Scam | I/II/III (C/U/R) | Money | settlement | G | Insurance odds +1 / +2 / +3 (additive) |
+| 5 | Perfect Prediction | U | Shoe | deal | G | Dealer hole card → random 10-value card |
+| 6 | Martingale's Ghost | U | Money | settlement | G | If you lost your last hand and win this one, double your winnings |
+| 7 | Push Power | U | Money | settlement | G | If you push this hand, win instead |
+| 8 | Deep Pen | R | Shoe | shoe | G | Every hand you win with this chip increases penetration by 1% |
+| 9 | Peek | R | Info | info | G | See dealer hole card |
+| 10 | Camouflage | U | Heat | heat | G | Heat gains ×0.5 while staked |
+| 11 | Psychic | R | Info | info | G | See the top card of the shoe as long as this chip is staked |
+| 12 | Tourist | R | Heat | heat | G | Heat resets to 0 when you lose this chip |
+
+**E6a — effect changes vs old S6:** Martingale's Ghost trigger loosened (any
+lost hand → the next win doubles; was a 3-loss streak) · Push Power loses the
+per-shoe cap (any push converts to a win) · Deep Pen redesigned from "cut
+card ignored" to the +1%-per-won-hand ramp · First Base Peek renamed **Peek**
+and made unconditional.
+
+**E6b — general chip laws (ruled with the roster):**
+- **Chips only have their effect while staked.** An unstaked promo is
+  inventory; a staked promo is live and at risk every hand — the economy's
+  self-balancer (Push Power's strength is rented, not owned).
+- **Split hands resolve separately; chips bind to their line.** Deep Pen
+  ramps only on the winning half carrying it; Ghost doubles only its own
+  line's settlement; Tourist only fires when its line loses.
+- **Psychic quantifies on sight:** the visible top card updates the count and
+  cardsSeen (S3 knowledge rule) for every new top card while staked.
+- **Deep Pen ramp:** +1% penetration per hand won with it staked (split
+  halves independent), caps at 100%, persists after the chip is lost or
+  unstaked.
+- **Martingale's Ghost** doubles the entire settlement of its line (3:2 →
+  3:1, even wins → 2:1, Sp21 bonus payouts ×2); split siblings unaffected.
+- **Tourist** fires only when its line loses in a regular hand: chip
+  consumed, heat → 0.
+- **Peek × Perfect Prediction** — both staked pre-deal, the combo teaches
+  nothing; the live play is Peek pre-deal → see the hole → stake PP on a
+  double or split to act on it.
+- **Heat chips (Camouflage, Tourist)** are inert until heat exists; their
+  rarities stay speculative until the harness has a heat model.
+- **Battery methodology:** any chip that changes optimal play gets a bespoke
+  chip-aware strategy before its measured EV is trusted — basic-strategy
+  measurement can show *lost* EV for genuinely good chips.

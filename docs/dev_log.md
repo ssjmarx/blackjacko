@@ -57,6 +57,36 @@ provenance; the law lives in the spec and the roadmap.
 - Other open decisions with due dates: Phaser pin + deploy target (0.1.0),
   save storage (0.4.0), assets/licensing plan (before 0.6.0), Sp21 index
   derivation (optional, after 0.10.0).
+
+## Entry #3 — 2026-10-22 · the chip roster ruled
+
+- The ✎ is resolved: the POC roster is a ruled 12-chip table, recorded as
+  spec erratum E6. Unchanged from S6: Hot Hand I/II/III, Airbag, Mulligan
+  I/II, Insurance Scam I/II/III, Perfect Prediction, Camouflage. Changed:
+  Martingale's Ghost (any lost hand → the win doubles; was a 3-streak), Push
+  Power (any push → win; the per-shoe cap is gone), Deep Pen (redesigned as a
+  +1%-per-won-hand ramp, cap 100%, persists after loss/unstake; was "cut card
+  ignored"), First Base Peek → Peek (unconditional hole-card sight). New:
+  Psychic (top card visible while staked, quantified on sight), Tourist
+  (returns from the B3 battery with a new effect: its line losing consumes
+  the chip and zeroes heat).
+- Retired: S6's Five-Card Charlie, Double Anything, Surrender Anywhere,
+  Burning Question, Ten Density, The Illustrious, Boring Bob, Team Player,
+  Cold Deck; B3's New Shoe Who Dis, Housekeeping, The Inside Job, Golden
+  Chip, Room Service, Baker's Dozen, Bolt Cutter.
+- General chip laws ruled with the roster: chips only have effects while
+  staked (at risk every hand — the self-balancer); split hands resolve
+  separately and chips bind to their line; Peek×PP only lives through a
+  double/split stake; heat chips stay inert until heat exists (their
+  rarities wait for the heat model).
+- Rarity law extended: all rarities speculative — the 0.3.0 battery assigns
+  C/U/R from measured EV; S4's ~70/25/5 governs drop rates only. Battery
+  methodology (learned in an earlier iteration): chips that change optimal
+  play get bespoke chip-aware strategies before their EV is trusted —
+  basic-strategy measurement can show *lost* EV for genuinely good chips.
+- Roadmap updated accordingly (0.3.0 ✎ resolved; §6 annotated). The roadmap
+  commit (2bf05f7) and this entry's commit are held from push pending the go.
+
 - Evidence filed: `docs/evidence/battery_b3.txt` — the BACKOFF chip-tuning
   battery + per-chip ablation (Godot 4.3 export). Design input for promo
   balance: Airbag dominates EV (+43.9pp LOO); Tourist/Baker's Dozen/Bolt

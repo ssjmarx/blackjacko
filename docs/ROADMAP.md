@@ -115,12 +115,15 @@ its diegetic line ☐ table limits bind at stake time, min and max.
 **Question:** Do the chips change how you play — and is the stacking law law?
 **Scope:** PromoEngine per S5/S12: hook dispatch (pre-deal, deal, action,
 settlement, rule, info, shoe, heat), click-order resolution, additive deltas
-over base, field-vs-line scope. The POC promo set (S11's 12 chips — exact
-roster per the ✎ ruling below). Rack: 6 promo slots; staking a promo triggers
+over base, field-vs-line scope. The ruled 12-chip roster (spec erratum E6,
+ruled 2026-10-22). Rack: 6 promo slots; staking a promo triggers
 it immediately; payouts roll promo odds (1/20); pity at 30, persisted,
 resetting on award; overflow auto-declines at 6/6 with the dealer's line; the
 two dealer reminders; promo color-up (sacrificed at face value, slot freed).
-Rarity weights ~70/25/5, set by the sim, recorded in the dev log.
+Rarity assignment is this milestone's battery output: every chip that
+changes optimal play gets a bespoke chip-aware strategy before its measured
+EV is trusted; S4's ~70/25/5 weights govern drop rates only. Results recorded
+in the dev log.
 **Exit tests:** ☐ vitest stacking-law table: two Insurance Scam II = 6:1 ·
 Scam I + III = 6:1 · two Airbags on one line both eaten · PP-then-PP no-ops ·
 click order breaks ties (S5's worked consequences as tests) ☐ Hot Hand
@@ -130,11 +133,12 @@ harness battery: marginal promo EV per chip, isolated and stacked, at 20M
 hands — jackpots allowed, equilibriums not ☐ the B3 ablation re-run through
 the TS core; Airbag is still the load-bearing chip.
 
-**✎ Ruling due before 0.3.0 starts — the POC chip roster.** The B3 battery
-(`docs/evidence/battery_b3.txt`, Godot-era) names a different chip set than
-spec S6 v0.2 (Hot Hand… Cold Deck): the catalog moved between the battery and
-the spec. Which 12 ship in the POC needs a human ruling; the B3 evidence maps
-by role (Airbag = the save, Scam = the printing press), not by name.
+**Ruled 2026-10-22:** the POC roster is the 12-chip table in spec erratum E6 —
+four effect changes vs old S6 (Ghost, Push Power, Deep Pen ramp, Peek), two
+new chips (Psychic, Tourist), the S6 and B3 dead weight retired. The chip
+laws ride along: chips only work while staked; chips bind to their line
+through splits; rarities are assigned by this milestone's battery, not by
+decree (heat chips wait for the heat model).
 
 ### v0.4.0 — THE SHOE
 **Question:** Does a run survive a restart mid-shoe, mid-hand?
@@ -282,8 +286,9 @@ nothing unattributed ships ☐ tagged, exported, playable. Done means done.
 
 **Open decisions (✎) — ruled by the human, recorded in the dev log:**
 
-- **POC chip roster** — due before 0.3.0 (see §5 v0.3.0): the B3 battery's
-  Godot-era names vs spec S6 v0.2's catalog; evidence maps by role, not name.
+- **Chip roster** — RESOLVED 2026-10-22, recorded as spec erratum E6.
+  Rarities are the 0.3.0 battery's output; Camouflage/Tourist wait for the
+  heat model in the harness.
 - **Phaser version pin** — due at 0.1.0 (knkn precedent: Phaser 4, TS-native).
 - **Deploy target & domain** — due at 0.1.0 (personal infra, knkn shape).
 - **Save storage** — due at 0.4.0 (localStorage vs downloadable file).
