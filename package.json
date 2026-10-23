@@ -11,7 +11,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "map": "node scripts/projectmap.ts",
-    "check": "npm run typecheck && npm test && npm run map",
+    "check": "npm run typecheck && npm test && npm run map && node scripts/a11y-lint.ts",
     "sim": "node src/sim/cli.ts",
     "verify": "node src/sim/cli.ts --suite verify"
   },

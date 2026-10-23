@@ -317,6 +317,39 @@ otherwise standard). Until wired into the engine, E4's basic-strategy-only
 deferral holds; wiring + verifying these rows is 0.10.0 THE SPANISH TABLES
 work.
 
+**E8 — Accessibility law + options menu (ruled with FELT pt2):**
+
+1. **The hard law:** every game object, every visual event, and every player
+   control is screen-reader complete — no gaps, ever. Enforced from the first
+   visual commit: the render kit (no Phaser object exists undescribed — the
+   kit's creators require an SR string, type-checked), the a11y lint (grep
+   law: object creation and interactivity live only in the kit; `npm run
+   check` fails on violations), and the announcement bridge (every
+   RoundEvent kind produces an announcement — a missed kind is a compile
+   error, and a test asserts every phrase is non-empty).
+2. **Contrast law:** every palette fg/bg pair clears WCAG AA (4.5:1),
+   test-enforced (`tests/contrast.test.ts`). White card face on the felt
+   (`#0b5d3b`) measures ≈7.9:1 (AAA). Card backs must be light or
+   white-outlined: the English-pattern deck's four backs (blue, purple, red,
+   yellow — all white-outlined; the SVG's green background makes the outline
+   trivial to preserve on extraction) pass by design.
+3. **The accessibility menu** (options ship with their systems):
+   - **Large number cards** — the key option: rank/number art and face art
+     separately swappable. Arrives with swappable card art (the Deck
+     interface, pt3 onward; per-property decks later). The extraction
+     pipeline keeps number and face layers separable for exactly this.
+   - **Four-color suits** — spades black, hearts red, diamonds blue, clubs
+     green: shape redundancy stays, color becomes a second channel. Vector
+     recolor; seeded with deck rendering.
+   - **High contrast mode** — felt, backs, and HUD recolored at runtime.
+   - (Standing with these: hand-location axis flip; mouse/keyboard/touch
+     parity — goal 4.)
+4. **Closed captions:** every announcement prints as a visible caption,
+   CEA-style — bottom-center band, white on translucent dark, speaker labels
+   ("Dealer: ..."), bracketed sounds ("[shuffle]") — **on by default**. The
+   caption text and the SR announcement are the same string by construction:
+   one bridge, two sinks.
+
 **E6 — S6 chip catalog superseded (roster ruling 2026-10-22):** the S6 table
 above is replaced by the ruled 12-chip POC roster below. All rarities are
 SPECULATIVE — a per-chip battery assigns each chip to Common / Uncommon /

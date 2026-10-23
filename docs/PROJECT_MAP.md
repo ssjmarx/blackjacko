@@ -184,22 +184,33 @@ owns legality (canDouble/canSplit/... flags) and clamps illegal picks with
 standard fallbacks (D->H, Ds->S).
 
 
+## src/layout/table.ts
+
+The table layout solver — the single home for every coordinate on screen.
+Pure geometry: viewport, insets, hand count, and the axis option in; named zones out for both surfaces.
+Cards target 10% of width; player hands stack; dealer rows grow right and squash.
+
+- `clamp(v: number, lo: number, hi: number)` — Clamp a value into [lo, hi].
+- `solveTable(width: number, height: number, opts: TableOptions = {})` — Solve the table for a viewport — pure: identical inputs, identical layout.
+
 ## src/main.ts
 
 The bootstrap: one Phaser.Game in RESIZE scale mode inside the #game
-element, hosting the felt scene. The DOM shell (index.html) carries the
-accessibility layer; the canvas carries the table.
+element, hosting the felt scene. The DOM shell carries the accessibility
+layer and zone variables; both surfaces re-solve from the one solver.
 
 
 ## src/scenes/feltscene.ts
 
-The felt scene — the table surface everything else lands on. pt1 ships the
-bare table: felt at any aspect ratio plus a debug readout of canvas size and
-orientation; the zone solver (pt2) replaces the readout with real placement.
+The felt scene — the table surface everything else lands on. pt2 adds the
+debug zone overlay through the render kit: one solve drives the canvas
+zones, the DOM probes, and the size/axis readout, live on every resize.
 
 - **class FeltScene** — The one Phaser scene: boots the felt and re-flows it on every resize.
-  - `create()` — Boot the felt: camera background, the debug readout, and the resize hook.
-  - `paint(size: Phaser.Structs.Size)` — Repaint the readout for the current game size; flips with the aspect.
+  - `create()` — Boot the felt: camera background, the readout, and the resize hook.
+  - `reflow(w: number, h: number)` — Re-solve the table and repaint every debug zone for the viewport.
+  - `paintReadout(w: number, h: number)` — Update the size/axis readout (flips with the aspect, per goal 1).
+  - `paintZones()` — Draw the debug zone overlay: one outlined, labeled rect per zone.
 
 ## src/sim/cli.ts
 
@@ -258,3 +269,39 @@ bankroll curve (peak / max drawdown).
   - `handsPerShoe()` — Hands per shoe (0 when no shoe boundary was counted).
 - `fmt(n: number, digits = 3)` — Fixed-digits format; normalizes negative zero; '–' for non-finite.
 - `pct(n: number, digits = 3)` — Fraction to a percent string.
+
+## src/ui/announcements.ts
+
+The announcement map — every RoundEvent kind phrased for speech and
+captions (spec E8: one string, two sinks). The Record types over the event
+and outcome unions make a missed kind a compile error.
+
+- `speakCard(card: number)` — Speak a card byte as words: "ace of spades".
+- `phraseFor(e: RoundEvent)` — Phrase a RoundEvent for speech and captions; never empty for a known kind.
+
+## src/ui/domshell.ts
+
+The DOM bridge — one side of the two-surface layout, and the home of the
+accessibility registry. Zones go to CSS variables; objects register their
+SR text here; the announcer and captions are one string, two sinks.
+
+- `mountDomShell()` — Grab the shell elements and create the captions band; safe to re-call.
+- `zoneMap(l: TableLayout)` — Every named zone of a layout, as a plain map for var/probe iteration.
+- `applyZones(l: TableLayout)` — Apply the solved zones to CSS custom properties on the root element.
+- `registerObject(id: string, role: string, sr: string)` — Register a game object's SR description; the kit calls this on creation.
+- `unregisterObject(id: string)` — Drop a game object from the registry.
+- `announce(text: string, opts: { speaker?: string } = {})` — Announce text to the SR layer and print it as a caption (one string, two sinks).
+- `setStateSummary(text: string)` — Replace the SR state panel summary text.
+- `showProbes(l: TableLayout)` — (Debug) Draw dashed probe divs for every zone, proving the shared solve.
+- `clearProbes()` — Remove the debug probe divs.
+- `renderState()` — Re-render the SR state panel from the registry (debug entries stay silent).
+
+## src/ui/kit.ts
+
+The render kit — the only sanctioned way to create Phaser game objects or
+wire interactivity (spec E8's hard law). Every creator requires an SR
+description and registers with the registry; undescribed objects cannot compile.
+
+- `rect(scene: Phaser.Scene, r: Rect, opts: KitRectOptions)` — Create a described rectangle: the felt, zones, spots — everything boxy.
+- `text(…)` — Create a described text object: readouts, labels, zone tags.
+- `destroy(…)` — Destroy a kit-created object and drop its registry entries.

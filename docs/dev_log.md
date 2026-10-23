@@ -157,6 +157,45 @@ provenance; the law lives in the spec and the roadmap.
   (HTTP 200, ready in 88 ms).
 - Eyes pending: the resize/orientation flip (20:9↔9:20) is the human's
   eyeball check at `npm run dev` → localhost:5173 — the pt1 exit test.
+  PASSED 2026-10-22 ("looks great!") — pt1 closed.
+
+## Entry #7 — 2026-10-22 · THE FELT pt2 — the solver
+
+- Spec erratum **E8** written (accessibility law + options menu: the hard
+  SR law, the contrast law, large-number cards / four-color suits / high
+  contrast / captions); the FELT gate's presentation erratum renumbered E9.
+  `current_plan.md` gained the aesthetic law (vector cards and chips,
+  calculated felt, photographic artifacts), the caption law, and the E8
+  summary; pt2/pt3 rows updated to the ruled scope.
+- **The solver exists:** `src/layout/table.ts` — a pure function from
+  viewport + insets + hand count + axis option to every named zone (safe,
+  pen bar, chip tray, dealer, shoe, player, four line slots, bet spots,
+  insurance spot, count HUD, context panel + collapsed button, lower
+  third). Cards are 10% of screen width (36px floor), upright 5:7; the
+  player band runs 50%→100% of width at four hands (portrait), collapsing
+  the context panel to a button; `axisFlip` mirrors the hand locations
+  (portrait flip = horizontal band swap; dealer stays top).
+- **The E8 hard law is enforced, not promised:** `src/ui/kit.ts` is the only
+  module allowed to create Phaser objects — every creator takes a required
+  SR string; `scripts/a11y-lint.ts` (now in `npm run check`) fails on any
+  `this.add.` / `setInteractive` outside the kit; `src/ui/announcements.ts`
+  phrases every RoundEvent kind (a missed kind is a compile error via
+  Record types); `tests/a11y.test.ts` asserts coverage and hole-card
+  secrecy; `tests/contrast.test.ts` enforces WCAG AA on every palette pair.
+- The solver's own tests caught three real geometry bugs before any human
+  saw them: the count HUD's x used the unclamped width (negative on narrow
+  screens), landscape insurance flew off-screen under axisFlip, and bet
+  spots escaped their slots at the 480×216 and 100×180 extremes. All fixed;
+  the bet-spot diameter now yields to the slot's tightest dimension.
+- Gate: typecheck + **106/106 tests** (8 files) + audit (PROJECT_MAP now 24
+  modules) + `a11y-lint: kit law holds` + vite build clean. The persistent
+  shell's completion detection broke mid-session (a stray dev-server
+  process holding the pipe, killed); commands ran fine — verified via log
+  files.
+- Eyes pending: `npm run dev` → the debug zone overlay at 20:9, square, and
+  9:20 — labeled zones, DOM dashed probes sharing the same numbers, and the
+  boot caption at the bottom. That closes pt2.
+
 
 
 

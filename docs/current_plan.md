@@ -43,6 +43,15 @@ record rulings in the dev log.
 - **Chips:** diegetic circles along the bottom, denomination-sorted, promo area
   reserved (empty until 0.3.0). Click+drag plays them; keyboard selects and
   plays them.
+- **Aesthetic law:** vector cards and chips, calculated felt, photographic
+  artifacts — the strategy and index cards ship as photographs of the human's
+  actual card-counter cards.
+- **Accessibility law (spec E8):** every game object, visual event, and player
+  control is SR-complete — enforced per commit by the render kit, the a11y
+  lint, and the announcement map. Contrast law: every palette pair clears
+  WCAG AA, test-enforced; card backs light or white-outlined. Closed captions
+  (CEA-style, bottom-center, speaker labels, bracketed sounds) print every
+  announcement, on by default — one string, two sinks.
 
 ## The patch cycle
 
@@ -50,12 +59,12 @@ record rulings in the dev log.
 |---|---|---|---|
 | pt0 | the seam | async resolver (awaits `Action \| Promise<Action>`) + the RoundEvent stream (card / hole-reveal / decision / line events); sims and tests adapt | check green; sim anchors sane |
 | pt1 | the shell | phaser 4.2.1 + vite 8.2.2 pins; tsconfig → knkn shape (bundler + DOM, `.ts` imports); index.html DOM shell; canvas boots to felt; resize + orientation flip live 20:9↔9:20 | first pixels; resize verified |
-| pt2 | the solver | pure zone solver (`src/layout/table.ts`) + vitest tests; debug zone overlay; DOM anchors share the same numbers | solver tested across the ratio sweep |
-| pt3 | the deck | `scripts/extract-deck.ts`: parse the English-pattern SVG (grid-positional — the source has no labels — calibrated once against your eyes) → per-card SVGs + manifest in `public/assets/decks/english/`; Deck interface; device-scaled rasterization; lower-third deck credit at start of play | A♠ lands where A♠ should |
+| pt2 | the solver | zone solver v2 (stacking law, dealer choreography, 10%/50% card metrics, hands parameter, dual context rects, axisFlip) + vitest suite (ratio sweep, goldens, hand-count expansion); the render kit + A11y registry (E8 law: SR-required creators, a11y grep lint, announcement map); contrast-law test; debug zone overlay through the kit; DOM anchors share one solve | solver tested across the ratio sweep; a11y lint green |
+| pt3 | the deck | `scripts/extract-deck.ts`: parse the English-pattern SVG (grid-positional — the source has no labels — calibrated once against your eyes) → per-card SVGs + manifest in `public/assets/decks/english/`; green background dropped, the four white-outlined backs preserved; number and face art extracted in separable layers (the large-number option swaps them independently — E8); Deck interface; device-scaled rasterization; lower-third deck credit at start of play | A♠ lands where A♠ should |
 | pt4 | the hand | HumanStrategy over the command bus; DOM buttons + keybinds; events → animation kit; a full Tony's round (hit/stand/double/split/surrender, insurance, peek); settlement flash | the first playable hand |
 | pt5 | the money | drawn chip tray (denomination-sorted, promo area reserved), click+drag + keyboard chips, bet circle, bankroll + min/max context, rebet | betting plays by all three input modes |
 | pt6 | the counter | RC/TC top right; penetration bar (black played / red cut tail, live cut updates) + the rounded red cut card in the shoe; strategy card bottom-left during play; a11y layer complete end-to-end; HUD flips with the axis | SR-playable; counts never drift from the engine |
-| pt7 | the gate | exit tests (50 hands by hand; seeded card-for-card replay vs the harness; purity greps; check); the gate's dev_log entry; spec erratum E8 (presentation law); roadmap 0.1.0 scope rewrite; tag v0.1.0 on the go | the gate passes or it doesn't |
+| pt7 | the gate | exit tests (50 hands by hand; seeded card-for-card replay vs the harness; purity greps; the a11y lint; check); the gate's dev_log entry; spec erratum E9 (presentation law); roadmap 0.1.0 scope rewrite; tag v0.1.0 on the go | the gate passes or it doesn't |
 
 ## Architecture notes
 

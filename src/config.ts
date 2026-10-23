@@ -14,3 +14,19 @@ export const FELT = {
 export const DEBUG = {
   layout: true,
 } as const;
+
+/** The card palette: face, ink, and the red suit — the contrast law's subjects (spec E8). */
+export const CARD = {
+  face: "#ffffff",
+  ink: "#1a1a1a",
+  red: "#c8102e",
+} as const;
+
+/** Closed captions (CEA-style, spec E8): bottom-center band, on by default. */
+export const CAPTIONS = {
+  background: "rgba(0, 0, 0, 0.75)",
+  color: "#ffffff",
+  displayMs: 4000,
+  maxWidthPct: 0.8,
+} as const;
+

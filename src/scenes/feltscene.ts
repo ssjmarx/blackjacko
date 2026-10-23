@@ -1,40 +1,102 @@
 /**
- * The felt scene — the table surface everything else lands on. pt1 ships the
- * bare table: felt at any aspect ratio plus a debug readout of canvas size and
- * orientation; the zone solver (pt2) replaces the readout with real placement.
+ * The felt scene — the table surface everything else lands on. pt2 adds the
+ * debug zone overlay through the render kit: one solve drives the canvas
+ * zones, the DOM probes, and the size/axis readout, live on every resize.
  */
 import Phaser from "phaser";
+import { solveTable, type Rect, type TableLayout } from "../layout/table.ts";
 import { DEBUG, FELT } from "../config.ts";
+import { destroy, rect, text } from "../ui/kit.ts";
+import { announce } from "../ui/domshell.ts";
+
+/** Debug zone colors (canvas numbers) — readable ink on the felt, debug-only. */
+const ZONE_COLORS = {
+  dealer: 0x3b82f6,
+  player: 0x22c55e,
+  shoe: 0xf97316,
+  penBar: 0x94a3b8,
+  chipTray: 0xa855f7,
+  countHud: 0xeab308,
+  contextPanel: 0x06b6d4,
+  insuranceSpot: 0xec4899,
+  lineSlot: 0xffffff,
+  betSpot: 0x22d3ee,
+  lowerThird: 0x64748b,
+} as const;
 
 /** The one Phaser scene: boots the felt and re-flows it on every resize. */
 export class FeltScene extends Phaser.Scene {
   private readout?: Phaser.GameObjects.Text;
+  private overlay: { obj: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text; id: string }[] = [];
+  private layout?: TableLayout;
 
   constructor() {
     super("felt");
   }
 
-  /** Boot the felt: camera background, the debug readout, and the resize hook. */
+  /** Boot the felt: camera background, the readout, and the resize hook. */
   create(): void {
     this.cameras.main.setBackgroundColor(FELT.background);
-    this.readout = this.add.text(8, 8, "", {
-      fontFamily: "monospace",
-      fontSize: "14px",
+    this.readout = text(this, 8, 8, "", {
+      id: "readout",
+      sr: "Canvas size and dealing axis readout",
       color: FELT.readout,
+      debug: true,
     });
-    this.paint(this.scale.gameSize);
-    this.scale.on("resize", (size: Phaser.Structs.Size) => this.paint(size));
+    this.reflow(this.scale.gameSize.width, this.scale.gameSize.height);
+    this.scale.on("resize", (size: Phaser.Structs.Size) => this.reflow(size.width, size.height));
+    announce("Welcome to blackjacko. Tony's Backroom: one deck, dealer stands on all 17s, blackjack pays 3 to 2.");
   }
 
-  /** Repaint the readout for the current game size; flips with the aspect. */
-  private paint(size: Phaser.Structs.Size): void {
+  /** Re-solve the table and repaint every debug zone for the viewport. */
+  private reflow(w: number, h: number): void {
+    this.layout = solveTable(w, h);
+    for (const o of this.overlay) destroy(this, o.obj, o.id);
+    this.overlay = [];
+    this.paintReadout(w, h);
+    if (DEBUG.layout) this.paintZones();
+  }
+
+  /** Update the size/axis readout (flips with the aspect, per goal 1). */
+  private paintReadout(w: number, h: number): void {
     if (!this.readout) return;
-    if (!DEBUG.layout) {
-      this.readout.setText("");
-      return;
-    }
-    const portrait = size.height > size.width;
+    const portrait = h > w;
     const axis = portrait ? "PORTRAIT — dealer top, player bottom" : "LANDSCAPE — dealer left, player right";
-    this.readout.setText(`${size.width}×${size.height} · ${axis}`);
+    this.readout.setText(`${w}×${h} · ${axis}`);
+  }
+
+  /** Draw the debug zone overlay: one outlined, labeled rect per zone. */
+  private paintZones(): void {
+    const l = this.layout;
+    if (!l) return;
+    const add = (r: Rect, color: number, id: string, sr: string): void => {
+      if (r.w <= 0 || r.h <= 0) return;
+      const obj = rect(this, r, { id, sr, color, alpha: 0.14, outlined: true, debug: true });
+      this.overlay.push({ obj, id });
+      const label = text(this, r.x + 3, r.y + 3, id, {
+        id: `${id} label`,
+        sr,
+        color: "#ffffff",
+        size: 11,
+        debug: true,
+      });
+      this.overlay.push({ obj: label, id: `${id} label` });
+    };
+    add(l.dealer, ZONE_COLORS.dealer, "dealer", "The dealer's cards.");
+    add(l.player, ZONE_COLORS.player, "player", "Your hands.");
+    add(l.shoe, ZONE_COLORS.shoe, "shoe", "The dealing shoe, with the cut card.");
+    add(l.penBar, ZONE_COLORS.penBar, "penBar", "The penetration bar.");
+    add(l.chipTray, ZONE_COLORS.chipTray, "chipTray", "Your chip tray.");
+    add(l.countHud, ZONE_COLORS.countHud, "countHud", "The running and true count.");
+    add(l.contextPanel, ZONE_COLORS.contextPanel, "contextPanel", "Betting limits and bankroll.");
+    if (l.contextButton.w > 0) add(l.contextButton, ZONE_COLORS.contextPanel, "strategyButton", "Opens the strategy card.");
+    add(l.insuranceSpot, ZONE_COLORS.insuranceSpot, "insuranceSpot", "The insurance line.");
+    add(l.lowerThird, ZONE_COLORS.lowerThird, "lowerThird", "The deck credit band.");
+    for (const [i, s] of l.lineSlots.entries()) {
+      add(s, ZONE_COLORS.lineSlot, `slot${i + 1}`, `Player line slot ${i + 1}.`);
+    }
+    for (const [i, b] of l.betSpots.entries()) {
+      add(b, ZONE_COLORS.betSpot, `bet${i + 1}`, `Bet spot ${i + 1}.`);
+    }
   }
 }
