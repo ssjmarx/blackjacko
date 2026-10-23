@@ -152,7 +152,7 @@ function printHeader(): void {
 }
 
 /** Run a scenario list in order, then the monotonic check when the group declares one. */
-function runGroup(name: string, scenarios: Scenario[], hands: number, seed: number): void {
+async function runGroup(name: string, scenarios: Scenario[], hands: number, seed: number): Promise<void> {
   if (scenarios.length === 0) return;
   console.log(`\n=== ${name} ===`);
   printHeader();
@@ -160,7 +160,7 @@ function runGroup(name: string, scenarios: Scenario[], hands: number, seed: numb
   let baseline: ScenarioResult | undefined;
   const withMonotonic = scenarios.some((s) => s.expected?.soft === 'monotonic');
   for (const sc of scenarios) {
-    const res = runScenario(sc, hands, seed);
+    const res = await runScenario(sc, hands, seed);
     results.push(res);
     if (sc.id === 'sweep-baseline') baseline = res;
     printResultRow(res, baseline);
@@ -182,7 +182,7 @@ function runGroup(name: string, scenarios: Scenario[], hands: number, seed: numb
 }
 
 /** CLI entry: parse args, dispatch to --list / --scenario / a named suite. */
-function main(): void {
+async function main(): Promise<void> {
   const opts = parseArgs(process.argv.slice(2));
   const hands = opts.hands ?? SCALES[opts.scale] ?? SCALES.quick!;
 
@@ -207,29 +207,29 @@ function main(): void {
   switch (opts.suite) {
     case 'verify':
     case 'all':
-      runGroup('ANCHORS — exact-ruleset EV/variance vs Wizard of Odds', scenariosByGroup('anchors'), hands, opts.seed);
-      runGroup('FRESH SHOE — off-the-top variants', scenariosByGroup('fresh'), hands, opts.seed);
-      runGroup('RULE SWEEP — one toggle at a time (delta vs sweep-baseline)', scenariosByGroup('sweep'), hands, opts.seed);
-      runGroup('PEN SWEEP — counting EV vs penetration', scenariosByGroup('pen'), hands, opts.seed);
-      runGroup('SPREAD LADDER — counting EV vs bet spread', scenariosByGroup('spread'), hands, opts.seed);
-      runGroup('COUNTING — flat vs ramps vs Kelly, BJ + Sp21 (Monkey)', scenariosByGroup('count'), hands, opts.seed);
+      await runGroup('ANCHORS — exact-ruleset EV/variance vs Wizard of Odds', scenariosByGroup('anchors'), hands, opts.seed);
+      await runGroup('FRESH SHOE — off-the-top variants', scenariosByGroup('fresh'), hands, opts.seed);
+      await runGroup('RULE SWEEP — one toggle at a time (delta vs sweep-baseline)', scenariosByGroup('sweep'), hands, opts.seed);
+      await runGroup('PEN SWEEP — counting EV vs penetration', scenariosByGroup('pen'), hands, opts.seed);
+      await runGroup('SPREAD LADDER — counting EV vs bet spread', scenariosByGroup('spread'), hands, opts.seed);
+      await runGroup('COUNTING — flat vs ramps vs Kelly, BJ + Sp21 (Monkey)', scenariosByGroup('count'), hands, opts.seed);
       break;
     case 'anchors':
-      runGroup('ANCHORS', scenariosByGroup('anchors'), hands, opts.seed);
-      runGroup('FRESH SHOE', scenariosByGroup('fresh'), hands, opts.seed);
+      await runGroup('ANCHORS', scenariosByGroup('anchors'), hands, opts.seed);
+      await runGroup('FRESH SHOE', scenariosByGroup('fresh'), hands, opts.seed);
       break;
     case 'sweep':
-      runGroup('RULE SWEEP', scenariosByGroup('sweep'), hands, opts.seed);
+      await runGroup('RULE SWEEP', scenariosByGroup('sweep'), hands, opts.seed);
       break;
     case 'pen':
-      runGroup('PEN SWEEP', scenariosByGroup('pen'), hands, opts.seed);
+      await runGroup('PEN SWEEP', scenariosByGroup('pen'), hands, opts.seed);
       break;
     case 'count':
-      runGroup('COUNTING', scenariosByGroup('count'), hands, opts.seed);
+      await runGroup('COUNTING', scenariosByGroup('count'), hands, opts.seed);
       break;
     default:
       throw new Error(`unknown suite: ${opts.suite}`);
   }
 }
 
-main();
+await main();

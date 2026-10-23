@@ -33,7 +33,7 @@ for (const id of opts.ids) {
   const sc = scenarioById(id);
   if (!sc) throw new Error(`unknown scenario: ${id}`);
   const t0 = performance.now();
-  const res = runScenario(sc, opts.hands, opts.seed);
+  const res = await runScenario(sc, opts.hands, opts.seed);
   const st = res.stats;
   const rebuys = (res as { rebuys?: number }).rebuys ?? 0;
   const line = JSON.stringify({

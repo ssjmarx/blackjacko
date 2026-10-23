@@ -8,7 +8,7 @@ import { mulberry32 } from '../src/core/rng.ts';
 import { playRound, newTally } from '../src/core/resolver.ts';
 import { SimPlayer } from '../src/core/player.ts';
 
-function diagnose(label: string, ruleset: ReturnType<typeof blackjackRuleset>, hands: number): void {
+async function diagnose(label: string, ruleset: ReturnType<typeof blackjackRuleset>, hands: number): Promise<void> {
   const shoe = new Shoe(ruleset, mulberry32(777));
   const player = new SimPlayer(ruleset.spanish ? { play: 'sp21', bet: 'flat', baseUnits: 1 } : { play: 'basic', bet: 'flat', baseUnits: 1 });
   const tally = newTally();
@@ -16,7 +16,7 @@ function diagnose(label: string, ruleset: ReturnType<typeof blackjackRuleset>, h
   let atRisk = 0;
   for (let i = 0; i < hands; i++) {
     if (shoe.needsShuffle() || shoe.remaining() < 21) shoe.shuffle();
-    const r = playRound({ ruleset, shoe, strategy: player, betUnits: 1, unitDollars: 25, tally });
+    const r = await playRound({ ruleset, shoe, strategy: player, betUnits: 1, unitDollars: 25, tally });
     net += r.net;
     atRisk += r.initialWager;
   }
@@ -42,5 +42,5 @@ function diagnose(label: string, ruleset: ReturnType<typeof blackjackRuleset>, h
   console.log(`hands per round:     ${(tally.hands === 0 ? 0 : hands === 0 ? 0 : 0) || (tally.splits + hands) / hands}`);
 }
 
-diagnose('Spanish 21 6D H17', spanish21Ruleset({ decks: 6, s17: false, pen: 0.8 }), 3_000_000);
-diagnose('Blackjack 6D H17 DAS (control)', blackjackRuleset({ decks: 6, s17: false, das: true, pen: 0.8 }), 3_000_000);
+await diagnose('Spanish 21 6D H17', spanish21Ruleset({ decks: 6, s17: false, pen: 0.8 }), 3_000_000);
+await diagnose('Blackjack 6D H17 DAS (control)', blackjackRuleset({ decks: 6, s17: false, das: true, pen: 0.8 }), 3_000_000);

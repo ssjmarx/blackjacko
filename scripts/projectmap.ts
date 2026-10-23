@@ -30,7 +30,7 @@ type ParseResult =
   | { kind: "undocumented"; where: string }
 
 const MODULE_DOC_LINES = 3
-const EXPORT_FUNCTION = /^(?:export )?function ([a-zA-Z_$][\w$]*)[<(]/
+const EXPORT_FUNCTION = /^(?:export )?(?:async )?function ([a-zA-Z_$][\w$]*)[<(]/
 const EXPORT_CLASS = /^export class ([A-Z][\w$]*)/
 const METHOD = /^ {2}(?:override |private |public |get |set |async |static )*([a-zA-Z_$][\w$]*)\(/
 const CONTROL = new Set(["if", "for", "while", "switch", "constructor", "return", "catch"])

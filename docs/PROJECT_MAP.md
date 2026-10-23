@@ -93,7 +93,7 @@ LS/rescue, resplitMax, aces per ruleset) → dealer turn → settle; the hole co
 
 - `newTally()` — A zeroed RoundTally for optional diagnostics collection.
 - `newLine(stake: number)` — A fresh play-phase line carrying one stake.
-- `playRound(env: RoundEnv)` — Play one full round to settlement; net/initialWager/atRisk are in units.
+- `playRound(env: RoundEnv)` — Play one full round to settlement; net/initialWager/atRisk are in units. Awaits promise-returning strategies at every decision point.
 - `canSplit(line: Line, lines: Line[], rules: Ruleset)` — Split legality: pair, not doubled, under resplitMax, aces honor rsa on a resplit.
 - `splitLine(line: Line, lines: Line[], betUnits: number)` — Pop the pair's second card into a child line; both lines carry fromSplit/splitAces.
 - `doubleOnOk(rules: Ruleset, ht: { total: number; soft: boolean })` — Double-range legality ('any' | '9-11' | '10-11'; restricted ranges are hard totals only).

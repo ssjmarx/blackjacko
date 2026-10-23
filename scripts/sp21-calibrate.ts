@@ -55,18 +55,18 @@ const candidates: Flip[] = [
   cellFlip(H17, 'pairs', 4, 2, 'H', 'P'), // 4,4 v 4
 ];
 
-function ev(flip: Flip | null, hands: number): number {
+async function ev(flip: Flip | null, hands: number): Promise<number> {
   if (flip) flip.apply();
   const sc = scenarioById('anchor-sp21-6d-h17')!;
-  const res = runScenario(sc, hands, 4242);
+  const res = await runScenario(sc, hands, 4242);
   if (flip) flip.revert();
   return res.stats.evPctInitial();
 }
 
-function main(): void {
+async function main(): Promise<void> {
   const hands = Number(process.argv[2] ?? 8_000_000);
   console.log(`baseline (no flips): running...`);
-  const base = ev(null, hands);
+  const base = await ev(null, hands);
   console.log(`baseline EV: ${(base * 100).toFixed(3)}%  (target -0.760%)`);
 
   // greedy pass: keep any flip that improves EV beyond ~2 SE
@@ -76,7 +76,7 @@ function main(): void {
     let evWith: number;
     try {
       for (const k of kept) k.apply();
-      evWith = ev(f, hands);
+      evWith = await ev(f, hands);
       for (const k of [...kept].reverse()) k.revert();
     } catch (e) {
       console.log(`SKIP ${f.id}: ${(e as Error).message}`);
@@ -94,4 +94,4 @@ function main(): void {
   void S17;
 }
 
-main();
+await main();

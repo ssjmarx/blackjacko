@@ -87,6 +87,30 @@ provenance; the law lives in the spec and the roadmap.
 - Roadmap updated accordingly (0.3.0 ✎ resolved; §6 annotated). The roadmap
   commit (2bf05f7) and this entry's commit are held from push pending the go.
 
+## Entry #4 — 2026-10-22 · THE FELT pt0 — the seam
+
+- `docs/current_plan.md` created (the pt-level working plan for 0.1.0, per the
+  five ruled goals) and added to the `.clinerules` boot order; the purity grep
+  there aligned to the canonical law (`src/core/` + `src/sim/`).
+- pt0 landed: `playRound` is now async — it awaits `Action | Promise<Action>`
+  at every decision point (insurance, per-line play, split-aces resplit,
+  double-down rescue), so sync sims and the coming async HumanStrategy share
+  one `Strategy` interface (`MaybePromise<T>` added in `view.ts`).
+- The resolver emits a `RoundEvent` render feed (`events?` on `RoundEnv`):
+  round-start / card / hole-revealed / decision / line-created / line-settled
+  / round-end. Hole identities stay out of the feed until `hole-revealed` —
+  the UI cannot leak what it must not show. Split children's second card now
+  emits too (a coverage gap this pass surfaced and closed).
+- Consumers adapted: runner, CLI (top-level await), all 81 tests (async),
+  pen-test / run-chunk / sp21-diagnose / sp21-calibrate. The auditor's
+  function regex now recognizes `async function`.
+- Perf datapoint: 800k hands through the async resolver in ~1.7s (~465k
+  hands/s) — parity with the sync era; the sync fast-path contingency is
+  likely moot. CLI runtime verified (`anchor-1d-s17-das`, 200k hands, PASS,
+  0.2s).
+- Gate green: typecheck + 81 tests + audit (17 modules).
+
+
 - Evidence filed: `docs/evidence/battery_b3.txt` — the BACKOFF chip-tuning
   battery + per-chip ablation (Godot 4.3 export). Design input for promo
   balance: Airbag dominates EV (+43.9pp LOO); Tourist/Baker's Dozen/Bolt

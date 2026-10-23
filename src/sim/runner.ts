@@ -46,7 +46,7 @@ export interface ScenarioResult {
 const MIN_CARDS_FOR_ROUND = 21;
 
 /** Run one scenario for `hands` rounds at `seed`; elapsed time and Kelly rebuys ride along. */
-export function runScenario(scenario: Scenario, hands: number, seed: number): ScenarioResult {
+export async function runScenario(scenario: Scenario, hands: number, seed: number): Promise<ScenarioResult> {
   const t0 = performance.now();
   const rng = mulberry32(seed);
   const shoe = new Shoe(scenario.ruleset, rng);
@@ -64,7 +64,7 @@ export function runScenario(scenario: Scenario, hands: number, seed: number): Sc
     }
     const tc = shoe.count.trueCount();
     const bet = player.betUnits(tc);
-    const res = playRound({
+    const res = await playRound({
       ruleset: scenario.ruleset,
       shoe,
       strategy: player,

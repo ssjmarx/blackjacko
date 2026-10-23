@@ -43,9 +43,12 @@ export interface InsuranceView {
   rawTc: number | null;
 }
 
+/** A value or a promise of it — the resolver awaits either, so sync sims and async humans share one interface. */
+export type MaybePromise<T> = T | Promise<T>;
+
 export interface Strategy {
   /** Called when dealer shows an ace, before peek. Return true to take insurance. */
-  insurance(view: InsuranceView): boolean;
+  insurance(view: InsuranceView): MaybePromise<boolean>;
   /** Decide the action for the active line. */
-  play(view: PlayerView): Action;
+  play(view: PlayerView): MaybePromise<Action>;
 }

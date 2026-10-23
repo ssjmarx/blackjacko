@@ -70,12 +70,36 @@ export function newTally(): RoundTally {
   };
 }
 
+/** What happened to one settled line — the UI's vocabulary for flashes and announcer lines. */
+export type LineOutcome =
+  | 'blackjack'
+  | 'twenty-one'
+  | 'super-bonus'
+  | 'win'
+  | 'lose'
+  | 'push'
+  | 'bust'
+  | 'surrender'
+  | 'rescue';
+
+/** The render feed for one round: the sim ignores these, the felt animates from them. Hole identities stay hidden until 'hole-revealed'. */
+export type RoundEvent =
+  | { kind: 'round-start' }
+  | { kind: 'card'; to: 'player' | 'dealer'; line: number; role: 'initial' | 'hit' | 'double' | 'up' | 'hole'; card?: number }
+  | { kind: 'hole-revealed'; card: number }
+  | { kind: 'decision'; line: number; action: Action }
+  | { kind: 'line-created'; line: number }
+  | { kind: 'line-settled'; line: number; net: number; outcome: LineOutcome }
+  | { kind: 'round-end'; result: RoundResult };
+
 export interface RoundEnv {
   ruleset: Ruleset;
   shoe: Shoe;
   strategy: Strategy;
   betUnits: number;
   unitDollars: number;
+  /** optional render-feed sink; the felt animates from these, sims leave it unset */
+  events?: (e: RoundEvent) => void;
   /** optional diagnostics collector */
   tally?: RoundTally;
 }
@@ -85,9 +109,13 @@ function newLine(stake: number): Line {
   return { cards: [], stake, doubled: false, fromSplit: false, splitAces: false, phase: 'play', net: 0, natural: false };
 }
 
-/** Play one full round to settlement; net/initialWager/atRisk are in units. */
-export function playRound(env: RoundEnv): RoundResult {
-  const { ruleset: rules, shoe, strategy, betUnits, unitDollars, tally } = env;
+/** Play one full round to settlement; net/initialWager/atRisk are in units. Awaits promise-returning strategies at every decision point. */
+export async function playRound(env: RoundEnv): Promise<RoundResult> {
+  const { ruleset: rules, shoe, strategy, betUnits, unitDollars, tally, events } = env;
+  const emit = (e: RoundEvent): void => {
+    events?.(e);
+  };
+  emit({ kind: 'round-start' });
   if (!rules.peek) throw new Error('stage 1 supports US hole-card (peek) rulesets only');
   if (tally) tally.rounds++;
 
@@ -102,6 +130,10 @@ export function playRound(env: RoundEnv): RoundResult {
   const up = shoe.deal();
   const p2 = shoe.deal();
   const hole = shoe.deal();
+  emit({ kind: 'card', to: 'player', line: 0, role: 'initial', card: p1 });
+  emit({ kind: 'card', to: 'dealer', line: 0, role: 'up', card: up });
+  emit({ kind: 'card', to: 'player', line: 0, role: 'initial', card: p2 });
+  emit({ kind: 'card', to: 'dealer', line: 0, role: 'hole' });
   const roundCards: number[] = [p1, up, p2, hole];
   const dealerCards: number[] = [up, hole];
 
@@ -121,7 +153,7 @@ export function playRound(env: RoundEnv): RoundResult {
       tc: shoe.count.trueCount(),
       rawTc: shoe.count.rawTrueCount(),
     };
-    if (strategy.insurance(insView)) {
+    if (await strategy.insurance(insView)) {
       insuranceBet = betUnits / 2;
       atRisk += insuranceBet;
       if (tally) tally.insuranceTaken++;
@@ -133,12 +165,15 @@ export function playRound(env: RoundEnv): RoundResult {
     if (!holeExposed) {
       shoe.count.expose(hole);
       holeExposed = true;
+      emit({ kind: 'hole-revealed', card: hole });
     }
   };
 
   const finish = (handsCount: number): RoundResult => {
     for (const c of roundCards) shoe.discard(c);
-    return { net, initialWager: betUnits, totalAtRisk: atRisk, hands: handsCount, naturals };
+    const result: RoundResult = { net, initialWager: betUnits, totalAtRisk: atRisk, hands: handsCount, naturals };
+    emit({ kind: 'round-end', result });
+    return result;
   };
 
   // --- peek (US hole card) ---
@@ -152,10 +187,14 @@ export function playRound(env: RoundEnv): RoundResult {
         naturals++;
         if (rules.playerBjBeatsDealerBj) {
           net += betUnits * rules.bjPayout; // Sp21: player BJ beats dealer BJ
+          emit({ kind: 'line-settled', line: 0, net: betUnits * rules.bjPayout, outcome: 'blackjack' });
+        } else {
+          // standard: natural pushes against dealer natural
+          emit({ kind: 'line-settled', line: 0, net: 0, outcome: 'push' });
         }
-        // standard: natural pushes against dealer natural
       } else {
         net -= betUnits;
+        emit({ kind: 'line-settled', line: 0, net: -betUnits, outcome: 'lose' });
       }
       atRisk += betUnits;
       return finish(1);
@@ -179,16 +218,19 @@ export function playRound(env: RoundEnv): RoundResult {
     net += main.net;
     naturals++;
     atRisk += betUnits;
+    emit({ kind: 'line-settled', line: 0, net: main.net, outcome: 'blackjack' });
     exposeHole(); // dealer reveals the hole when paying
     return finish(1);
   }
   atRisk += betUnits;
 
   // --- Spanish 21 21-win settlement (player 21 always wins) ---
-  const settleSp21Win = (line: Line): void => {
+  const settleSp21Win = (line: Line, lineIdx: number): void => {
+    let outcome: LineOutcome = 'twenty-one';
     if (rules.superBonus && isSuitedTripleSeven(line.cards) && upVal === 7 && !line.doubled && !line.fromSplit) {
       const betDollars = line.stake * unitDollars;
       line.net = (betDollars >= 25 ? 5000 : 1000) / unitDollars;
+      outcome = 'super-bonus';
       if (tally) tally.superBonus++;
     } else {
       let bonus = 0;
@@ -208,6 +250,7 @@ export function playRound(env: RoundEnv): RoundResult {
     }
     line.phase = 'done';
     net += line.net;
+    emit({ kind: 'line-settled', line: lineIdx, net: line.net, outcome });
   };
 
   // --- player turn ---
@@ -225,13 +268,14 @@ export function playRound(env: RoundEnv): RoundResult {
       roundCards.push(c);
       line.cards.push(c);
       shoe.count.expose(c);
+      emit({ kind: 'card', to: 'player', line: idx, role: 'initial', card: c });
     }
 
     const ht = handTotal(line.cards);
 
     // Sp21: any 21 is an immediate win
     if (rules.player21AlwaysWins && ht.total === 21) {
-      settleSp21Win(line);
+      settleSp21Win(line, idx);
       idx++;
       continue;
     }
@@ -247,8 +291,9 @@ export function playRound(env: RoundEnv): RoundResult {
     if (line.splitAces && !rules.hitSplitAces && line.cards.length >= 2) {
       if (isSplitPair(line.cards) && canSplit(line, lines, rules)) {
         const v = buildView(line, lines, up, upVal, rules, shoe);
-        if (strategy.play(v) === 'P') {
+        if ((await strategy.play(v)) === 'P') {
           splitLine(line, lines, betUnits);
+          emit({ kind: 'line-created', line: lines.length - 1 });
           atRisk += betUnits;
           if (tally) tally.splits++;
           continue;
@@ -260,7 +305,8 @@ export function playRound(env: RoundEnv): RoundResult {
     }
 
     const view = buildView(line, lines, up, upVal, rules, shoe);
-    const action = clampAction(strategy.play(view), view);
+    const action = clampAction(await strategy.play(view), view);
+    emit({ kind: 'decision', line: idx, action });
 
     switch (action) {
       case 'H': {
@@ -274,8 +320,9 @@ export function playRound(env: RoundEnv): RoundResult {
           line.phase = 'done';
           net += line.net;
           if (tally) tally.busts++;
+          emit({ kind: 'line-settled', line: idx, net: line.net, outcome: 'bust' });
         } else if (rules.player21AlwaysWins && t2.total === 21) {
-          settleSp21Win(line);
+          settleSp21Win(line, idx);
         } else if (t2.total === 21) {
           line.phase = 'standing';
         }
@@ -298,16 +345,18 @@ export function playRound(env: RoundEnv): RoundResult {
           line.phase = 'done';
           net += line.net;
           if (tally) tally.busts++;
+          emit({ kind: 'line-settled', line: idx, net: line.net, outcome: 'bust' });
         } else if (rules.player21AlwaysWins && t2.total === 21) {
-          settleSp21Win(line); // bonus void after double: even money on 2x
+          settleSp21Win(line, idx); // bonus void after double: even money on 2x
         } else if (rules.rescue) {
           // double-down rescue: decision after seeing the doubled card
           const v = buildView(line, lines, up, upVal, rules, shoe);
-          if (clampAction(strategy.play(v), v) === 'RESCUE') {
+          if (clampAction(await strategy.play(v), v) === 'RESCUE') {
             line.net = -line.stake; // forfeit original, retrieve doubled portion
             line.phase = 'done';
             net += line.net;
             if (tally) tally.rescues++;
+            emit({ kind: 'line-settled', line: idx, net: line.net, outcome: 'rescue' });
           } else {
             line.phase = 'standing';
           }
@@ -318,6 +367,7 @@ export function playRound(env: RoundEnv): RoundResult {
       }
       case 'P':
         splitLine(line, lines, betUnits);
+        emit({ kind: 'line-created', line: lines.length - 1 });
         atRisk += betUnits;
         if (tally) tally.splits++;
         break;
@@ -326,6 +376,7 @@ export function playRound(env: RoundEnv): RoundResult {
         line.phase = 'done';
         net += line.net;
         if (tally) tally.surrenders++;
+        emit({ kind: 'line-settled', line: idx, net: line.net, outcome: 'surrender' });
         break;
       case 'RESCUE':
         // unreachable (only queried on doubled hands via clampAction)
@@ -348,22 +399,27 @@ export function playRound(env: RoundEnv): RoundResult {
     }
     const dealerTotal = dt.total;
     if (tally && dealerTotal > 21) tally.dealerBusts++;
-    for (const line of lines) {
+    for (const [lineIdx, line] of lines.entries()) {
       if (line.phase !== 'standing') continue;
       const pt = handTotal(line.cards).total;
       const wager = line.stake * (line.doubled ? 2 : 1);
+      let outcome: LineOutcome;
       if (dealerTotal > 21 || pt > dealerTotal) {
         line.net = wager;
+        outcome = 'win';
         if (tally) tally.wins++;
       } else if (pt < dealerTotal) {
         line.net = -wager;
+        outcome = 'lose';
         if (tally) tally.losses++;
       } else {
         line.net = 0;
+        outcome = 'push';
         if (tally) tally.pushes++;
       }
       line.phase = 'done';
       net += line.net;
+      emit({ kind: 'line-settled', line: lineIdx, net: line.net, outcome });
     }
   }
 

@@ -8,7 +8,7 @@ The human decides what gets built, reviews every change, and owns every commit. 
 
 ## 1. Ask, don't assume
 
-The design documents are the canonical vision, subject to update by the human at any time. Read them at the start of every session (`.clinerules` fixes the boot order). The doc family has split responsibilities: `docs/ROADMAP.md` is the working roadmap (the only doc describing future work in detail), `docs/spec-0.2.md` is design law (spec v0.2 + errata, kept verbatim until the TypeScript migration; its Godot-era engine references are superseded by the Phaser/TS ruling — everything else stands), and `docs/dev_log.md` is the development log (rulings, changelogs, supersessions — evidence, not law). If anything needed for the task at hand is ambiguous or under-specified, **ask, don't assume** — a wrong guess ships in the diff.
+The design documents are the canonical vision, subject to update by the human at any time. Read them at the start of every session (`.clinerules` fixes the boot order). The doc family has split responsibilities: `docs/ROADMAP.md` is the working roadmap (the only doc describing future work in detail), `docs/current_plan.md` is the active patch-cycle plan (pt-level detail for the milestone in progress), `docs/spec-0.2.md` is design law (spec v0.2 + errata, kept verbatim until the TypeScript migration; its Godot-era engine references are superseded by the Phaser/TS ruling — everything else stands), and `docs/dev_log.md` is the development log (rulings, changelogs, supersessions — evidence, not law). If anything needed for the task at hand is ambiguous or under-specified, **ask, don't assume** — a wrong guess ships in the diff.
 
 ## 2. File access: the whole repo is yours
 
