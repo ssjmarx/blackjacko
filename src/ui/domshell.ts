@@ -180,8 +180,7 @@ export function showLowerThird(text: string, l: TableLayout): void {
   Object.assign(state.lowerThird.style, {
     left: `${b.x}px`,
     top: `${b.y}px`,
-    width: `${b.w}px`,
-    height: `${b.h}px`,
+    maxWidth: `${b.w}px`,
   });
   if (state.creditShown) return;
   state.creditShown = true;

@@ -7,7 +7,7 @@ import Phaser from "phaser";
 import { solveTable, type Rect, type TableLayout } from "../layout/table.ts";
 import { CARD_STACK, DEBUG, FELT } from "../config.ts";
 import { destroy, rect, text } from "../ui/kit.ts";
-import { announce, showLowerThird } from "../ui/domshell.ts";
+import { announce, registerObject, showLowerThird } from "../ui/domshell.ts";
 import { englishDeck } from "../ui/decks/english.ts";
 import { cardSprite } from "../ui/cardart.ts";
 import { deckStack, shoeRow } from "../ui/cardstack.ts";
@@ -67,7 +67,7 @@ export class FeltScene extends Phaser.Scene {
     announce("Welcome to blackjacko. Tony's Backroom: one deck, dealer stands on all 17s, blackjack pays 3 to 2.");
     if (this.deck && this.layout) {
       showLowerThird(this.deck.creditLines().join("\n"), this.layout);
-      announce(`Deck: ${this.deck.creditLines().join(". ")}.`);
+      registerObject("deck credit", "text", `Deck: ${this.deck.creditLines().join(", ")}.`);
     }
     if (this.deck) this.proveDeck();
   }

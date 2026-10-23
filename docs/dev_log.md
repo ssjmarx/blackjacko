@@ -285,6 +285,26 @@ provenance; the law lives in the spec and the roadmap.
   the 104-card deck stack clamped to the safe top, the 416-card shoe row
   shifted inward at the safe right edge. That closes pt3 amendment 2.
 
+## Entry #12 — 2026-10-22 · correction — the amendment 2 batch missed two fixes
+
+- Honest accounting: amendment 2's batch planned two lower-third fixes and
+  shipped without them — Entry #11's claims that the band sizes to its text
+  and that the caption mirror was gone were **wrong as shipped** (the
+  eyeball caught both; the gate couldn't, because nothing tests the DOM
+  styling). The clamping, grouping, and max-size work Entry #11 describes
+  was real — only those two claims were false.
+- Now actually fixed: `showLowerThird` anchors the band (left/top/max-width
+  from the solver zone) and lets it size to its text — the black backing
+  hugs the four lines. The deck credit's `announce()` is gone from the felt
+  boot: the credit registers as a persistent SR state entry
+  ("deck credit" in the panel) and never touches the announcer or captions.
+- The record discipline this earns: when a batch skips a planned fix, the
+  dev log says so in the same entry — not after the eyeball catches it.
+- Gate: typecheck + 118/118 tests + audit + `a11y-lint: kit law holds` +
+  build clean (unchanged surfaces, no new tests — the DOM styling remains
+  eyeball-law).
+
+
 
 
 
