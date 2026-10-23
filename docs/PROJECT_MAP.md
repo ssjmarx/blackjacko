@@ -295,10 +295,11 @@ fit within the solver's card box; registry cleanup rides through the kit.
 
 The count-true card visuals (ruled): a deck stacks straight up, a shoe lays
 its cards down — drawn from the actual card count, one white-outlined stripe
-per card. Identical stripes are one SR fact, not one per card.
+per group of cards. Identical stripes are one SR fact, not one per card.
 
-- `deckStack(…)` — Create a vertical deck stack of `count` backs; stripe per card, bottom-anchored.
-- `shoeRow(…)` — Create a horizontal shoe row of `count` laid-down backs; stripe per card.
+- `placeStripes(…)` — Place a clamped stripe run: sprites step `step` from the anchor; overflow shifts the run inward, never shrinks it.
+- `deckStack(…)` — Create a vertical deck stack of `count` cards; one stripe per group, bottom-anchored, clamped down.
+- `shoeRow(…)` — Create a horizontal shoe row of `count` laid-down cards; one stripe per group, clamped inward.
 
 ## src/ui/decks/deck.ts
 

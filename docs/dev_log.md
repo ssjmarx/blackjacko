@@ -261,6 +261,31 @@ provenance; the law lives in the spec and the roadmap.
   four lines; resize = silent reposition) + the two stacks. That closes the
   pt3 amendment.
 
+## Entry #11 — 2026-10-22 · pt3 amendment 2 — the four nits
+
+- **The lower third:** the band now sizes to its text (the solver rect is an
+  anchor — left/top/max-width; height and width ride the content), and the
+  deck credit no longer announces itself — it registers as a persistent SR
+  state entry instead (it is not a game event; no caption, no aria-live).
+  The caption mirror the eyeball caught is structurally gone.
+- **The count-true stacks stay on screen (ruled):** `placeStripes` (pure,
+  tested) places a stripe run along an axis and, when the far end would
+  leave the clamp band, shifts the whole run inward by the overshoot —
+  pushed down, shifted inward, never shrunk. The deck stack clamps to the
+  screen's safe top; the shoe row clamps to the safe right edge.
+- **Max sizes are law and are the test cases:** `config.CARD_STACK` gained
+  `group: 4, maxDeck: 104, maxShoe: 416`; the felt proof draws the max
+  sizes. One sprite per four cards (the resolution cut): a 416 shoe renders
+  104 stripes at 2px, a 104 deck renders 26 at 1px — the stripe step stays
+  as drawn, per the correction to my first interpretation.
+- Gate: typecheck + **118/118 tests** (10 files — the cardstack placement
+  law joined: clamping, max sizes, shift-never-shrinks) + audit (28
+  modules) + `a11y-lint: kit law holds` + build clean.
+- Eyes pending: the credit band hugging its four lines at the left edge,
+  the 104-card deck stack clamped to the safe top, the 416-card shoe row
+  shifted inward at the safe right edge. That closes pt3 amendment 2.
+
+
 
 
 ## Entry #8 — 2026-10-22 · two menu rulings while the pt2 eyeball runs

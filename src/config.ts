@@ -37,9 +37,15 @@ export const LOWER_THIRD = {
   outMs: 800,
 } as const;
 
-/** The count-true stacks (ruled): pixels of stripe per card, deck vs shoe. */
+/**
+ * The count-true stacks (ruled): one sprite per group of cards, pixels of
+ * stripe per sprite; the max deck (2 decks) and shoe (8 decks) are tested.
+ */
 export const CARD_STACK = {
   deckPx: 1,
   shoePx: 2,
+  group: 4,
+  maxDeck: 104,
+  maxShoe: 416,
 } as const;
 

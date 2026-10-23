@@ -97,7 +97,11 @@ export class FeltScene extends Phaser.Scene {
     };
     const ace = cardSprite(this, d, 0, aceBox, { id: "proof ace of spades", debug: true });
     this.cards.push({ obj: ace, id: "proof ace of spades" });
-    const stack = deckStack(this, d, 52, l.shoe, CARD_STACK.deckPx, { id: "proof deck stack", debug: true });
+    const stack = deckStack(this, d, CARD_STACK.maxDeck, l.shoe, CARD_STACK.deckPx, {
+      id: "proof deck stack",
+      debug: true,
+      clampMin: l.safe.y + l.metrics.cardH / 2,
+    });
     for (const img of stack) this.cards.push({ obj: img, id: "proof deck stack" });
     const rowBox: Rect = {
       x: l.safe.x + l.safe.w * 0.15,
@@ -105,7 +109,11 @@ export class FeltScene extends Phaser.Scene {
       w: l.safe.w * 0.7,
       h: l.metrics.cardH * 0.8,
     };
-    const row = shoeRow(this, d, 104, rowBox, CARD_STACK.shoePx, { id: "proof shoe row", debug: true });
+    const row = shoeRow(this, d, CARD_STACK.maxShoe, rowBox, CARD_STACK.shoePx, {
+      id: "proof shoe row",
+      debug: true,
+      clampMax: l.safe.x + l.safe.w - l.metrics.cardW / 2,
+    });
     for (const img of row) this.cards.push({ obj: img, id: "proof shoe row" });
     showLowerThird(d.creditLines().join("\n"), l);
   }
