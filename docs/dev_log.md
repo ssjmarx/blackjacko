@@ -31,6 +31,32 @@ provenance; the law lives in the spec and the roadmap.
 - First `npm run check` caught a real leftover: `scripts/pen-test.ts`
   imported from the original dev machine's absolute path
   (`/home/z/my-project/...`) — repointed to relative imports.
+- Remotes wired per the house pattern: `origin` fetches gitea, pushes both
+  gitea + GitHub. Founding commit `31a627d` pushed to both.
+
+## Entry #2 — 2026-10-22 · the roadmap authored
+
+- `docs/ROADMAP.md` authored in full (streamslop pattern): 13 gates from
+  THE FELT (0.1.0, first Phaser hand) to THE SHIP (1.0.0, full 7-era
+  campaign). POC gate at 0.6.0 (spec S11 complete). Dependency chain is
+  linear to COUNTERMEASURES, then SPANISH and METER & WHEEL run as
+  independent era-5 branches converging at THE MACHINE.
+- Gate law: `npm run check` at every commit; the harness battery before any
+  tag that touches money math; a six-box hand-run list at every gate (the
+  count HUD is the engine's count; seeded UI sessions replay card-for-card;
+  one home per number; instant settlement; the fiction teaches; one era
+  back still passes).
+- **Version field realigned to the versioning law:** `0.1.0` (the core's
+  old version) → `0.0.1` — the version is a promise about testability, and
+  no gate has passed yet. Bumps resume at THE FELT.
+- **Flagged, not resolved (✎):** the POC chip roster — `battery_b3.txt`
+  names a Godot-era chip set (New Shoe Who Dis, Baker's Dozen, Bolt Cutter…)
+  that doesn't match spec S6 v0.2 (Hot Hand, Camouflage, Team Player…). The
+  catalog moved between the battery and the spec; which 12 ship in the POC
+  is a human ruling, due before 0.3.0 starts.
+- Other open decisions with due dates: Phaser pin + deploy target (0.1.0),
+  save storage (0.4.0), assets/licensing plan (before 0.6.0), Sp21 index
+  derivation (optional, after 0.10.0).
 - Evidence filed: `docs/evidence/battery_b3.txt` — the BACKOFF chip-tuning
   battery + per-chip ablation (Godot 4.3 export). Design input for promo
   balance: Airbag dominates EV (+43.9pp LOO); Tourist/Baker's Dozen/Bolt

@@ -1,6 +1,6 @@
 {
   "name": "blackjacko",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Blackjacko — a card-counter blackjack campaign game (Balatro-shaped): pure-logic core + headless EV/variance verification harness now, Phaser front-end next. Stage 1-2 of the build: no promos, no heat, no scenes.",
   "type": "module",
   "private": true,
