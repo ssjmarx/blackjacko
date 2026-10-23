@@ -363,8 +363,10 @@ shoe size settable; alternate rules settable; the count visualizer
 toggleable. The table's chips are not generated art — they are photographs
 of the human's actual custom poker chips, a personal artifact no one else
 can hope to fake (the aesthetic law's photographic layer, made personal).
-Roadmap placement is an open ruling ✎ — natural candidates: alongside the
-POC gate, or as its own gate.
+Corey's Table is also the **embedded website demo**: published to the
+human's personal site with promo chips disabled and every other feature
+live (the deploy ruling's web target). Roadmap placement is an open ruling
+✎ — natural candidates: alongside the POC gate, or as its own gate.
 
 **E6 — S6 chip catalog superseded (roster ruling 2026-10-22):** the S6 table
 above is replaced by the ruled 12-chip POC roster below. All rarities are

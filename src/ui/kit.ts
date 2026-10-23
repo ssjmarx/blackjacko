@@ -51,10 +51,30 @@ export function text(
   return t;
 }
 
+/** Options for a kit-created image. */
+export interface KitImageOptions {
+  id: string;
+  sr: string;
+  debug?: boolean;
+}
+
+/** Create a described image (a card, a chip — anything textured). */
+export function image(
+  scene: Phaser.Scene,
+  key: string,
+  x: number,
+  y: number,
+  opts: KitImageOptions,
+): Phaser.GameObjects.Image {
+  const img = scene.add.image(x, y, key);
+  registerObject(opts.id, opts.debug ? "debug" : "image", opts.sr);
+  return img;
+}
+
 /** Destroy a kit-created object and drop its registry entries. */
 export function destroy(
   scene: Phaser.Scene,
-  obj: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text,
+  obj: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text | Phaser.GameObjects.Image,
   id: string,
 ): void {
   unregisterObject(id);

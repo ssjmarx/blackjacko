@@ -16,8 +16,10 @@ const state = {
   statePanel: null as HTMLElement | null,
   captions: null as HTMLElement | null,
   probes: null as HTMLElement | null,
+  lowerThird: null as HTMLElement | null,
   objects: new Map<string, Entry>(),
   captionTimer: undefined as ReturnType<typeof setTimeout> | undefined,
+  creditTimer: undefined as ReturnType<typeof setTimeout> | undefined,
 };
 
 /** Grab the shell elements and create the captions band; safe to re-call. */
@@ -148,6 +150,47 @@ export function showProbes(l: TableLayout): void {
 export function clearProbes(): void {
   state.probes?.remove();
   state.probes = null;
+}
+
+/** Show the lower-third credit band, positioned from the solved layout. */
+export function showLowerThird(text: string, l: TableLayout): void {
+  if (!state.lowerThird) {
+    state.lowerThird = document.createElement("div");
+    state.lowerThird.id = "bj-lower-third";
+    Object.assign(state.lowerThird.style, {
+      position: "fixed",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "rgba(0, 0, 0, 0.78)",
+      color: "#f5f0e1",
+      font: "italic 600 20px/1.2 Georgia, serif",
+      textAlign: "center",
+      padding: "0 18px",
+      borderRadius: "4px",
+      zIndex: "45",
+      opacity: "0",
+      transition: "opacity 600ms ease",
+      pointerEvents: "none",
+    });
+    document.body.appendChild(state.lowerThird);
+  }
+  const b = l.lowerThird;
+  Object.assign(state.lowerThird.style, {
+    left: `${b.x}px`,
+    top: `${b.y}px`,
+    width: `${b.w}px`,
+    height: `${b.h}px`,
+  });
+  state.lowerThird.textContent = text;
+  const reveal = (): void => {
+    if (state.lowerThird) state.lowerThird.style.opacity = "1";
+  };
+  requestAnimationFrame(reveal);
+  if (state.creditTimer) clearTimeout(state.creditTimer);
+  state.creditTimer = setTimeout(() => {
+    if (state.lowerThird) state.lowerThird.style.opacity = "0";
+  }, 7000);
 }
 
 /** Re-render the SR state panel from the registry (debug entries stay silent). */

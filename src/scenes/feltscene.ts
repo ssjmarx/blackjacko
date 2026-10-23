@@ -7,7 +7,10 @@ import Phaser from "phaser";
 import { solveTable, type Rect, type TableLayout } from "../layout/table.ts";
 import { DEBUG, FELT } from "../config.ts";
 import { destroy, rect, text } from "../ui/kit.ts";
-import { announce } from "../ui/domshell.ts";
+import { announce, showLowerThird } from "../ui/domshell.ts";
+import { englishDeck } from "../ui/decks/english.ts";
+import { backSprite, cardSprite } from "../ui/cardart.ts";
+import type { Deck } from "../ui/decks/deck.ts";
 
 /** Debug zone colors (canvas numbers) — readable ink on the felt, debug-only. */
 const ZONE_COLORS = {
@@ -28,10 +31,25 @@ const ZONE_COLORS = {
 export class FeltScene extends Phaser.Scene {
   private readout?: Phaser.GameObjects.Text;
   private overlay: { obj: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text; id: string }[] = [];
+  private cards: { obj: Phaser.GameObjects.Image; id: string }[] = [];
   private layout?: TableLayout;
+  private deck?: Deck;
 
   constructor() {
     super("felt");
+  }
+
+  /** Load the deck's art files before the scene boots. */
+  preload(): void {
+    this.deck = englishDeck();
+    for (let b = 0; b < this.deck.backCount; b++) {
+      const f = this.deck.backFor(b);
+      this.load.svg(f.key, f.file);
+    }
+    for (let c = 0; c < 52; c++) {
+      const f = this.deck.faceFor(c);
+      this.load.svg(f.key, f.file);
+    }
   }
 
   /** Boot the felt: camera background, the readout, and the resize hook. */
@@ -46,6 +64,7 @@ export class FeltScene extends Phaser.Scene {
     this.reflow(this.scale.gameSize.width, this.scale.gameSize.height);
     this.scale.on("resize", (size: Phaser.Structs.Size) => this.reflow(size.width, size.height));
     announce("Welcome to blackjacko. Tony's Backroom: one deck, dealer stands on all 17s, blackjack pays 3 to 2.");
+    if (this.deck) this.proveDeck();
   }
 
   /** Re-solve the table and repaint every debug zone for the viewport. */
@@ -53,8 +72,34 @@ export class FeltScene extends Phaser.Scene {
     this.layout = solveTable(w, h);
     for (const o of this.overlay) destroy(this, o.obj, o.id);
     this.overlay = [];
+    for (const c of this.cards) destroy(this, c.obj, c.id);
+    this.cards = [];
     this.paintReadout(w, h);
     if (DEBUG.layout) this.paintZones();
+    if (this.deck) this.proveDeck();
+  }
+
+  /** The pt3 proof: A♠ in the dealer zone, the backs in the shoe, the credit. */
+  private proveDeck(): void {
+    const l = this.layout;
+    const d = this.deck;
+    if (!l || !d) return;
+    const aceBox: Rect = {
+      x: l.dealer.x + l.metrics.cardW * 0.2,
+      y: l.dealer.y,
+      w: l.metrics.cardW * 1.6,
+      h: l.dealer.h,
+    };
+    const ace = cardSprite(this, d, 0, aceBox, { id: "proof ace of spades", debug: true });
+    this.cards.push({ obj: ace, id: "proof ace of spades" });
+    for (let i = 0; i < d.backCount; i++) {
+      const b = backSprite(this, d, i, l.shoe, { id: `proof back ${i + 1}`, debug: true });
+      b.setDepth(10 + i);
+      b.setAngle((i - 1.5) * 3);
+      this.cards.push({ obj: b, id: `proof back ${i + 1}` });
+    }
+    showLowerThird(d.credit, l);
+    announce(`Deck: ${d.credit}.`);
   }
 
   /** Update the size/axis readout (flips with the aspect, per goal 1). */

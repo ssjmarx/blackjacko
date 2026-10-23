@@ -8,7 +8,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const KIT = join("src", "ui", "kit.ts");
-const FORBIDDEN = [/this\.add\./, /setInteractive/];
+const FORBIDDEN = [/\w+\.add\./, /setInteractive/];
 
 /** Every .ts file under a directory, any depth, sorted for stable output. */
 function walk(dir: string): string[] {

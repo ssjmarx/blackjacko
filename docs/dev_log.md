@@ -196,6 +196,41 @@ provenance; the law lives in the spec and the roadmap.
   9:20 — labeled zones, DOM dashed probes sharing the same numbers, and the
   boot caption at the bottom. That closes pt2.
 
+## Entry #9 — 2026-10-22 · THE FELT pt3 — the deck
+
+- The human separated the English-pattern deck into 56 individual SVGs in
+  Inkscape (`card images/wikimediaimages/english pattern individuals/`,
+  semantically named `as.svg`…`yellow_back.svg`) — the pt3 extraction phase
+  collapsed to validation + manifest + move.
+- `scripts/build-deck.ts`: validates the set (56 expected names, per-file
+  page parse — Inkscape selection bounds vary ~0.2% per card, recorded not
+  policed), moves the files to `public/assets/decks/english/`, emits
+  `src/ui/decks/english-manifest.json` (byte → file, aspect, credit line)
+  and `calibration.html` (the contact sheet). Idempotent: a consumed source
+  with a populated output rebuilds the manifest. Lesson learned twice: emit
+  before the destructive move, and tolerance beats equality against
+  Inkscape floats.
+- **The Deck contract** (`src/ui/decks/deck.ts`): pure data — files, credit
+  line, byte→art mapping; per-property decks and the large-number option
+  slot in without touching the felt. `english.ts` is the first
+  implementation; `cardart.ts` is the kit-backed sprite factory (native
+  aspect, fit within the solver's card box, SR name via `speakCard`).
+- The felt proof: A♠ renders in the dealer zone at solver metrics, the four
+  backs fan in the shoe, and the **lower-third deck credit** plays at boot —
+  DOM band positioned from the solver's CSS vars, announced + captioned
+  (the attribution law, live).
+- E9 amended: Corey's Table is the embedded website demo (promos off,
+  everything else live) — the deploy ruling's web target.
+- Gate: typecheck + **111/111 tests** (9 files) + audit (PROJECT_MAP now 27
+  modules) + `a11y-lint: kit law holds` + build clean. The a11y lint's grep
+  law tightened to `\w+\.add\.` — the kit guards every object creation,
+  including `scene.add.`.
+- Eyes pending: the calibration sheet
+  (`public/assets/decks/english/calibration.html`) — confirm each file's art
+  matches its name; then the felt proof at `npm run dev` (A♠ + backs +
+  credit). That closes pt3.
+
+
 ## Entry #8 — 2026-10-22 · two menu rulings while the pt2 eyeball runs
 
 - **Starting true count** joins the E8 accessibility menu: speeds the game
