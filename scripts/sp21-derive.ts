@@ -46,8 +46,6 @@ const warnings: string[] = [];
 
 function encode(kind: string, total: number, up: number, c: Cell): string {
   const b2 = c.bestByN.get(2) ?? 'H';
-  const ns = [...c.bestByN.keys()].sort((a, b) => a - b);
-  const knownMax = ns[ns.length - 1] ?? 2;
   if (b2 === 'R') return 'R';
   // prefix over KNOWN counts; gap-tolerant. capped = some known count above
   // the prefix disagrees.
@@ -88,16 +86,6 @@ function encode(kind: string, total: number, up: number, c: Cell): string {
   return 'H';
 }
 
-// build rows
-function buildRow(kind: string, lo: number, hi: number): string {
-  const out: string[] = [];
-  for (let up = 2; up <= 11; up++) {
-    // aggregate over totals handled by caller; here per total
-    void up;
-  }
-  void out;
-  return '';
-}
 
 const hardRows: Record<number, string[]> = {};
 const softRows: Record<number, string[]> = {};

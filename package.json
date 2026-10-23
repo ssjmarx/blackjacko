@@ -1,10 +1,13 @@
 {
   "name": "blackjacko",
   "version": "0.0.1",
-  "description": "Blackjacko — a card-counter blackjack campaign game (Balatro-shaped): pure-logic core + headless EV/variance verification harness now, Phaser front-end next. Stage 1-2 of the build: no promos, no heat, no scenes.",
+  "description": "Blackjacko — a card-counter blackjack campaign game (Balatro-shaped): pure-logic core + verification harness behind it, Phaser front-end landing now (THE FELT). Stage 1-2 of the build: no promos, no heat, no scenes.",
   "type": "module",
   "private": true,
   "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "map": "node scripts/projectmap.ts",
@@ -19,9 +22,13 @@
     "card-counting",
     "hi-lo"
   ],
+  "dependencies": {
+    "phaser": "4.2.1"
+  },
   "devDependencies": {
     "@types/node": "26.6.5",
     "typescript": "7.0.2",
+    "vite": "8.2.2",
     "vitest": "5.0.5"
   }
 }

@@ -131,6 +131,34 @@ provenance; the law lives in the spec and the roadmap.
   rows wire in during 0.10.0 (roadmap scope updated). The presentation-law
   erratum at the FELT gate becomes E8 (E7 now taken).
 
+## Entry #6 — 2026-10-22 · THE FELT pt1 — the shell
+
+- Pins landed: phaser 4.2.1 (runtime) + vite 8.2.2 (dev), exact per knkn
+  precedent; scripts gained dev / build / preview (build = `tsc && vite
+  build`).
+- tsconfig migrated to the knkn shape: module ESNext, moduleResolution
+  bundler, lib ES2022 + DOM, isolatedModules, noUnusedLocals,
+  resolveJsonModule — keeping `.ts` import extensions and the strict set.
+  Node-run scripts are unaffected (Node strips types regardless; tsc stays
+  the only type court).
+- `noUnusedLocals` paid rent on day one: seven dead declarations deleted —
+  sp21-derive's `knownMax` + `ns` pair and the `buildRow` stub,
+  sp21-probe's `NINE`, strategy.test's `J`/`DIAMONDS`/`CLUBS` imports and
+  the unused `I18F` player.
+- The shell boots: `index.html` (canvas host + `sr-announcer`/`sr-state`
+  a11y scaffold, `viewport-fit=cover` for the phone wrappers),
+  `vite.config.ts`, `src/config.ts` (felt palette + debug flags — one home),
+  `src/main.ts` (Phaser.Game in `Scale.RESIZE`), `src/scenes/feltscene.ts`
+  (felt + a debug readout of size and dealing axis that flips 20:9↔9:20
+  live).
+- Verified: check green (typecheck under the new court, 81 tests, audit —
+  PROJECT_MAP now 20 modules), vite build clean (1.37 MB / 358 KB gzip —
+  that's Phaser), dev server serves the shell and transforms main.ts
+  (HTTP 200, ready in 88 ms).
+- Eyes pending: the resize/orientation flip (20:9↔9:20) is the human's
+  eyeball check at `npm run dev` → localhost:5173 — the pt1 exit test.
+
+
 
 
 - Evidence filed: `docs/evidence/battery_b3.txt` — the BACKOFF chip-tuning

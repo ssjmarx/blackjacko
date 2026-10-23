@@ -21,7 +21,6 @@ import { makeCard, RANK_IDX, A, TEN, J, Q, K } from '../src/core/card.ts';
 const SIX = RANK_IDX.six;
 const SEVEN = RANK_IDX.seven;
 const EIGHT = RANK_IDX.eight;
-const NINE = RANK_IDX.nine;
 
 const decks = Number(process.argv[2] ?? 2);
 const minDelta = Number(process.argv[3] ?? 0.004);

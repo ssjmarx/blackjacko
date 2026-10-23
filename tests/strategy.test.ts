@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { SimPlayer } from '../src/core/player.ts';
 import { makeView } from './helpers.ts';
-import { makeCard, A, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, J, Q, K, SPADES, HEARTS, DIAMONDS, CLUBS } from '../src/core/card.ts';
+import { makeCard, A, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, Q, K, SPADES, HEARTS } from '../src/core/card.ts';
 import { blackjackRuleset, spanish21Ruleset } from '../src/core/rules.ts';
 import type { Ruleset } from '../src/core/rules.ts';
 
@@ -9,7 +9,6 @@ const c = (r: number, s: number): number => makeCard(r, s);
 
 const BASIC = new SimPlayer({ play: 'basic', insurance: 'never', bet: 'flat', baseUnits: 1 });
 const I18 = new SimPlayer({ play: 'i18', insurance: 'index', bet: 'flat', baseUnits: 1 });
-const I18F = new SimPlayer({ play: 'i18+fab4', insurance: 'index', bet: 'flat', baseUnits: 1 });
 const LS_RULES = blackjackRuleset({ surrender: true });
 
 function playerPlay(p: SimPlayer, cards: number[], up: number, over: { tc?: number; ruleset?: Ruleset; canSplit?: boolean; canSurrender?: boolean; canDouble?: boolean } = {}) {
