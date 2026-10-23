@@ -196,6 +196,22 @@ provenance; the law lives in the spec and the roadmap.
   9:20 — labeled zones, DOM dashed probes sharing the same numbers, and the
   boot caption at the bottom. That closes pt2.
 
+## Entry #8 — 2026-10-22 · two menu rulings while the pt2 eyeball runs
+
+- **Starting true count** joins the E8 accessibility menu: speeds the game
+  up by removing low cards from the shoe, or slows it down by removing high
+  ones. Range −20 (all tens/aces out) through +20 (all 2s–6s out); removed
+  cards are random; the removal math uses each count system's tags (Monkey
+  aces count as 2) — **needs verification** against intent.
+- **Corey's Table** ruled as spec erratum **E9**: the free-play/practice
+  mode — promo chips on/off, per-shoe summary stats, shoe size, alternate
+  rules, count visualizer toggle. Its chips are photographs of the human's
+  actual custom poker chips — the photographic layer, made personal.
+- The FELT gate's presentation erratum becomes E10 (E9 now taken). Corey's
+  Table's roadmap placement is an open ✎ (candidates: alongside the POC
+  gate, or its own gate).
+
+
 
 
 

@@ -342,6 +342,13 @@ work.
      green: shape redundancy stays, color becomes a second channel. Vector
      recolor; seeded with deck rendering.
    - **High contrast mode** — felt, backs, and HUD recolored at runtime.
+   - **Starting true count** — pacing made visible: speeds the game up by
+     removing low cards from the shoe, or slows it down by removing high
+     cards from it. Range **−20** (all tens/aces removed) through **+20**
+     (all 2s–6s removed); the removed cards are chosen randomly. The removal
+     math uses each count system's tags — at Sp21 tables an ace counts as 2
+     (the Monkey tag), which the feature must handle. **Needs verification**
+     that the behavior matches intent.
    - (Standing with these: hand-location axis flip; mouse/keyboard/touch
      parity — goal 4.)
 4. **Closed captions:** every announcement prints as a visible caption,
@@ -349,6 +356,15 @@ work.
    ("Dealer: ..."), bracketed sounds ("[shuffle]") — **on by default**. The
    caption text and the SR announcement are the same string by construction:
    one bridge, two sinks.
+
+**E9 — Corey's Table: free play (ruled 2026-10-22):** the practice mode.
+Promo chips on or off; per-shoe summary stats at the end of every shoe;
+shoe size settable; alternate rules settable; the count visualizer
+toggleable. The table's chips are not generated art — they are photographs
+of the human's actual custom poker chips, a personal artifact no one else
+can hope to fake (the aesthetic law's photographic layer, made personal).
+Roadmap placement is an open ruling ✎ — natural candidates: alongside the
+POC gate, or as its own gate.
 
 **E6 — S6 chip catalog superseded (roster ruling 2026-10-22):** the S6 table
 above is replaced by the ruled 12-chip POC roster below. All rarities are

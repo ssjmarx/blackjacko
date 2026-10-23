@@ -45,7 +45,8 @@ record rulings in the dev log.
   plays them.
 - **Aesthetic law:** vector cards and chips, calculated felt, photographic
   artifacts — the strategy and index cards ship as photographs of the human's
-  actual card-counter cards.
+  actual card-counter cards, and Corey's Table's chips as photographs of the
+  human's actual custom poker chips (spec E9).
 - **Accessibility law (spec E8):** every game object, visual event, and player
   control is SR-complete — enforced per commit by the render kit, the a11y
   lint, and the announcement map. Contrast law: every palette pair clears
@@ -64,7 +65,7 @@ record rulings in the dev log.
 | pt4 | the hand | HumanStrategy over the command bus; DOM buttons + keybinds; events → animation kit; a full Tony's round (hit/stand/double/split/surrender, insurance, peek); settlement flash | the first playable hand |
 | pt5 | the money | drawn chip tray (denomination-sorted, promo area reserved), click+drag + keyboard chips, bet circle, bankroll + min/max context, rebet | betting plays by all three input modes |
 | pt6 | the counter | RC/TC top right; penetration bar (black played / red cut tail, live cut updates) + the rounded red cut card in the shoe; strategy card bottom-left during play; a11y layer complete end-to-end; HUD flips with the axis | SR-playable; counts never drift from the engine |
-| pt7 | the gate | exit tests (50 hands by hand; seeded card-for-card replay vs the harness; purity greps; the a11y lint; check); the gate's dev_log entry; spec erratum E9 (presentation law); roadmap 0.1.0 scope rewrite; tag v0.1.0 on the go | the gate passes or it doesn't |
+| pt7 | the gate | exit tests (50 hands by hand; seeded card-for-card replay vs the harness; purity greps; the a11y lint; check); the gate's dev_log entry; spec erratum E10 (presentation law); roadmap 0.1.0 scope rewrite; tag v0.1.0 on the go | the gate passes or it doesn't |
 
 ## Architecture notes
 
