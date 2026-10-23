@@ -1,0 +1,12 @@
+# Git internals (inspect history with git commands instead)
+.git/
+
+# Installed dependencies — never useful as context
+node_modules/
+
+# Bulk simulation data — the verdicts and aggregate scripts tell the story;
+# the raw per-hand JSONL lines do not
+results/*.jsonl
+
+# Lockfile churn — the package.json pins are the source of truth
+package-lock.json

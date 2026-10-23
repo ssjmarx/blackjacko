@@ -1,0 +1,8 @@
+# Installed dependencies — reproducible from the lockfile
+node_modules/
+
+# Build output (Vite arrives with the Phaser front-end)
+dist/
+
+# Retired-tool artifacts (the pre-migration Aider era) — never recreate
+.aider*

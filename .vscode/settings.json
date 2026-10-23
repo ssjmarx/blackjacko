@@ -1,0 +1,22 @@
+{
+    // ------------------------------------------------------------------
+    // Workspace hygiene: installed deps and future build output
+    // ------------------------------------------------------------------
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/dist": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/package-lock.json": true
+    },
+
+    // ------------------------------------------------------------------
+    // TypeScript: the repo pins everything exactly (package.json); no
+    // format-on-save — comment style is governed by the docstring
+    // auditor (scripts/projectmap.ts) and formatters would fight it.
+    // ------------------------------------------------------------------
+    "editor.formatOnSave": false,
+    "files.eol": "\n"
+}

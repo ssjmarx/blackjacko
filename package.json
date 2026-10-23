@@ -1,0 +1,27 @@
+{
+  "name": "blackjacko",
+  "version": "0.1.0",
+  "description": "Blackjacko — a card-counter blackjack campaign game (Balatro-shaped): pure-logic core + headless EV/variance verification harness now, Phaser front-end next. Stage 1-2 of the build: no promos, no heat, no scenes.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "map": "node scripts/projectmap.ts",
+    "check": "npm run typecheck && npm test && npm run map",
+    "sim": "node src/sim/cli.ts",
+    "verify": "node src/sim/cli.ts --suite verify"
+  },
+  "keywords": [
+    "blackjack",
+    "spanish-21",
+    "simulation",
+    "card-counting",
+    "hi-lo"
+  ],
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}
