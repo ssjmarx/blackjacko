@@ -468,3 +468,28 @@ provenance; the law lives in the spec and the roadmap.
   The shoe row was never broken (left-planted, eroding right).
 - Gate: **145/145 tests** (12 files), audit 33 modules, kit law holds,
   build clean, purity clean.
+
+---
+
+## Entry #18 — batch 1.15: the depth law, the anchored credit, the oversampled wood (2026-10-23)
+
+- **Root cause found for the two rounds of "upside-down" deck:** the z-order
+  was inverted for the vertical form — sprites drew with depth increasing
+  downward, so the deepest tail card painted fully while the next-to-deal
+  card showed as a one-pixel sliver: the cards below literally appeared on
+  top of the cards above. The depth law now inverts for the `"down"` axis
+  (first card renders on top; the row keeps its fan law).
+- **The deck re-anchored (third ruling, superseding twice):** the first
+  card **centers in the shoe cell**, the run descending into deck extra.
+  `fitFootprint` gains the cell center, yields the back when the run cannot
+  fit below it, and pins the tail to the extent floor in the clamped case.
+  The floor-plant and ceiling-hang are both superseded; the ORDER law never
+  changed — only the paint order and the anchor were wrong.
+- **The lower third anchors at the panel's bottom-outer corner** (was the
+  top-outer corner), sprouting up across the controls band; mirrored under
+  the axis flip. Spec E11's credit bullet amended.
+- **The wood oversamples:** 6-12 knots seeded window-wide (was 2-4,
+  rail-only — the far side starved); the packing trims, and the felt trims
+  the middle. The margin drops to **2.5% per edge** (95% felt).
+- Gate: **146/146 tests** (12 files), audit 33 modules, kit law holds,
+  build clean, purity clean.

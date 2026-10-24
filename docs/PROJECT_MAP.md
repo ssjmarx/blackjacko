@@ -303,7 +303,7 @@ first, stuck in place, dealt sprites vanishing from the dealt end.
 - `stackPlan(pen: number, max: number, group: number)` — Plan the full stack: every sprite of the deck, the cut riding the pen mark from the planted end.
 - `hiddenSprites(dealt: number, group: number)` — Sprites fully dealt from the dealt end — the sticks-in-place erosion law.
 - `dealtFrom(pen: number, max: number, remaining: number)` — Cards already dealt, derived from the dealable remaining count.
-- `fitFootprint(…)` — The footprint law (spec E13): card size first, yield to the run, clamp only when the run alone cannot fit.
+- `fitFootprint(…)` — The footprint law (spec E13): the first card centers in its cell at card size; the back yields to the run; the clamp is the last resort.
 - `buildStack(…)` — Build the stack: the full deck drawn once at fixed positions, dealt sprites hidden from the dealt end.
 - `deckStack(…)` — Create the vertical deck stack: card-sized at the top margin, bleeding down, the tail planted at the bottom.
 - `shoeRow(…)` — Create the horizontal shoe row: card-sized at the left, running right into the pit, the tail planted.
@@ -403,8 +403,8 @@ The wood rail — procedural growth-ring wood (spec E13): 2-4 squished
 knots, warped ring grains growing from each until the packing blocks
 them, the frame filled; the felt insets on top, cut clean.
 
-- `paintWood(…)` — Paint full-window growth-ring wood; the caller insets the felt on top.
-- `seedKnots(outer: Rect, inner: Rect, rng: ()` — Seed 2-4 knots in the visible rail, rejection-sampled so none collide.
+- `paintWood(scene: Phaser.Scene, outer: Rect, seed: number)` — Paint full-window growth-ring wood; the caller insets the felt on top.
+- `seedKnots(outer: Rect, rng: ()` — Seed 6-12 knots across the whole window, rejection-sampled so none collide; the felt trims the middle.
 - `paintKnot(g: Phaser.GameObjects.Graphics, k: Knot, rng: ()` — Draw one knot: tight concentric squished ellipses, the darkest strokes on the frame.
 - `strokeSquished(…)` — Stroke a squished circle: 40 sampled points, rotated by angle.
 - `growGrains(…)` — Grow warped rings from every knot; meeting families merge and keep growing until the frame is filled.

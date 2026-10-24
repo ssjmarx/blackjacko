@@ -37,17 +37,12 @@ interface Knot {
 }
 
 /** Paint full-window growth-ring wood; the caller insets the felt on top. */
-export function paintWood(
-  scene: Phaser.Scene,
-  outer: Rect,
-  inner: Rect,
-  seed: number,
-): Phaser.GameObjects.Graphics {
+export function paintWood(scene: Phaser.Scene, outer: Rect, seed: number): Phaser.GameObjects.Graphics {
   const rng = deriveStream(seed, WOOD.salt);
   const g = graphics(scene, { id: "wood rail", sr: "Decorative wood rail framing the table." });
   g.fillStyle(WOOD.base, 1);
   g.fillRect(outer.x, outer.y, outer.w, outer.h);
-  const knots = seedKnots(outer, inner, rng);
+  const knots = seedKnots(outer, rng);
   const envs: Envelope[] = [];
   for (const [i, k] of knots.entries()) {
     paintKnot(g, k, rng);
@@ -58,19 +53,16 @@ export function paintWood(
   return g;
 }
 
-/** Seed 2-4 knots in the visible rail, rejection-sampled so none collide. */
-function seedKnots(outer: Rect, inner: Rect, rng: () => number): Knot[] {
-  const count = 2 + Math.floor(rng() * 3);
-  const base = Math.min(outer.w, outer.h);
+/** Seed 6-12 knots across the whole window, rejection-sampled so none collide; the felt trims the middle. */
+function seedKnots(outer: Rect, rng: () => number): Knot[] {
+  const count = 6 + Math.floor(rng() * 7);
   const knots: Knot[] = [];
   let attempts = 0;
-  while (knots.length < count && attempts++ < 60) {
+  while (knots.length < count && attempts++ < 90) {
     const cx = outer.x + 8 + rng() * (outer.w - 16);
     const cy = outer.y + 8 + rng() * (outer.h - 16);
-    const inFelt = cx > inner.x && cx < inner.x + inner.w && cy > inner.y && cy < inner.y + inner.h;
-    if (inFelt) continue;
-    const r = base * (0.02 + rng() * 0.02);
-    if (knots.some((o) => Math.hypot(o.cx - cx, o.cy - cy) < (o.base + r) * 3.5)) continue;
+    const r = Math.min(outer.w, outer.h) * (0.015 + rng() * 0.02);
+    if (knots.some((o) => Math.hypot(o.cx - cx, o.cy - cy) < (o.base + r) * 2.2)) continue;
     const a1 = 0.02 + rng() * 0.02;
     const a2 = 0.015 + rng() * 0.02;
     knots.push({

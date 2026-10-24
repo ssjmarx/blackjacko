@@ -176,28 +176,28 @@ describe("layout: the named laws", () => {
 
   it("goldens: canonical sizes under the margin law", () => {
     const d = solveTable(1280, 720);
-    expect(d.safe).toEqual({ x: 64, y: 36, w: 1152, h: 648 });
-    const bandH = 129.6;
+    expect(d.safe).toEqual({ x: 32, y: 18, w: 1216, h: 684 });
+    const bandH = 136.8;
     expect(d.chipTray.h).toBeCloseTo(bandH);
-    expect(d.metrics.cardW).toBeCloseTo(Math.min(1152 / 1.2, (bandH * 0.96) / 1.4));
-    expect(d.metrics.cardW).toBeCloseTo(88.87, 2);
-    expect(d.metrics.cardH).toBeCloseTo(124.42, 2);
-    expect(d.controls.w).toBeCloseTo(864);
-    expect(d.contextPanel.w).toBeCloseTo(288);
-    expect(d.countHud.w).toBeCloseTo(288);
-    expect(d.shoe.w).toBeCloseTo(288);
-    expect(d.pit.w).toBeCloseTo(480);
-    expect(d.discard.w).toBeCloseTo(384);
+    expect(d.metrics.cardW).toBeCloseTo(Math.min(1216 / 1.2, (bandH * 0.96) / 1.4));
+    expect(d.metrics.cardW).toBeCloseTo(93.81, 2);
+    expect(d.metrics.cardH).toBeCloseTo(131.33, 2);
+    expect(d.controls.w).toBeCloseTo(912);
+    expect(d.contextPanel.w).toBeCloseTo(304);
+    expect(d.countHud.w).toBeCloseTo(304);
+    expect(d.shoe.w).toBeCloseTo(304);
+    expect(d.pit.w).toBeCloseTo(506.67, 2);
+    expect(d.discard.w).toBeCloseTo(405.33, 2);
     const p = solveTable(360, 800);
-    expect(p.chipTray.h).toBeCloseTo(144);
-    expect(p.metrics.cardW).toBeCloseTo(Math.min(324 / 1.2, (144 * 0.96) / 1.4));
+    expect(p.chipTray.h).toBeCloseTo(152);
+    expect(p.metrics.cardW).toBeCloseTo(Math.min(342 / 1.2, (152 * 0.96) / 1.4));
   });
 
-  it("the margin frames the table: 5% per window edge, insets compose", () => {
+  it("the margin frames the table: 2.5% per window edge, insets compose", () => {
     const bare = solveTable(1000, 1000);
-    expect(bare.safe).toEqual({ x: 50, y: 50, w: 900, h: 900 });
+    expect(bare.safe).toEqual({ x: 25, y: 25, w: 950, h: 950 });
     const notched = solveTable(1000, 1000, { insets: { top: 40, right: 0, bottom: 0, left: 0 } });
-    expect(notched.safe).toEqual({ x: 50, y: 90, w: 900, h: 860 });
+    expect(notched.safe).toEqual({ x: 25, y: 65, w: 950, h: 910 });
   });
 
   it("the chip tray sits beside the player band, the controls row at the bottom", () => {

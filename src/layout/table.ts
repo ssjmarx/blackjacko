@@ -70,7 +70,7 @@ export interface TableLayout {
 
 // --- the grid fractions: the tunables, each with one home (spec E11) ---
 
-const MARGIN_FRAC = 0.05; // the margin law: 5% of the window per edge (spec E13)
+const MARGIN_FRAC = 0.025; // the margin law: 2.5% of the window per edge (spec E13)
 const BANDS = 5; // five clean fifths of the safe area (spec E12/E13)
 const SHOE_W = 1 / 4; // band 1: shoe cell width
 const PIT_W = 5 / 12; // band 1: pit width (the shoe row bleeds into it)

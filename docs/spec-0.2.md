@@ -388,9 +388,9 @@ option mirrors the horizontal anchors only — dealer and player never move.
   by the pit, the Deep Pen chip). When the dealable run empties, the cut
   card is exposed — it slides out and lands by the dealer hand: last hand.
 - **Lower thirds live at the context panel** — the panel is a static spot
-  (click for the strategy card); the credit sprouts up and away from its
-  outer top corner, auto-sized, once per session, SR-panel-only (never a
-  caption).
+  (click for the strategy card); the credit sprouts up from its bottom-
+  outer corner (amended 2026-10-23 from the top corner), auto-sized, once
+  per session, SR-panel-only (never a caption).
 - **Insurance spots move into the player zone** — one per hand slot: the bet
   bottom-center, insurance top-center.
 - **The five buttons are always visible** — fixed order D H S P R, positions
@@ -418,27 +418,29 @@ settled cards somewhere to go) — and band 2 carries the dealer's cards at
 **E13 — the deck's double band, the margin, the rail (ruled 2026-10-23,
 amends E11/E12):**
 
-- **The margin law:** the play field shrinks **5% of the window per edge**
-  (90% in use), applied after device insets compose — nothing draws on the
-  window border again. Law-tested: safe = 90% centered; insets shrink it
-  further on the notched side.
+- **The margin law:** the play field shrinks **2.5% of the window per edge**
+  (95% in use — halved 2026-10-23 for a roomier felt), applied after device
+  insets compose — nothing draws on the window border again. Law-tested:
+  safe = 95% centered; insets shrink it further on the notched side.
 - **Band order:** the chip tray moves to **band 4, directly beside the
   player band** (no dragging chips past the buttons); **band 5 is context
   panel (1/4) | controls (3/4)**, the bottom row.
 - **The deck's double band:** band 1 is **deck/shoe 1/4 | pit 5/12 |
   discard 1/3**; band 2 is **deck extra 1/4** (the deck stack's vertical
   bleed room, directly under the shoe cell) **| dealer 1/2 | count hud 1/4**.
-- **The stack laws, v3 (deck re-planted 2026-10-23):** the deck **stands on
-  the floor of deck extra, growing upward** — next card on top, the cut card
-  and its dead tail planted at the bottom (the ceiling-hang read upside-
-  down); the shoe runs **right into the pit**, left-planted. The graphic is
-  **drawn once and sticks in place**: dealt sprites vanish from the dealt
-  end (hidden = floor(dealt/group)), the planted end never moves. The
-  footprint is **card-size first**, yields to the run only on true overflow,
-  and the shift-clamp stays the last resort — stripes never shrink. The cut
-  card still rides the pen mark measured from the planted end (one sprite
-  per `group` cards of pen change) and is exposed exactly when the dealable
-  empties.
+- **The stack laws, v3 (deck re-anchored + depth law fixed 2026-10-23):**
+  the deck's **first card centers in the shoe cell, the run descending into
+  deck extra** (superseding the floor-plant and the ceiling-hang before
+  it), and the **first card renders on top** — the depth law was inverted
+  for the vertical form, painting the tail card over the dealable and
+  reading upside-down. The shoe runs **right into the pit**, left-planted.
+  The graphic is **drawn once and sticks in place**: dealt sprites vanish
+  from the dealt end (hidden = floor(dealt/group)), the planted end never
+  moves. The footprint is **card-size first**, yields to the run only on
+  true overflow, and the shift-clamp stays the last resort — stripes never
+  shrink. The cut card still rides the pen mark measured from the planted
+  end (one sprite per `group` cards of pen change) and is exposed exactly
+  when the dealable empties.
 - **The dealer bleed:** the dealer row grows in its cell, then may bleed
   right into the count-hud cell on excessive draws (the player isn't making
   a decision while the dealer hits); the squash policy remains the last
@@ -450,7 +452,9 @@ amends E11/E12):**
   derived CSS. (The "buttons look small" report traced to an oversized proof
   A♠ plus band-filling, not the bar — both fixed 2026-10-23.)
 - **The wood rail:** procedural growth-ring wood fills the whole window —
-  2-4 squished knots seeded in the visible rail, warped ring grains growing
+  6-12 squished knots oversample the window and the packing trims them (the
+  felt trims the middle; amended 2026-10-23 from a rail-only seeding that
+  starved the far side), warped ring grains growing
   from each (coherent warp phase per family, geometric spacing) under
   circle-envelope collision packing; **rings are few and thick** (half as
   many, three times the stroke, 2026-10-23), and **meeting families merge**

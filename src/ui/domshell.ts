@@ -176,13 +176,13 @@ export function showLowerThird(text: string, l: TableLayout): void {
     });
     document.body.appendChild(state.lowerThird);
   }
-  // the credit sprouts up and away from the context panel's outer top corner (spec E11)
+  // the credit sprouts up from the context panel's bottom-outer corner (spec E11/E13)
   const p = l.contextPanel;
-  const anchorX = l.axisFlip ? p.x : p.x + p.w;
+  const anchorX = l.axisFlip ? p.x + p.w : p.x;
   Object.assign(state.lowerThird.style, {
     left: l.axisFlip ? "auto" : `${anchorX}px`,
     right: l.axisFlip ? `${window.innerWidth - anchorX}px` : "auto",
-    bottom: `${window.innerHeight - p.y}px`,
+    bottom: `${window.innerHeight - (p.y + p.h)}px`,
     maxWidth: `${l.axisFlip ? anchorX - l.safe.x : l.safe.x + l.safe.w - anchorX}px`,
     fontSize: `${Math.max(11, Math.round(p.h * 0.18))}px`,
   });

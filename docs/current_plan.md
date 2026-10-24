@@ -34,7 +34,7 @@ record rulings in the dev log.
   size law on the felt), placeholders until the human's vector art
   lands. Procedural growth-ring wood fills the frame with the felt inset on
   top, seeded from a child stream of the session seed (same seed, same
-  table; the shuffle untouched).
+  table; the shuffle untouched). The margin is 2.5% per window edge.
 - **Vector-first assets:** cards come from the English-pattern SVG (wikimedia,
   CC0, Loren Osborn) first — per-property decks arrive later through a `Deck`
   interface. Chips, bet circles, side-bet spots, the pen bar, and the cut card

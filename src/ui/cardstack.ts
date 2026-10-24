@@ -66,35 +66,42 @@ export function dealtFrom(pen: number, max: number, remaining: number): number {
   return Math.max(0, Math.round(pen * max) - 1 - Math.max(0, remaining));
 }
 
-/** The footprint law (spec E13): card size first, yield to the run, clamp only when the run alone cannot fit. */
+/** The footprint law (spec E13): the first card centers in its cell at card size; the back yields to the run; the clamp is the last resort. */
 export function fitFootprint(
   extent: Rect,
   axis: "down" | "right",
   run: number,
   aspect: number,
   want: Rect,
-): { box: Rect; clamped: boolean } {
-  if (axis === "down") {
-    if (want.h + run <= extent.h) {
+  cellCenter?: number,
+): { box: Rect; start: number; clamped: boolean } {
+  if (axis === "down" && cellCenter !== undefined) {
+    const room = extent.y + extent.h - cellCenter;
+    if (want.h / 2 + run <= room) {
       return {
-        box: { x: extent.x + (extent.w - want.w) / 2, y: extent.y + extent.h - want.h, w: want.w, h: want.h },
+        box: { x: extent.x + (extent.w - want.w) / 2, y: cellCenter - want.h / 2, w: want.w, h: want.h },
+        start: cellCenter,
         clamped: false,
       };
     }
-    const avail = extent.h - run;
-    if (avail > 0) {
-      let h = avail;
-      let w = h / aspect;
-      if (w > extent.w) {
-        w = extent.w;
-        h = w * aspect;
-      }
-      return { box: { x: extent.x + (extent.w - w) / 2, y: extent.y + extent.h - h, w, h }, clamped: false };
+    const h = 2 * (room - run);
+    if (h > 0) {
+      const w = Math.min(extent.w, h / aspect);
+      return {
+        box: { x: extent.x + (extent.w - w) / 2, y: cellCenter - (w * aspect) / 2, w, h: w * aspect },
+        start: cellCenter,
+        clamped: false,
+      };
     }
-    return { box: fitIn(extent, aspect), clamped: true };
+    const box = fitIn(extent, aspect);
+    return { box, start: extent.y + extent.h - box.h / 2 - run, clamped: true };
   }
   if (want.w + run <= extent.w) {
-    return { box: { x: extent.x, y: extent.y + (extent.h - want.h) / 2, w: want.w, h: want.h }, clamped: false };
+    return {
+      box: { x: extent.x, y: extent.y + (extent.h - want.h) / 2, w: want.w, h: want.h },
+      start: extent.x + want.w / 2,
+      clamped: false,
+    };
   }
   const avail = extent.w - run;
   if (avail > 0) {
@@ -104,15 +111,18 @@ export function fitFootprint(
       h = extent.h;
       w = h / aspect;
     }
-    return { box: { x: extent.x, y: extent.y + (extent.h - h) / 2, w, h }, clamped: false };
+    return { box: { x: extent.x, y: extent.y + (extent.h - h) / 2, w, h }, start: extent.x + w / 2, clamped: false };
   }
-  return { box: fitIn(extent, aspect), clamped: true };
+  const box = fitIn(extent, aspect);
+  return { box, start: extent.x + box.w / 2, clamped: true };
 }
 
-/** The options every stack build takes: identity, the wanted card box, and the shoe state. */
+/** The options every stack build takes: identity, the anchor cell, the wanted card box, and the shoe state. */
 export interface StackOpts {
   id: string;
   debug?: boolean;
+  /** the anchor cell the first card centers in (the shoe, for both forms) */
+  cell: Rect;
   /** the card-size footprint the stack prefers (the solver's metrics box) */
   want: Rect;
   /** dealable cards left — the dealt count derives from it */
@@ -134,10 +144,17 @@ function buildStack(
   const plan = stackPlan(opts.pen, opts.max, CARD_STACK.group);
   const hidden = hiddenSprites(dealtFrom(opts.pen, opts.max, opts.remaining), CARD_STACK.group);
   const run = (plan.total - 1) * perCard;
-  const fit = fitFootprint(extent, axis, run, deck.aspect, opts.want);
+  const fit = fitFootprint(
+    extent,
+    axis,
+    run,
+    deck.aspect,
+    opts.want,
+    axis === "down" ? opts.cell.y + opts.cell.h / 2 : undefined,
+  );
   const fitted = fit.box;
-  // the deck plants on the extent floor (grows upward), the shoe plants at the left edge
-  let planted = axis === "down" ? extent.y + extent.h - fitted.h / 2 - run : extent.x + fitted.w / 2;
+  // the deck's first card centers in the shoe cell, the shoe plants at the extent's left edge
+  let planted = fit.start;
   if (axis === "right" && fit.clamped) {
     planted = placeStripes(plan.total, perCard, planted, extent.x + extent.w - fitted.w / 2).anchor;
   }
@@ -164,11 +181,11 @@ function buildStack(
           debug: true,
         },
       );
-      g.setDepth(10 + i).setVisible(visible);
+      g.setDepth(axis === "down" ? 10 + (plan.total - 1 - i) : 10 + i).setVisible(visible);
       out.push(g);
     } else {
       const b = backSprite(scene, deck, i % deck.backCount, fitted, { id: `${opts.id} ${i + 1}`, debug: true });
-      b.setDepth(10 + i).setVisible(visible);
+      b.setDepth(axis === "down" ? 10 + (plan.total - 1 - i) : 10 + i).setVisible(visible);
       b.x = x;
       b.y = y;
       if (axis === "right") b.setAngle(90);

@@ -89,7 +89,7 @@ export class FeltScene extends Phaser.Scene {
   private reflow(w: number, h: number): void {
     this.layout = solveTable(w, h);
     if (this.wood) destroy(this, this.wood, "wood rail");
-    this.wood = paintWood(this, { x: 0, y: 0, w, h }, this.layout.safe, sessionSeed());
+    this.wood = paintWood(this, { x: 0, y: 0, w, h }, sessionSeed());
     if (this.felt) destroy(this, this.felt, "felt");
     this.felt = rect(this, this.layout.safe, { id: "felt", sr: "The felt table surface.", color: FELT.fill });
     this.felt.setDepth(-5);
@@ -116,6 +116,7 @@ export class FeltScene extends Phaser.Scene {
     const stack = deckStack(this, d, deckExtent, {
       id: "proof deck stack",
       debug: true,
+      cell: l.shoe,
       want: { x: 0, y: 0, ...cardSize },
       remaining: Math.round(0.75 * CARD_STACK.maxDeck) - 1,
       pen: 0.75,
@@ -129,6 +130,7 @@ export class FeltScene extends Phaser.Scene {
     const row = shoeRow(this, d, rowExtent, {
       id: "proof shoe row",
       debug: true,
+      cell: l.shoe,
       want: { x: 0, y: 0, ...cardSize },
       remaining: Math.round(0.75 * CARD_STACK.maxShoe) - 1,
       pen: 0.75,

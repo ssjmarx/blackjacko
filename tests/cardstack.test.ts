@@ -93,20 +93,22 @@ describe("stackPlan — the full-shoe accounting, and the erosion law", () => {
 describe("fitFootprint — the card-size-first footprint law", () => {
   const want = { x: 0, y: 0, w: 90, h: 126 };
 
-  it("keeps the full card size, floor-planted, when footprint plus run fits the extent", () => {
-    const f = fitFootprint({ x: 0, y: 0, w: 288, h: 259.2 }, "down", 26, 1.498, want);
+  it("keeps the full card size with the first card centered in its cell", () => {
+    const f = fitFootprint({ x: 0, y: 0, w: 288, h: 259.2 }, "down", 26, 1.498, want, 64.8);
     expect(f.clamped).toBe(false);
     expect(f.box.w).toBe(90);
     expect(f.box.h).toBe(126);
-    expect(f.box.y).toBeCloseTo(259.2 - 126);
+    expect(f.start).toBe(64.8);
+    expect(f.box.y).toBeCloseTo(64.8 - 63);
     expect(f.box.x).toBeCloseTo((288 - 90) / 2);
   });
 
-  it("the back yields to the run when even the double band cannot hold card size", () => {
-    const f = fitFootprint({ x: 0, y: 0, w: 288, h: 150 }, "down", 140, 1.498, want);
+  it("the back yields to the run when it cannot fit below the cell center", () => {
+    const f = fitFootprint({ x: 0, y: 0, w: 288, h: 200 }, "down", 60, 1.498, want, 100);
     expect(f.clamped).toBe(false);
-    expect(f.box.h + 140).toBeLessThanOrEqual(150);
-    expect(f.box.y).toBeCloseTo(150 - f.box.h);
+    expect(f.start).toBe(100);
+    expect(f.box.y).toBeCloseTo(100 - f.box.h / 2);
+    expect(f.box.h / 2 + 60).toBeLessThanOrEqual(200);
   });
 
   it("a rightward run leaves the back left-planted, vertically centered", () => {
@@ -122,5 +124,12 @@ describe("fitFootprint — the card-size-first footprint law", () => {
     expect(f.clamped).toBe(true);
     expect(f.box.w).toBeLessThanOrEqual(120);
     expect(f.box.h).toBeLessThanOrEqual(168);
+  });
+
+  it("the clamped deck pins its tail to the extent floor and lets the head overflow", () => {
+    const f = fitFootprint({ x: 0, y: 0, w: 304, h: 120 }, "down", 140, 1.498, want, 60);
+    expect(f.clamped).toBe(true);
+    expect(f.box.h).toBeLessThanOrEqual(120);
+    expect(f.start + f.box.h / 2 + 140).toBeLessThanOrEqual(120 + 0.01);
   });
 });
