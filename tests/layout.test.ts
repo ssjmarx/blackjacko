@@ -136,6 +136,14 @@ describe("layout: rulings", () => {
     expect(l.lowerThird.y + l.lowerThird.h).toBeLessThanOrEqual(l.chipTray.y);
   });
 
+  it("the controls strip sits above the chip tray, inside the safe area", () => {
+    const l = solveTable(1280, 720);
+    expect(l.controls.y + l.controls.h + 6).toBe(l.chipTray.y);
+    expect(l.controls.w).toBe(l.safe.w);
+    expect(l.controls.x).toBe(l.safe.x);
+    expect(l.controls.h).toBeGreaterThan(0);
+  });
+
   it("goldens: canonical sizes", () => {
     const desktop = solveTable(1280, 720);
     expect(desktop.metrics.cardW).toBe(128);

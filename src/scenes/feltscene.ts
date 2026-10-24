@@ -11,6 +11,8 @@ import { announce, registerObject, showLowerThird } from "../ui/domshell.ts";
 import { englishDeck } from "../ui/decks/english.ts";
 import { cardSprite } from "../ui/cardart.ts";
 import { deckStack, shoeRow } from "../ui/cardstack.ts";
+import { CommandBus } from "../ui/input/bus.ts";
+import { mountControls } from "../ui/input/controls.ts";
 import type { Deck } from "../ui/decks/deck.ts";
 
 /** Debug zone colors (canvas numbers) — readable ink on the felt, debug-only. */
@@ -20,6 +22,7 @@ const ZONE_COLORS = {
   shoe: 0xf97316,
   penBar: 0x94a3b8,
   chipTray: 0xa855f7,
+  controls: 0xf59e0b,
   countHud: 0xeab308,
   contextPanel: 0x06b6d4,
   insuranceSpot: 0xec4899,
@@ -35,6 +38,8 @@ export class FeltScene extends Phaser.Scene {
   private cards: { obj: Phaser.GameObjects.Image; id: string }[] = [];
   private layout?: TableLayout;
   private deck?: Deck;
+  private bus = new CommandBus();
+  private controls?: ReturnType<typeof mountControls>;
 
   constructor() {
     super("felt");
@@ -64,6 +69,9 @@ export class FeltScene extends Phaser.Scene {
     });
     this.reflow(this.scale.gameSize.width, this.scale.gameSize.height);
     this.scale.on("resize", (size: Phaser.Structs.Size) => this.reflow(size.width, size.height));
+    this.controls = mountControls(this.bus);
+    if (this.layout) this.controls.layout(this.layout);
+    this.controls.setMode("idle");
     announce("Welcome to blackjacko. Tony's Backroom: one deck, dealer stands on all 17s, blackjack pays 3 to 2.");
     if (this.deck && this.layout) {
       showLowerThird(this.deck.creditLines().join("\n"), this.layout);
@@ -81,6 +89,7 @@ export class FeltScene extends Phaser.Scene {
     this.cards = [];
     this.paintReadout(w, h);
     if (DEBUG.layout) this.paintZones();
+    this.controls?.layout(this.layout);
     if (this.deck) this.proveDeck();
   }
 
@@ -148,6 +157,7 @@ export class FeltScene extends Phaser.Scene {
     add(l.shoe, ZONE_COLORS.shoe, "shoe", "The dealing shoe, with the cut card.");
     add(l.penBar, ZONE_COLORS.penBar, "penBar", "The penetration bar.");
     add(l.chipTray, ZONE_COLORS.chipTray, "chipTray", "Your chip tray.");
+    add(l.controls, ZONE_COLORS.controls, "controls", "The action bar.");
     add(l.countHud, ZONE_COLORS.countHud, "countHud", "The running and true count.");
     add(l.contextPanel, ZONE_COLORS.contextPanel, "contextPanel", "Betting limits and bankroll.");
     if (l.contextButton.w > 0) add(l.contextButton, ZONE_COLORS.contextPanel, "strategyButton", "Opens the strategy card.");
