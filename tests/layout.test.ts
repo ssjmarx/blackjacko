@@ -82,6 +82,7 @@ describe("layout: the ratio sweep", () => {
           expect(overlaps(l.player, l.chipTray), where).toBe(false);
           expect(overlaps(l.controls, l.chipTray), where).toBe(false);
           expect(overlaps(l.player, l.controls), where).toBe(false);
+          expect(overlaps(l.controls, l.contextPanel), where).toBe(false);
           expect(overlaps(l.countHud, l.chipTray), where).toBe(false);
 
           // line slots live inside the player band; bet spots inside their slot
@@ -139,15 +140,35 @@ describe("layout: rulings", () => {
   it("the controls strip sits above the chip tray, inside the safe area", () => {
     const l = solveTable(1280, 720);
     expect(l.controls.y + l.controls.h + 6).toBe(l.chipTray.y);
-    expect(l.controls.w).toBe(l.safe.w);
-    expect(l.controls.x).toBe(l.safe.x);
+    expect(l.controls.w).toBeCloseTo(l.safe.w * 0.5);
+    expect(l.controls.x).toBeCloseTo(l.safe.x + l.safe.w * 0.5);
     expect(l.controls.h).toBe(56);
+    const flipped = solveTable(1280, 720, { axisFlip: true });
+    expect(flipped.controls.x).toBeCloseTo(flipped.safe.x);
   });
 
   it("the control bar grows to two rows in portrait", () => {
     const l = solveTable(360, 800);
     expect(l.controls.h).toBe(96);
     expect(l.controls.y + l.controls.h + 6).toBe(l.chipTray.y);
+  });
+
+  it("the shoe anchors at the field top, aligned with the count hud, above the dealer zone", () => {
+    for (const axisFlip of [false, true]) {
+      const portrait = solveTable(360, 800, { axisFlip });
+      expect(portrait.shoe.y).toBe(portrait.countHud.y);
+      expect(portrait.shoe.y).toBeGreaterThanOrEqual(portrait.penBar.y + portrait.penBar.h);
+      expect(portrait.shoe.y + portrait.shoe.h).toBeLessThanOrEqual(portrait.dealer.y);
+      const landscape = solveTable(1280, 720, { axisFlip });
+      expect(landscape.dealer.y).toBeGreaterThanOrEqual(landscape.shoe.y + landscape.shoe.h);
+    }
+  });
+
+  it("the controls zone clears the context panel", () => {
+    for (const axisFlip of [false, true]) {
+      const l = solveTable(1280, 720, { axisFlip });
+      expect(overlaps(l.controls, l.contextPanel), `flip=${axisFlip}`).toBe(false);
+    }
   });
 
   it("the count hud is a reservation the bands yield to", () => {

@@ -123,7 +123,13 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
     orientation === "portrait" ? PORTRAIT_CONTROLS_H : CONTROLS_H,
     (chipTray.y - fieldY) * 0.35,
   );
-  const controls: Rect = { x: safe.x, y: chipTray.y - controlsH - 6, w: safe.w, h: controlsH };
+  // the button area: the half opposite the lower third, mirrored by axisFlip
+  const controls: Rect = {
+    x: axisFlip ? safe.x : safe.x + safe.w * 0.5,
+    y: chipTray.y - controlsH - 6,
+    w: safe.w * 0.5,
+    h: controlsH,
+  };
   const fieldH = controls.y - 6 - fieldY;
   const bandBottom = controls.y - 6;
 
@@ -172,7 +178,7 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
     dealer = { x: safe.x, y: dealerY, w: safe.w, h: dealerH };
     player = { x: bandX, y: bandY, w: bandW, h: playerH };
     shoe.x = axisFlip ? dealer.x + dealer.w - shoeW - 4 : dealer.x + 4;
-    shoe.y = dealer.y + 4;
+    shoe.y = fieldY + 4;
     for (let i = 0; i < hands; i++) {
       slots.push({ x: player.x + (i * player.w) / hands, y: player.y, w: player.w / hands, h: player.h });
     }
@@ -247,12 +253,14 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
       h: CONTEXT_BUTTON,
     };
   } else {
-    const panelX = axisFlip ? safe.x + safe.w - PANEL_W - 4 : safe.x + 4;
+    const panelW = Math.min(PANEL_W, safe.w * 0.4);
     const panelH = Math.min(PANEL_H, chipTray.y - fieldY - 8);
+    const panelX = axisFlip ? safe.x + safe.w - panelW - 4 : safe.x + 4;
+    const panelY = Math.max(fieldY + 4, chipTray.y - panelH - 4);
     contextPanel = {
       x: panelX,
-      y: Math.max(fieldY + 4, chipTray.y - panelH - 4),
-      w: Math.min(PANEL_W, safe.w * 0.4),
+      y: panelY,
+      w: panelW,
       h: panelH,
     };
     contextButton = {

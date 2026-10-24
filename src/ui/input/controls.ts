@@ -88,6 +88,8 @@ export function mountControls(bus: CommandBus): ControlsHandle {
       for (const spec of SPECS) {
         const b = buttons.get(spec.id);
         if (!b) continue;
+        // insurance mode shows only the pair; the round and play groups hide
+        b.style.display = mode === "insurance" && spec.group !== "insurance" ? "none" : "";
         let enabled = false;
         if (mode === "idle") enabled = spec.kind === "deal";
         else if (mode === "insurance") enabled = spec.group === "insurance";
@@ -99,13 +101,12 @@ export function mountControls(bus: CommandBus): ControlsHandle {
             (spec.kind === "split" && (legal.split ?? false)) ||
             (spec.kind === "surrender" && (legal.surrender ?? false));
         b.disabled = !enabled;
-        // the insurance pair is prompt-time furniture: visible only when asked
-        b.style.display = spec.group === "insurance" && mode !== "insurance" ? "none" : "";
       }
     },
     layout(l: TableLayout) {
       const c = l.controls;
       bar.classList.toggle("portrait", l.orientation === "portrait");
+      bar.classList.toggle("flipped", l.axisFlip);
       Object.assign(bar.style, {
         left: `${c.x}px`,
         top: `${c.y}px`,

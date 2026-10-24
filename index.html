@@ -54,17 +54,22 @@
         position: fixed;
         display: flex;
         flex-wrap: wrap;
+        justify-content: flex-end;
         gap: 8px;
         align-items: stretch;
         z-index: 35;
       }
+      #bj-controls.flipped {
+        justify-content: flex-start;
+      }
       #bj-controls.portrait {
-        flex-wrap: wrap;
-        justify-content: center;
+        justify-content: flex-end;
         align-content: center;
         gap: 6px;
       }
       #bj-controls.portrait .bj-btn {
+        flex: 0 0 calc((100% - 12px) / 3);
+        justify-content: center;
         padding: 5px 10px;
         font-size: 14px;
       }
