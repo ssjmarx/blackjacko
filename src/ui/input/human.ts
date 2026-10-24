@@ -13,6 +13,7 @@ const PLAY_ACTIONS: Partial<Record<string, Action>> = {
   double: "D",
   split: "P",
   surrender: "R",
+  rescue: "RESCUE",
 };
 
 /** The human at the felt: bus commands in, core decisions out. */
@@ -39,7 +40,12 @@ export class HumanStrategy implements Strategy {
 
   /** Await the player's action for the active line (legality drives the bar). */
   play(view: PlayerView): Promise<Action> {
-    this.controls.setMode("play", { double: view.canDouble, split: view.canSplit, surrender: view.canSurrender });
+    this.controls.setMode("play", {
+      double: view.canDouble,
+      split: view.canSplit,
+      surrender: view.canSurrender,
+      rescue: view.canRescue,
+    });
     return new Promise((resolve) => {
       this.resolvePlay = resolve;
     });

@@ -35,6 +35,8 @@
         padding: 8px 14px;
         font: 600 15px system-ui, sans-serif;
         cursor: pointer;
+        min-width: 0;
+        white-space: nowrap;
       }
       .bj-btn kbd {
         background: #f5f0e1;
@@ -53,7 +55,7 @@
       #bj-controls {
         position: fixed;
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         justify-content: flex-end;
         gap: 8px;
         align-items: stretch;
@@ -63,15 +65,11 @@
         justify-content: flex-start;
       }
       #bj-controls.portrait {
-        justify-content: flex-end;
-        align-content: center;
         gap: 6px;
       }
       #bj-controls.portrait .bj-btn {
-        flex: 0 0 calc((100% - 12px) / 3);
-        justify-content: center;
-        padding: 5px 10px;
-        font-size: 14px;
+        padding: 4px 8px;
+        font-size: 13px;
       }
       #bj-controls.portrait .bj-btn kbd {
         display: none;

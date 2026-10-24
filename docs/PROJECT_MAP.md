@@ -348,11 +348,12 @@ the only listener that acts on them. Pure routing, no DOM.
 
 ## src/ui/input/controls.ts
 
-The control bar — the DOM twin of the felt (goal 4): real buttons with
-visible keyboard chips, SR labels, and one command destination. The round
-driver enables exactly the legal actions; keys respect the same state.
+The control bar — five context-rebinding buttons, one row, right-aligned:
+D deals/doubles, H hits/takes, S stands/passes, R surrenders/forfeits.
+resolveButtons is the tested law table; mountControls renders and wires it.
 
-- `mountControls(bus: CommandBus)` — Mount the control bar and wire its keyboard map to the bus.
+- `resolveButtons(mode: ControlMode, legal: ControlLegality = {})` — Resolve the five buttons for a mode — pure, unit-tested, no DOM.
+- `mountControls(bus: CommandBus)` — Mount the control bar: five buttons, keyboard map, SR registration.
 
 ## src/ui/input/human.ts
 
