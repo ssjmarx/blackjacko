@@ -55,6 +55,12 @@ export const CUT_CARD = {
   radius: 0.08,
 } as const;
 
+/** The action buttons (spec E12): card-shaped placeholders — paper and ink. */
+export const BUTTON = {
+  paper: "#ffffff",
+  ink: "#1a1a1a",
+} as const;
+
 /** Animation kit timings (ms) — the composable tween durations. */
 export const ANIM = {
   place: 260,

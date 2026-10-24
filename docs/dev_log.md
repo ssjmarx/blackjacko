@@ -308,6 +308,22 @@ provenance; the law lives in the spec and the roadmap.
 
 
 
+## Entry #14 — 2026-10-22 · the fifths grid — four nits, one coherent revision
+
+- The eyeball caught the deck stack spilling its cell: the footprint now
+  **yields to the stripe run** (fit-the-cell law, `fitFootprint`) — the
+  whole graphic lives inside the shoe cell; the shift-clamp survives only
+  as the physically-impossible fallback (shift, never shrink).
+- **The five buttons became cards** — card-sized, card-shaped, driven from
+  the solver's card metrics; placeholder white/black, the human's vector
+  art later. Shape held under the five-across cap.
+- **The grid became fifths:** tray 1/5, four content bands of 1/5; the
+  dealer and pit swapped (dealer 3/4 in band 2 beside the hud, the pit
+  demoted to the back row); the back row is shoe 1/3 | pit 1/3 | **discard
+  tray 1/3** (new zone — empty until settled cards need somewhere to go).
+- Button ink/paper joined the contrast law's pairs. Gate: 138/138 + audit
+  (31 modules) + kit law + build + purity.
+
 ## Entry #13 — 2026-10-22 · FELT pt4 batches 1–1.10 — the relational grid
 
 - Batches 1 through 1.9 (six commits, not logged individually): the command

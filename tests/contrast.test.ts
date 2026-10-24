@@ -4,7 +4,7 @@
  * the palette can never silently drift into illegibility.
  */
 import { describe, it, expect } from "vitest";
-import { CARD, CAPTIONS, FELT } from "../src/config.ts";
+import { CARD, BUTTON, CAPTIONS, FELT } from "../src/config.ts";
 
 /** WCAG relative luminance of a #rrggbb color. */
 function luminance(hex: string): number {
@@ -30,6 +30,7 @@ describe("contrast law (spec E8)", () => {
     ["card ink on face", CARD.ink, CARD.face],
     ["card red on face", CARD.red, CARD.face],
     ["captions on band (vs black)", CAPTIONS.color, "#000000"],
+    ["button ink on paper", BUTTON.ink, BUTTON.paper],
   ];
   for (const [name, fg, bg] of PAIRS) {
     it(`${name} clears WCAG AA`, () => {

@@ -22,11 +22,13 @@ record rulings in the dev log.
 ## Presentation law (ruled 2026-10-22)
 
 - **Adaptive layout from day 1:** one pure zone solver drives both the canvas and
-  the DOM overlay. One banded grid at every aspect (spec E11, ruled 2026-10-22):
-  dealer top, player bottom, always — shoe 1/8 | dealer 7/8; pit | count hud 1/4;
-  player full width; context panel 1/4 | controls 3/4; chip tray 1/8 of safe
-  height. Fully relational: every element sizes from its cell, no pixel
-  minimums; the axis option mirrors the horizontal anchors only.
+  the DOM overlay. One banded grid at every aspect (spec E11/E12, ruled
+  2026-10-22): dealer top, player bottom, always — five clean fifths; the
+  back row is shoe 1/3 | pit 1/3 | discard 1/3; dealer 3/4 | count hud 1/4;
+  player full width; context panel 1/4 | controls 3/4. Fully relational:
+  every element sizes from its cell, no pixel minimums; the axis option
+  mirrors the horizontal anchors only. The five action buttons are
+  card-shaped placeholders (the human's vector art later).
 - **Vector-first assets:** cards come from the English-pattern SVG (wikimedia,
   CC0, Loren Osborn) first — per-property decks arrive later through a `Deck`
   interface. Chips, bet circles, side-bet spots, the pen bar, and the cut card

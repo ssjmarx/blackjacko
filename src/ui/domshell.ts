@@ -55,6 +55,7 @@ function zoneMap(l: TableLayout): Record<string, Rect> {
   return {
     safe: l.safe,
     pit: l.pit,
+    discard: l.discard,
     shoe: l.shoe,
     dealer: l.dealer,
     player: l.player,

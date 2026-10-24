@@ -398,6 +398,23 @@ option mirrors the horizontal anchors only — dealer and player never move.
   disabled at the base label). Button sizing is fully relative, driven by
   the controls cell.
 
+**E12 — the fifths grid (ruled 2026-10-22, amends E11's band structure):**
+the tray grows to **1/5** of safe height and the four content bands each
+hold **1/5** — five clean fifths, top to bottom. The dealer zone and the pit
+swap: band 1 is the table's back row — **shoe 1/3 | pit 1/3 | discard tray
+1/3** (the discard tray is the new zone; empty until the round driver gives
+settled cards somewhere to go) — and band 2 carries the dealer's cards at
+**3/4** width beside the count hud (1/4).
+
+- **The stack fits its cell (E12):** the deck/shoe graphic's back footprint
+  yields to its stripe run — footprint = fit(cell minus the run) — so the
+  whole graphic lives inside the shoe cell at any pen; only when the run
+  alone cannot fit does the shift-clamp take over (shift, never shrink).
+- **The five action buttons are cards (E12):** card-sized and card-shaped,
+  driven straight from the solver's card metrics — placeholder art (white
+  paper, black ink), the human's vector art to replace it later; five fit
+  the controls cell with the shape held (uniform downscale, ratio kept).
+
 **E6 — S6 chip catalog superseded (roster ruling 2026-10-22):** the S6 table
 above is replaced by the ruled 12-chip POC roster below. All rarities are
 SPECULATIVE — a per-chip battery assigns each chip to Common / Uncommon /

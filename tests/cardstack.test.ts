@@ -4,7 +4,7 @@
  * `group` cards of penetration, the ruled 26th-card-becomes-sprite-7 law.
  */
 import { describe, it, expect } from "vitest";
-import { placeStripes, cutSpriteIndex, stackPlan } from "../src/ui/cardstack.ts";
+import { placeStripes, cutSpriteIndex, stackPlan, fitFootprint } from "../src/ui/cardstack.ts";
 
 describe("placeStripes — the count-true stack law", () => {
   it("steps sprites apart, linear in the count", () => {
@@ -90,5 +90,28 @@ describe("stackPlan — the sprite accounting", () => {
     expect(p.cut).toBe(1);
     expect(p.tail).toBe(0);
     expect(p.total).toBe(14);
+  });
+});
+
+describe("fitFootprint — the fit-the-cell law", () => {
+  it("an upward run eats the cell height: footprint plus run exactly fills it", () => {
+    const f = fitFootprint({ x: 0, y: 0, w: 426, h: 144 }, "up", 26, 1.4);
+    expect(f.clamped).toBe(false);
+    expect(f.box.h + 26).toBeCloseTo(144);
+    expect(f.box.w).toBeLessThanOrEqual(426);
+  });
+
+  it("a rightward run eats the cell width, capped by the aspect height", () => {
+    const f = fitFootprint({ x: 0, y: 0, w: 426, h: 144 }, "right", 208, 1.4);
+    expect(f.clamped).toBe(false);
+    expect(f.box.w + 208).toBeLessThanOrEqual(426);
+    expect(f.box.h).toBeLessThanOrEqual(144);
+  });
+
+  it("an un-fittable run falls back to the clamp (a 416 row in a narrow cell)", () => {
+    const f = fitFootprint({ x: 0, y: 0, w: 120, h: 168 }, "right", 208, 1.4);
+    expect(f.clamped).toBe(true);
+    expect(f.box.w).toBeLessThanOrEqual(120);
+    expect(f.box.h).toBeLessThanOrEqual(168);
   });
 });

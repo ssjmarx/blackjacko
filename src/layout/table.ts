@@ -52,6 +52,7 @@ export interface TableLayout {
   hands: number;
   safe: Rect;
   pit: Rect;
+  discard: Rect;
   shoe: Rect;
   dealer: Rect;
   player: Rect;
@@ -67,9 +68,8 @@ export interface TableLayout {
 
 // --- the grid fractions: the tunables, each with one home (spec E11) ---
 
-const TRAY_FRAC = 1 / 8; // chip tray height vs safe height
-const BANDS = 4; // equal content bands above the tray
-const SHOE_W = 1 / 8; // shoe cell width vs safe width (band 1)
+const TRAY_FRAC = 1 / 5; // chip tray height vs safe height — clean fifths (spec E12)
+const BANDS = 4; // equal content bands above the tray, each also 1/5
 const HUD_W = 1 / 4; // count hud width vs safe width (band 2)
 const PANEL_W = 1 / 4; // context panel width vs safe width (band 4)
 const CARD_BOX_ASPECT = 7 / 5; // the canonical card box ratio (art fits within)
@@ -116,20 +116,24 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
   const b3 = band(2);
   const b4 = band(3);
 
-  // band 1: shoe 1/8 | dealer 7/8; band 2: pit | hud 1/4; band 4: panel 1/4 | controls 3/4
+  // band 1: the back row — shoe 1/3 | pit 1/3 | discard 1/3 (the axis mirrors the ends)
+  const third = safe.w / 3;
   const shoe: Rect = axisFlip
-    ? { x: safe.x + safe.w - safe.w * SHOE_W, y: b1.y, w: safe.w * SHOE_W, h: b1.h }
-    : { x: safe.x, y: b1.y, w: safe.w * SHOE_W, h: b1.h };
-  const dealer: Rect = axisFlip
-    ? { x: safe.x, y: b1.y, w: safe.w - shoe.w, h: b1.h }
-    : { x: safe.x + shoe.w, y: b1.y, w: safe.w - shoe.w, h: b1.h };
+    ? { x: safe.x + safe.w - third, y: b1.y, w: third, h: b1.h }
+    : { x: safe.x, y: b1.y, w: third, h: b1.h };
+  const pit: Rect = { x: safe.x + third, y: b1.y, w: third, h: b1.h };
+  const discard: Rect = axisFlip
+    ? { x: safe.x, y: b1.y, w: third, h: b1.h }
+    : { x: safe.x + safe.w - third, y: b1.y, w: third, h: b1.h };
+
+  // band 2: dealer 3/4 | count hud 1/4; band 4: panel 1/4 | controls 3/4
   const hudW = safe.w * HUD_W;
+  const dealer: Rect = axisFlip
+    ? { x: safe.x + hudW, y: b2.y, w: safe.w - hudW, h: b2.h }
+    : { x: safe.x, y: b2.y, w: safe.w - hudW, h: b2.h };
   const countHud: Rect = axisFlip
     ? { x: safe.x, y: b2.y, w: hudW, h: b2.h }
     : { x: safe.x + safe.w - hudW, y: b2.y, w: hudW, h: b2.h };
-  const pit: Rect = axisFlip
-    ? { x: safe.x + hudW, y: b2.y, w: safe.w - hudW, h: b2.h }
-    : { x: safe.x, y: b2.y, w: safe.w - hudW, h: b2.h };
   const player: Rect = { ...b3 };
   const panelW = safe.w * PANEL_W;
   const contextPanel: Rect = axisFlip
@@ -180,6 +184,7 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
     hands,
     safe,
     pit,
+    discard,
     shoe,
     dealer,
     player,

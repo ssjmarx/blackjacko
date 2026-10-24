@@ -21,6 +21,7 @@ function zonesOf(l: TableLayout): Record<string, Rect> {
   return {
     safe: l.safe,
     pit: l.pit,
+    discard: l.discard,
     shoe: l.shoe,
     dealer: l.dealer,
     player: l.player,
@@ -54,28 +55,37 @@ describe("layout: the ratio sweep", () => {
         for (const hands of [1, 2, 4]) {
           const l = solveTable(w, h, { axisFlip, hands });
           const where = `${w}x${h} flip=${axisFlip} hands=${hands}`;
-          const trayH = l.safe.h / 8;
-          const bandH = (l.safe.h - trayH) / 4;
+          const bandH = l.safe.h / 5;
 
           // orientation is reported; the grid never branches on it
           expect(l.orientation, where).toBe(h > w ? "portrait" : "landscape");
 
-          // the banded grid: equal content quarters + the 1/8 tray, touching
-          expect(l.chipTray.h, where).toBeCloseTo(trayH);
-          expect(l.dealer.y, where).toBeCloseTo(l.safe.y);
+          // the banded grid: five clean fifths, touching
+          expect(l.chipTray.h, where).toBeCloseTo(bandH);
+          expect(l.shoe.y, where).toBeCloseTo(l.safe.y);
+          expect(l.pit.y, where).toBeCloseTo(l.safe.y);
+          expect(l.discard.y, where).toBeCloseTo(l.safe.y);
+          expect(l.dealer.y, where).toBeCloseTo(l.safe.y + bandH);
           expect(l.countHud.y, where).toBeCloseTo(l.safe.y + bandH);
           expect(l.player.y, where).toBeCloseTo(l.safe.y + 2 * bandH);
           expect(l.contextPanel.y, where).toBeCloseTo(l.safe.y + 3 * bandH);
           expect(l.chipTray.y, where).toBeCloseTo(l.safe.y + 4 * bandH);
+          expect(l.shoe.h, where).toBeCloseTo(bandH);
+          expect(l.dealer.h, where).toBeCloseTo(bandH);
           expect(l.countHud.h, where).toBeCloseTo(bandH);
           expect(l.player.h, where).toBeCloseTo(bandH);
           expect(l.contextPanel.h, where).toBeCloseTo(bandH);
           expect(l.controls.h, where).toBeCloseTo(bandH);
 
-          // the width fractions: shoe 1/8, pit 3/4, hud 1/4, panel 1/4, controls 3/4
-          expect(l.shoe.w, where).toBeCloseTo(l.safe.w / 8);
-          expect(l.dealer.w, where).toBeCloseTo((l.safe.w * 7) / 8);
-          expect(l.pit.w, where).toBeCloseTo((l.safe.w * 3) / 4);
+          // the width fractions: the back row in thirds, dealer 3/4, hud 1/4, panel 1/4, controls 3/4
+          expect(l.shoe.w, where).toBeCloseTo(l.safe.w / 3);
+          expect(l.pit.w, where).toBeCloseTo(l.safe.w / 3);
+          expect(l.discard.w, where).toBeCloseTo(l.safe.w / 3);
+          expect(l.pit.x, where).toBeCloseTo(l.safe.x + l.safe.w / 3);
+          expect(l.discard.x + l.discard.w, where).toBeCloseTo(
+            axisFlip ? l.safe.x + l.safe.w / 3 : l.safe.x + l.safe.w,
+          );
+          expect(l.dealer.w, where).toBeCloseTo((l.safe.w * 3) / 4);
           expect(l.countHud.w, where).toBeCloseTo(l.safe.w / 4);
           expect(l.contextPanel.w, where).toBeCloseTo(l.safe.w / 4);
           expect(l.controls.w, where).toBeCloseTo((l.safe.w * 3) / 4);
@@ -112,7 +122,7 @@ describe("layout: the named laws", () => {
       for (const axisFlip of [false, true]) {
         const l = solveTable(w, h, { axisFlip });
         const where = `${w}x${h} flip=${axisFlip}`;
-        expect(l.dealer.y, where).toBe(l.safe.y);
+        expect(l.dealer.y, where).toBeCloseTo(l.safe.y + l.safe.h / 5);
         expect(l.player.y + l.player.h, where).toBeCloseTo(l.contextPanel.y);
         const flipped = solveTable(w, h, { axisFlip: !axisFlip });
         expect(flipped.dealer.y, where).toBe(l.dealer.y);
@@ -126,8 +136,11 @@ describe("layout: the named laws", () => {
   it("axisFlip mirrors the horizontal anchors only", () => {
     const l = solveTable(1280, 720);
     const f = solveTable(1280, 720, { axisFlip: true });
-    expect(f.shoe.x + f.shoe.w).toBeCloseTo(l.safe.x + l.safe.w);
+    expect(f.shoe.x).toBeCloseTo(l.discard.x);
+    expect(f.discard.x).toBeCloseTo(l.shoe.x);
+    expect(f.pit.x).toBeCloseTo(l.pit.x);
     expect(f.countHud.x).toBeCloseTo(l.safe.x);
+    expect(f.dealer.x + f.dealer.w).toBeCloseTo(l.safe.x + l.safe.w);
     expect(f.contextPanel.x + f.contextPanel.w).toBeCloseTo(l.safe.x + l.safe.w);
     expect(f.controls.x).toBeCloseTo(l.safe.x);
     expect(f.dealer.y).toBe(l.dealer.y);
@@ -158,17 +171,18 @@ describe("layout: the named laws", () => {
   it("goldens: canonical sizes", () => {
     const d = solveTable(1280, 720);
     expect(d.safe).toEqual({ x: 0, y: 0, w: 1280, h: 720 });
-    expect(d.chipTray.h).toBe(90);
-    const bandH = 630 / 4;
+    expect(d.chipTray.h).toBe(144);
+    const bandH = 144;
     expect(d.metrics.cardW).toBeCloseTo(Math.min(1280 / 1.2, (bandH * 0.64) / 1.4, (bandH * 0.85) / 1.4));
-    expect(d.metrics.cardW).toBeCloseTo(72);
-    expect(d.metrics.cardH).toBeCloseTo(100.8);
+    expect(d.metrics.cardW).toBeCloseTo(65.83, 1);
+    expect(d.metrics.cardH).toBeCloseTo(92.16, 1);
     expect(d.controls.w).toBeCloseTo(960);
     expect(d.contextPanel.w).toBeCloseTo(320);
     expect(d.countHud.w).toBe(320);
+    expect(d.shoe.w).toBeCloseTo(1280 / 3);
     const p = solveTable(360, 800);
-    expect(p.chipTray.h).toBe(100);
-    expect(p.metrics.cardW).toBeCloseTo(Math.min(360 / 1.2, (175 * 0.64) / 1.4, (175 * 0.85) / 1.4));
+    expect(p.chipTray.h).toBe(160);
+    expect(p.metrics.cardW).toBeCloseTo(Math.min(360 / 1.2, (160 * 0.64) / 1.4, (160 * 0.85) / 1.4));
   });
 
   it("the dealer row squashes before leaving its cell", () => {

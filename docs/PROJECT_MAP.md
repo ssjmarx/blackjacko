@@ -300,6 +300,7 @@ group, with the ruled cut card riding red at the penetration mark.
 - `placeStripes(…)` — Place a clamped stripe run: sprites step `step` from the anchor; overflow shifts the run inward, never shrinks it.
 - `cutSpriteIndex(pen: number, max: number, group: number)` — The ruled cut-card law: the sprite containing the pen card goes red — one sprite per `group` cards of pen.
 - `stackPlan(pen: number, max: number, remaining: number, group: number)` — Plan a stack's sprites from pen, shoe size, and the dealable remaining count.
+- `fitFootprint(…)` — The fit-the-cell law: the back footprint yields to the stripe run (spec E12); un-fittable runs fall back to the clamp.
 - `buildStack(…)` — Build the stack along one axis: backs step out, the cut card swaps in at the plan's mark.
 - `deckStack(…)` — Create a vertical deck stack: tail, the red cut card, then the dealable run, bottom-anchored.
 - `shoeRow(…)` — Create a horizontal shoe row: the same plan laid end to end, clamped inward.

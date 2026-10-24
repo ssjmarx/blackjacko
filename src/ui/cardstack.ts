@@ -66,6 +66,23 @@ export function stackPlan(pen: number, max: number, remaining: number, group: nu
   return { tail: cut - 1, cut, total: cut + dealable };
 }
 
+/** The fit-the-cell law: the back footprint yields to the stripe run (spec E12); un-fittable runs fall back to the clamp. */
+export function fitFootprint(
+  box: Rect,
+  axis: "up" | "right",
+  run: number,
+  aspect: number,
+): { box: Rect; clamped: boolean } {
+  const canFit = axis === "up" ? run < box.h : run < box.w;
+  const fitBox =
+    !canFit
+      ? box
+      : axis === "up"
+        ? { x: box.x, y: box.y + run, w: box.w, h: box.h - run }
+        : { x: box.x, y: box.y, w: box.w - run, h: box.h };
+  return { box: fitIn(fitBox, aspect), clamped: !canFit };
+}
+
 /** Build the stack along one axis: backs step out, the cut card swaps in at the plan's mark. */
 function buildStack(
   scene: Phaser.Scene,
@@ -83,12 +100,21 @@ function buildStack(
     max: number;
   },
 ): (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] {
-  const fitted = fitIn(box, deck.aspect);
   const plan = stackPlan(opts.pen, opts.max, opts.remaining, CARD_STACK.group);
+  const run = (plan.total - 1) * perCard;
+  const fit = fitFootprint(box, axis, run, deck.aspect);
+  const fitted = fit.box;
+  const anchor = axis === "up" ? box.y + box.h - fitted.h / 2 : box.x + fitted.w / 2;
   const restMin = axis === "up" ? box.y + fitted.h / 2 : box.x + fitted.w / 2;
   const restMax = axis === "up" ? box.y + box.h - fitted.h / 2 : box.x + box.w - fitted.w / 2;
-  const anchor = axis === "up" ? box.y + box.h - fitted.h / 2 : box.x + fitted.w / 2;
-  const placed = placeStripes(plan.total, perCard, anchor, axis, opts.clampMin ?? restMin, opts.clampMax ?? restMax);
+  const placed = placeStripes(
+    plan.total,
+    perCard,
+    anchor,
+    axis,
+    fit.clamped ? (opts.clampMin ?? restMin) : -1e9,
+    fit.clamped ? (opts.clampMax ?? restMax) : 1e9,
+  );
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
   const out: (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] = [];

@@ -21,6 +21,7 @@ const ZONE_COLORS = {
   player: 0x22c55e,
   shoe: 0xf97316,
   pit: 0x94a3b8,
+  discard: 0x14b8a6,
   chipTray: 0xa855f7,
   controls: 0xf59e0b,
   countHud: 0xeab308,
@@ -156,6 +157,7 @@ export class FeltScene extends Phaser.Scene {
     add(l.player, ZONE_COLORS.player, "player", "Your hands.");
     add(l.shoe, ZONE_COLORS.shoe, "shoe", "The dealing shoe, with the cut card.");
     add(l.pit, ZONE_COLORS.pit, "pit", "The middle of the table.");
+    add(l.discard, ZONE_COLORS.discard, "discard", "The discard tray.");
     add(l.chipTray, ZONE_COLORS.chipTray, "chipTray", "Your chip tray.");
     add(l.controls, ZONE_COLORS.controls, "controls", "The action bar.");
     add(l.countHud, ZONE_COLORS.countHud, "countHud", "The running and true count.");
