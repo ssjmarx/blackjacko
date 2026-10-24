@@ -125,6 +125,7 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
   );
   const controls: Rect = { x: safe.x, y: chipTray.y - controlsH - 6, w: safe.w, h: controlsH };
   const fieldH = controls.y - 6 - fieldY;
+  const bandBottom = controls.y - 6;
 
   // card metrics from the ruled target (10% of screen width, floored)
   const cardW = Math.max(MIN_CARD_W, CARD_TARGET * width);
@@ -144,44 +145,61 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
   const chipR = clamp(trayH * 0.38, CHIP_R_MIN, cardH * 0.3);
   metrics.chipR = chipR;
 
+  // the HUD reservation: it flips sides with the player band, so both yield to it
+  const hudW = Math.min(HUD_W, safe.w * 0.45);
+  const countHud: Rect = {
+    x: axisFlip ? safe.x + 4 : safe.x + safe.w - hudW - 4,
+    y: fieldY + 4,
+    w: hudW,
+    h: HUD_H,
+  };
+  const hudBottom = countHud.y + countHud.h + 6;
+
   // dealing bands: portrait = horizontal strips (dealer top, player bottom);
   // landscape = vertical columns (dealer left, player right); axisFlip mirrors.
   let dealer: Rect;
   let player: Rect;
+  const shoe: Rect = { x: 0, y: 0, w: shoeW, h: shoeH };
   const slots: Rect[] = [];
-  const hudW = Math.min(HUD_W, safe.w * 0.45);
-  const hudX = axisFlip ? safe.x + 4 : safe.x + safe.w - hudW - 4;
   if (orientation === "portrait") {
+    // the count HUD is a reservation: the dealer band starts below it
+    const dealerY = Math.max(fieldY, hudBottom);
     const dealerH = fieldH * PORTRAIT_DEALER;
     const playerH = fieldH * PORTRAIT_PLAYER;
     const bandY = fieldY + fieldH - playerH;
     const bandW = hands >= CONTEXT_COLLAPSE_AT ? safe.w : safe.w * PORTRAIT_BAND_AT_REST;
     const bandX = axisFlip ? safe.x : safe.x + safe.w - bandW;
-    dealer = { x: safe.x, y: fieldY, w: safe.w, h: dealerH };
+    dealer = { x: safe.x, y: dealerY, w: safe.w, h: dealerH };
     player = { x: bandX, y: bandY, w: bandW, h: playerH };
-    for (let i = 0; i < 4; i++) {
-      slots.push({ x: player.x + (i * player.w) / 4, y: player.y, w: player.w / 4, h: player.h });
+    shoe.x = axisFlip ? dealer.x + dealer.w - shoeW - 4 : dealer.x + 4;
+    shoe.y = dealer.y + 4;
+    for (let i = 0; i < hands; i++) {
+      slots.push({ x: player.x + (i * player.w) / hands, y: player.y, w: player.w / hands, h: player.h });
     }
   } else {
     const dealerW = safe.w * LANDSCAPE_DEALER;
     const playerW = safe.w * LANDSCAPE_PLAYER;
     const dealerX = axisFlip ? safe.x + safe.w - dealerW : safe.x;
     const playerX = axisFlip ? safe.x : safe.x + safe.w - playerW;
-    dealer = { x: dealerX, y: fieldY, w: dealerW, h: fieldH };
-    player = { x: playerX, y: fieldY, w: playerW, h: fieldH };
-    for (let i = 0; i < 4; i++) {
-      slots.push({ x: player.x, y: player.y + (i * player.h) / 4, w: player.w, h: player.h / 4 });
+    // the dealer column: shoe on top, cards in the middle, the context panel below
+    shoe.x = axisFlip ? dealerX + dealerW - shoeW - 4 : dealerX + 4;
+    shoe.y = fieldY + 4;
+    const panelH = Math.min(PANEL_H, chipTray.y - fieldY - 8);
+    const panelY = Math.max(fieldY + 4, chipTray.y - panelH - 4);
+    dealer = {
+      x: dealerX,
+      y: shoe.y + shoe.h + 8,
+      w: dealerW,
+      h: Math.max(0, panelY - 8 - (shoe.y + shoe.h + 8)),
+    };
+    player = { x: playerX, y: hudBottom, w: playerW, h: Math.max(0, bandBottom - hudBottom) };
+    for (let i = 0; i < hands; i++) {
+      slots.push({ x: player.x, y: player.y + (i * player.h) / hands, w: player.w, h: player.h / hands });
     }
   }
 
-  // the shoe anchors inside the dealer band's outer edge; dealer rows grow screen-right
-  const shoe: Rect = {
-    x: axisFlip ? dealer.x + dealer.w - shoeW - 4 : dealer.x + 4,
-    y: dealer.y + 4,
-    w: shoeW,
-    h: shoeH,
-  };
-  const rowAvail = safe.x + safe.w - (shoe.x + shoe.w) - 8;
+  // dealer rows grow inward from the shoe; squash when they outgrow the table
+  const rowAvail = axisFlip ? shoe.x - safe.x - 8 : safe.x + safe.w - (shoe.x + shoe.w) - 8;
   metrics.dealerFits = Math.max(2, Math.floor((rowAvail + metrics.dealerGap) / (cardW * (1 + DEALER_GAP))));
 
   // bet spots: inside each line slot (portrait: below the hand; landscape: beside it);
@@ -205,8 +223,6 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
           w: insW,
           h: cardH * 0.5,
         };
-
-  const countHud: Rect = { x: hudX, y: fieldY + 4, w: hudW, h: HUD_H };
 
   // the context block: full panel at rest; collapses to a button when the
   // player band expands over it (portrait, 4 hands). Landscape keeps the panel.
@@ -247,8 +263,13 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
     };
   }
 
-  // transient band: the deck credit hugs the lower-left (television credit)
-  const lowerThird: Rect = { x: safe.x, y: chipTray.y - 76, w: safe.w * 0.45, h: 64 };
+  // transient band: the deck credit hugs its half of the screen (television credit)
+  const lowerThird: Rect = {
+    x: axisFlip ? safe.x + safe.w * 0.5 : safe.x,
+    y: chipTray.y - 76,
+    w: safe.w * 0.5,
+    h: 64,
+  };
 
   return {
     width,

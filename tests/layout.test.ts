@@ -150,6 +150,31 @@ describe("layout: rulings", () => {
     expect(l.controls.y + l.controls.h + 6).toBe(l.chipTray.y);
   });
 
+  it("the count hud is a reservation the bands yield to", () => {
+    const portrait = solveTable(360, 800);
+    expect(portrait.dealer.y).toBeGreaterThanOrEqual(portrait.countHud.y + portrait.countHud.h);
+    const landscape = solveTable(1280, 720);
+    expect(landscape.player.y).toBeGreaterThanOrEqual(landscape.countHud.y + landscape.countHud.h);
+    expect(landscape.dealer.y).toBeGreaterThanOrEqual(landscape.shoe.y + landscape.shoe.h);
+    expect(landscape.dealer.y + landscape.dealer.h).toBeLessThanOrEqual(landscape.contextPanel.y);
+  });
+
+  it("line slots are context-sensitive: one at rest, subdividing to the cap", () => {
+    expect(solveTable(360, 800, { hands: 1 }).lineSlots).toHaveLength(1);
+    expect(solveTable(360, 800, { hands: 2 }).lineSlots).toHaveLength(2);
+    expect(solveTable(360, 800, { hands: 4 }).lineSlots).toHaveLength(4);
+    const four = solveTable(360, 800, { hands: 4 });
+    for (const s of four.lineSlots) expect(contains(four.player, s)).toBe(true);
+  });
+
+  it("the lower third caps at half the width, mirroring with the controls", () => {
+    const plain = solveTable(1280, 720);
+    expect(plain.lowerThird.w).toBeLessThanOrEqual(plain.safe.w * 0.5 + 0.01);
+    expect(plain.lowerThird.x).toBe(plain.safe.x);
+    const flipped = solveTable(1280, 720, { axisFlip: true });
+    expect(flipped.lowerThird.x).toBeGreaterThanOrEqual(flipped.safe.x + flipped.safe.w * 0.5 - 0.01);
+  });
+
   it("goldens: canonical sizes", () => {
     const desktop = solveTable(1280, 720);
     expect(desktop.metrics.cardW).toBe(128);
