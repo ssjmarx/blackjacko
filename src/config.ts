@@ -50,11 +50,6 @@ export const CARD_STACK = {
   maxShoe: 416,
 } as const;
 
-/** The margin law (spec E13): 5% of the window per edge frames the play field. */
-export const MARGIN = {
-  frac: 0.05,
-} as const;
-
 /**
  * The wood rail (spec E14): a procedural flow-field density — seeded knots
  * disturb a stream function whose level sets are the grain; every pixel is
@@ -108,5 +103,6 @@ export const TONYS = {
   betUnits: 1,
   min: 1,
   max: 25,
+  ruleTags: ["S17", "Blackjacks Pay 3:2"],
 } as const;
 

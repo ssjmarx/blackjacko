@@ -40,7 +40,11 @@ record rulings in the dev log.
   knots, colored per-pixel through an asymmetric annual ramp with fiber,
   figure, knot cores, and baked light — wall-to-wall coverage is
   law-tested. The debug overlay (zones, probes, readout) is flag-off: the
-  felt renders as its single shade of green. The margin is 2.5% per edge.
+  felt renders as its single shade of green. The margin is 1% per window
+  edge (E14 amendment). The shoe row's back is the card box rotated —
+  card-sized 1:1, never yielding; the cut card reads 75% down the length.
+  The credit floats with a per-letter outline; captions sit on the top
+  layer; table rules ride deck extra's floor.
 - **Vector-first assets:** cards come from the English-pattern SVG (wikimedia,
   CC0, Loren Osborn) first — per-property decks arrive later through a `Deck`
   interface. Chips, bet circles, side-bet spots, the pen bar, and the cut card

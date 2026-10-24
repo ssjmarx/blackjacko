@@ -8,6 +8,8 @@ import {
   placeStripes,
   placeStripesLeft,
   cutSpriteIndex,
+  cutSpriteIdx,
+  dealtOrder,
   stackPlan,
   hiddenSprites,
   dealtFrom,
@@ -107,6 +109,31 @@ describe("stackPlan — the full-shoe accounting, and the erosion law", () => {
   });
 });
 
+describe("cutSpriteIdx and dealtOrder — the horizontal reflection laws", () => {
+  const plan = stackPlan(0.75, 416, 4); // cut 27, total 104
+
+  it("both horizontal rows put the cut sprite 26 from the plant — 75% down the length", () => {
+    expect(cutSpriteIdx("right", plan.total, plan.cut)).toBe(26);
+    expect(cutSpriteIdx("left", plan.total, plan.cut)).toBe(26);
+    expect(cutSpriteIdx("down", plan.total, plan.cut)).toBe(77);
+  });
+
+  it("horizontal rows erode from the far end; the deck sheds from its top", () => {
+    expect(dealtOrder("right", 104, 0)).toBe(103);
+    expect(dealtOrder("left", 104, 0)).toBe(103);
+    expect(dealtOrder("left", 104, 103)).toBe(0);
+    expect(dealtOrder("down", 104, 0)).toBe(0);
+    expect(dealtOrder("down", 104, 103)).toBe(103);
+  });
+
+  it("the pen mark position reads correctly from the planted end", () => {
+    // the tail (26 sprites) rides the plant; the cut card is its boundary
+    const idx = cutSpriteIdx("left", plan.total, plan.cut);
+    expect((idx) * 2).toBeCloseTo(52); // 52px of a 206px run from the plant
+    expect(206 - idx * 2).toBeCloseTo(154); // 75% down the length, reading left to right
+  });
+});
+
 describe("fitFootprint — the card-size-first footprint law", () => {
   const want = { x: 0, y: 0, w: 90, h: 126 };
 
@@ -132,31 +159,33 @@ describe("fitFootprint — the card-size-first footprint law", () => {
     const f = fitFootprint({ x: 0, y: 0, w: 864, h: 129.6 }, "right", 208, 1.498, want);
     expect(f.clamped).toBe(false);
     expect(f.box.x).toBe(0);
-    expect(f.box.w + 208).toBeLessThanOrEqual(864);
-    expect(f.box.h).toBeLessThanOrEqual(129.6);
+    expect(f.box.w).toBe(126);
+    expect(f.box.h).toBe(90);
+    expect(f.start).toBe(63);
   });
 
   it("a leftward run plants at the window-side (right) edge, growing toward the pit", () => {
     const f = fitFootprint({ x: 0, y: 0, w: 864, h: 129.6 }, "left", 208, 1.498, want);
     expect(f.clamped).toBe(false);
-    expect(f.box.x).toBe(864 - 90);
-    expect(f.start).toBe(864 - 45);
-    expect(f.box.w + 208).toBeLessThanOrEqual(864);
-    expect(f.box.h).toBeLessThanOrEqual(129.6);
+    expect(f.box.x).toBe(864 - 126);
+    expect(f.box.w).toBe(126);
+    expect(f.box.h).toBe(90);
+    expect(f.start).toBe(864 - 63);
   });
 
-  it("the leftward yield keeps the back at the right edge, shrunk by the run", () => {
+  it("the row's back never yields: card-sized at every extent", () => {
     const f = fitFootprint({ x: 0, y: 0, w: 200, h: 129.6 }, "left", 120, 1.498, want);
     expect(f.clamped).toBe(false);
-    expect(f.box.x + f.box.w).toBeCloseTo(200);
-    expect(f.box.w + 120).toBeLessThanOrEqual(200 + 0.01);
+    expect(f.box.x).toBe(200 - 126);
+    expect(f.box.w).toBe(126);
+    expect(f.box.h).toBe(90);
   });
 
-  it("an un-fittable run falls back to the clamp (a 416 row in a narrow cell)", () => {
-    const f = fitFootprint({ x: 0, y: 0, w: 120, h: 168 }, "right", 208, 1.498, want);
-    expect(f.clamped).toBe(true);
-    expect(f.box.w).toBeLessThanOrEqual(120);
-    expect(f.box.h).toBeLessThanOrEqual(168);
+  it("the row shrinks at the card's rate: double the card, double the footprint", () => {
+    const a = fitFootprint({ x: 0, y: 0, w: 900, h: 400 }, "left", 150, 1.498, want);
+    const b = fitFootprint({ x: 0, y: 0, w: 900, h: 400 }, "left", 150, 1.498, { x: 0, y: 0, w: 180, h: 252 });
+    expect(b.box.w).toBeCloseTo(a.box.w * 2);
+    expect(b.box.h).toBeCloseTo(a.box.h * 2);
   });
 
   it("the clamped deck pins its tail to the extent floor and lets the head overflow", () => {

@@ -124,6 +124,8 @@ describe("layout: the ratio sweep", () => {
           expect(l.bankrollPoint.y, where).toBeCloseTo(l.chipTray.y + l.chipTray.h);
           expect(l.stakesPoint.x, where).toBeCloseTo(l.pit.x + l.pit.w / 2);
           expect(l.stakesPoint.y, where).toBeCloseTo(l.pit.y + l.pit.h);
+          expect(l.rulesPoint.x, where).toBeCloseTo(l.deckExtra.x + l.deckExtra.w / 2);
+          expect(l.rulesPoint.y, where).toBeCloseTo(l.deckExtra.y + l.deckExtra.h);
         }
       }
     });
@@ -162,32 +164,32 @@ describe("layout: the ratio sweep", () => {
 
   it("goldens: canonical sizes under the margin law", () => {
     const d = solveTable(1280, 720);
-    expect(d.safe).toEqual({ x: 32, y: 18, w: 1216, h: 684 });
-    const bandH = 136.8;
-    expect(d.metrics.cardW).toBeCloseTo(Math.min((bandH * 0.96) / 1.4, 1216 / 6.3, (1216 * 0.75) / 1.2));
-    expect(d.metrics.cardW).toBeCloseTo(93.81, 2);
-    expect(d.metrics.cardH).toBeCloseTo(131.33, 2);
-    expect(d.controls.w).toBeCloseTo(1216);
-    expect(d.countHud.w).toBeCloseTo(304);
-    expect(d.shoe.w).toBeCloseTo(304);
-    expect(d.discard.w).toBeCloseTo(304);
-    expect(d.pit.w).toBeCloseTo(608);
-    expect(d.dealer.w).toBeCloseTo(608);
+    expect(d.safe).toEqual({ x: 12.8, y: 7.2, w: 1254.4, h: 705.6 });
+    const bandH = 141.12;
+    expect(d.metrics.cardW).toBeCloseTo(Math.min((bandH * 0.96) / 1.4, 1254.4 / 6.3, (1254.4 * 0.75) / 1.2));
+    expect(d.metrics.cardW).toBeCloseTo(96.77, 2);
+    expect(d.metrics.cardH).toBeCloseTo(135.48, 2);
+    expect(d.controls.w).toBeCloseTo(1254.4);
+    expect(d.countHud.w).toBeCloseTo(313.6);
+    expect(d.shoe.w).toBeCloseTo(313.6);
+    expect(d.discard.w).toBeCloseTo(313.6);
+    expect(d.pit.w).toBeCloseTo(627.2);
+    expect(d.dealer.w).toBeCloseTo(627.2);
     expect(d.player.h).toBeCloseTo(bandH * 2);
-    expect(d.chipTray.w).toBeCloseTo(304);
+    expect(d.chipTray.w).toBeCloseTo(313.6);
     expect(d.metrics.dealerFits).toBe(9);
     const p = solveTable(720, 1600);
-    expect(p.safe).toEqual({ x: 18, y: 40, w: 684, h: 1520 });
-    expect(p.metrics.cardW).toBeCloseTo(684 / 6.3, 2);
-    expect(p.metrics.cardW).toBeCloseTo(108.57, 2);
-    expect(p.metrics.cardH).toBeCloseTo(152.0, 2);
+    expect(p.safe).toEqual({ x: 7.2, y: 16, w: 705.6, h: 1568 });
+    expect(p.metrics.cardW).toBeCloseTo(705.6 / 6.3, 2);
+    expect(p.metrics.cardW).toBeCloseTo(112.0, 2);
+    expect(p.metrics.cardH).toBeCloseTo(156.8, 2);
   });
 
-  it("the margin frames the table: 2.5% per window edge, insets compose", () => {
+  it("the margin frames the table: 1% per window edge, insets compose", () => {
     const bare = solveTable(1000, 1000);
-    expect(bare.safe).toEqual({ x: 25, y: 25, w: 950, h: 950 });
+    expect(bare.safe).toEqual({ x: 10, y: 10, w: 980, h: 980 });
     const notched = solveTable(1000, 1000, { insets: { top: 40, right: 0, bottom: 0, left: 0 } });
-    expect(notched.safe).toEqual({ x: 25, y: 65, w: 950, h: 910 });
+    expect(notched.safe).toEqual({ x: 10, y: 50, w: 980, h: 940 });
   });
 
   it("the one-size law: height binds at landscape, width at portrait", () => {

@@ -571,3 +571,15 @@ and made unconditional.
   blank regions until **no blank 2-cell square remains** (law-tested:
   wall-to-wall grain, deterministic per seed). Rendered per-pixel at ½
   resolution and upscaled — soft, never aliased.
+- **Nits of 2026-10-23 (amending E14):** the margin tightens to **1% per
+  edge** (98% felt; the margin is one home — the solver's constant, which
+  the cut-in shadow imports). The **shoe row's back is the card box
+  rotated — card-sized 1:1 at every window, never yielding** (the old
+  avail-driven yield shrank it at ~3× the card's rate); overflow shifts,
+  never shrinks. The **cut sprite and erosion directions are uniform across
+  horizontal rows** (the cut-th sprite from the plant, eroding from the far
+  end) — the pen-0.75 mark reads 75% down the length. The **credit floats**
+  — no box, a thick per-letter black outline — and **captions sit on the
+  top DOM layer** (z 90). **Table rules ("S17 · Blackjacks Pay 3:2")
+  center on deck extra's floor** — the third floor readout, config-driven
+  until batch 2 derives them from the live ruleset.

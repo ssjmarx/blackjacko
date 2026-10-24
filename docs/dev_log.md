@@ -562,3 +562,34 @@ A+D+C with B folded in) renders the wood **per-pixel as a density field**:
   soft, never aliased, ~tens of ms per resize.
 - Gate: **155/155 tests** (13 files), audit, kit law holds, build clean,
   purity clean.
+
+## Entry #21 — batch 1.18: five nits, two real bugs (2026-10-23)
+
+- **The shoe shrank at ~3× the card's rate:** the row's fit math built the
+  lying back in the *upright* frame and sized its yield from
+  `extent.w − run` directly (slope ~0.475/px vs the card's ~0.15). The
+  lying-frame law replaces it: **the row's back is the card box rotated —
+  card-sized 1:1 at every window, never yielding**; overflow shifts, never
+  shrinks. The old math also mis-reserved the horizontal half-extent by
+  `(cardH − cardW)/2` per side — fixed by the same frame. The deck's yield
+  (ruled, eyeballed) is untouched.
+- **The cut card sat at 25% instead of 75%:** the 1.16 reflection wrote the
+  "left" row's cut index as `total − cut` (the deck's formula) — but
+  horizontal rows index sprites *from the plant*, so the cut is `cut − 1`
+  for both. The same mirroring inverted the leftward **erosion direction**
+  (it was hiding the tail side). Both directions are now uniform across
+  horizontal axes, extracted as pure `cutSpriteIdx`/`dealtOrder` and
+  law-tested (the pen-0.75 mark reads 75% down the length).
+- **Margin 1%** per edge — and the consolidation it forced: `config.MARGIN`
+  (0.05, feeding the cut-in width) had drifted from the solver's
+  `MARGIN_FRAC` (0.025) — two homes for one law, already wrong. The solver's
+  constant is now *the* margin home, exported and imported by the scene.
+- **The credit floats** — the black box is gone, replaced by a thick
+  per-letter black outline (`-webkit-text-stroke` + `paint-order: stroke
+  fill`, layered text-shadow fallback). **Captions sit on the top DOM
+  layer** (z 90 vs the credit's 45).
+- **Table rules** ("S17 · Blackjacks Pay 3:2") center on **deck extra's
+  floor** via a solver `rulesPoint` — config-driven until batch 2 derives
+  the strings from the live ruleset.
+- Gate: **158/158 tests** (13 files), audit 33 modules, kit law holds,
+  build clean, purity clean.

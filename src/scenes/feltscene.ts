@@ -4,8 +4,8 @@
  * zones, the DOM probes, and the size/axis readout, live on every resize.
  */
 import Phaser from "phaser";
-import { solveTable, unionRects, type Rect, type TableLayout } from "../layout/table.ts";
-import { CARD_STACK, DEBUG, FELT, MARGIN, TONYS } from "../config.ts";
+import { solveTable, unionRects, MARGIN_FRAC, type Rect, type TableLayout } from "../layout/table.ts";
+import { CARD_STACK, DEBUG, FELT, TONYS } from "../config.ts";
 import { destroy, rect, text } from "../ui/kit.ts";
 import { announce, registerObject, showLowerThird } from "../ui/domshell.ts";
 import { englishDeck } from "../ui/decks/english.ts";
@@ -101,7 +101,7 @@ export class FeltScene extends Phaser.Scene {
     this.felt = rect(this, this.layout.safe, { id: "felt", sr: "The felt table surface.", color: FELT.fill });
     this.felt.setDepth(-10);
     if (this.shadow) destroy(this, this.shadow, "felt cut-in shadow");
-    this.shadow = paintCutIn(this, this.layout.safe, Math.min(w, h) * MARGIN.frac);
+    this.shadow = paintCutIn(this, this.layout.safe, Math.min(w, h) * MARGIN_FRAC);
     for (const o of this.overlay) destroy(this, o.obj, o.id);
     this.overlay = [];
     for (const c of this.cards) destroy(this, c.obj, c.id);
@@ -135,6 +135,14 @@ export class FeltScene extends Phaser.Scene {
     });
     stakes.setOrigin(0.5, 1);
     this.readouts.push({ obj: stakes, id: "table stakes" });
+    const rules = text(this, l.rulesPoint.x, l.rulesPoint.y, TONYS.ruleTags.join(" · "), {
+      id: "table rules",
+      sr: `Table rules: ${TONYS.ruleTags.join("; ")}.`,
+      color: FELT.readout,
+      size: 15,
+    });
+    rules.setOrigin(0.5, 1);
+    this.readouts.push({ obj: rules, id: "table rules" });
   }
 
   /** The pt3 proof: A♠ at true card metrics; the deck stack bleeds into deck extra at 75% pen. */

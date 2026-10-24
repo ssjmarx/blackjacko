@@ -302,10 +302,12 @@ edge and runs toward the pit — stuck in place, dealt sprites vanishing.
 - `placeStripes(…)` — Place a stripe run stepping in the + direction from the anchor; overflow shifts the run inward, never shrinks it.
 - `placeStripesLeft(…)` — The mirrored run: stepping in the − direction from the anchor, clamped by a minimum.
 - `cutSpriteIndex(pen: number, max: number, group: number)` — The ruled cut-card law: the sprite containing the pen card goes red — one sprite per `group` cards of pen.
+- `cutSpriteIdx(axis: "down" | "right" | "left", total: number, cut: number)` — The cut sprite's index: the cut-th sprite counting from the planted end — every axis.
+- `dealtOrder(axis: "down" | "right" | "left", total: number, i: number)` — The dealt order: 0 hides first; the deck sheds from its top, rows from the far end.
 - `stackPlan(pen: number, max: number, group: number)` — Plan the full stack: every sprite of the deck, the cut riding the pen mark from the planted end.
 - `hiddenSprites(dealt: number, group: number)` — Sprites fully dealt from the dealt end — the sticks-in-place erosion law.
 - `dealtFrom(pen: number, max: number, remaining: number)` — Cards already dealt, derived from the dealable remaining count.
-- `fitFootprint(…)` — The footprint law (spec E13/E14): the first card centers in its cell at card size; the back yields to the run; the clamp is the last resort. Horizontal rows plant at the window-side edge and grow toward the pit.
+- `fitFootprint(…)` — The footprint law (spec E13/E14): the deck's first card centers in its cell at card size; the deck's back yields to the run; the clamp is the last resort. A row's back is the card box rotated — card-sized 1:1 at every window, planted at the window-side edge.
 - `buildStack(…)` — Build the stack: the full deck drawn once at fixed positions, dealt sprites hidden from the dealt end.
 - `deckStack(…)` — Create the vertical deck stack: card-sized in its shoe cell, bleeding down, the top card on top.
 - `shoeRow(…)` — Create the horizontal shoe row: planted at the window-side edge, running toward the pit, the tail planted.

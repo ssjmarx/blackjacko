@@ -44,7 +44,7 @@ export function mountDomShell(): void {
       borderRadius: "6px",
       display: "none",
       pointerEvents: "none",
-      zIndex: "40",
+      zIndex: "90",
     });
     document.body.appendChild(state.captions);
   }
@@ -166,13 +166,14 @@ export function showLowerThird(text: string, l: TableLayout): void {
       display: "flex",
       alignItems: "flex-start",
       justifyContent: "flex-start",
-      background: "rgba(0, 0, 0, 0.78)",
       color: "#f5f0e1",
       font: "italic 600 20px/1.4 Georgia, serif",
       textAlign: "left",
       whiteSpace: "pre-line",
-      padding: "10px 16px",
-      borderRadius: "4px",
+      WebkitTextStroke: "max(1.5px, 0.16em) #000",
+      paintOrder: "stroke fill",
+      textShadow:
+        "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000",
       zIndex: "45",
       opacity: "0",
       transition: `opacity ${LOWER_THIRD.inMs}ms ease`,

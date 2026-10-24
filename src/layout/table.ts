@@ -78,12 +78,14 @@ export interface TableLayout {
   bankrollPoint: Point;
   /** the pit's floor, centered — the table min/max readout's home */
   stakesPoint: Point;
+  /** deck extra's floor, centered — the table-rules readout's home */
+  rulesPoint: Point;
   metrics: TableMetrics;
 }
 
 // --- the grid fractions: the tunables, each with one home (spec E14) ---
 
-const MARGIN_FRAC = 0.025; // the margin law: 2.5% of the window per edge (spec E13)
+export const MARGIN_FRAC = 0.01; // the margin law: 1% of the window per edge (spec E14, was 2.5%)
 const BAND = 1 / 5; // bands 1, 2, and 4 are fifths; band 3 (the player) is two
 const QUARTER = 1 / 4; // the back row's and band 2's end cells; the chip column
 const CARD_BOX_ASPECT = 7 / 5; // the canonical card box ratio (art fits within)
@@ -225,6 +227,7 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
     captionPoint: { x: safe.x + safe.w / 2, y: b4Y },
     bankrollPoint: { x: chipTray.x + chipTray.w / 2, y: chipTray.y + chipTray.h },
     stakesPoint: { x: pit.x + pit.w / 2, y: pit.y + pit.h },
+    rulesPoint: { x: deckExtra.x + deckExtra.w / 2, y: deckExtra.y + deckExtra.h },
     metrics,
   };
 }

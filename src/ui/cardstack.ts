@@ -62,6 +62,16 @@ export function cutSpriteIndex(pen: number, max: number, group: number): number 
   return Math.max(1, Math.ceil(position / group));
 }
 
+/** The cut sprite's index: the cut-th sprite counting from the planted end — every axis. */
+export function cutSpriteIdx(axis: "down" | "right" | "left", total: number, cut: number): number {
+  return axis === "down" ? total - cut : cut - 1;
+}
+
+/** The dealt order: 0 hides first; the deck sheds from its top, rows from the far end. */
+export function dealtOrder(axis: "down" | "right" | "left", total: number, i: number): number {
+  return axis === "down" ? i : total - 1 - i;
+}
+
 /** Plan the full stack: every sprite of the deck, the cut riding the pen mark from the planted end. */
 export function stackPlan(pen: number, max: number, group: number): StackPlan {
   const cut = cutSpriteIndex(pen, max, group);
@@ -78,7 +88,7 @@ export function dealtFrom(pen: number, max: number, remaining: number): number {
   return Math.max(0, Math.round(pen * max) - 1 - Math.max(0, remaining));
 }
 
-/** The footprint law (spec E13/E14): the first card centers in its cell at card size; the back yields to the run; the clamp is the last resort. Horizontal rows plant at the window-side edge and grow toward the pit. */
+/** The footprint law (spec E13/E14): the deck's first card centers in its cell at card size; the deck's back yields to the run; the clamp is the last resort. A row's back is the card box rotated — card-sized 1:1 at every window, planted at the window-side edge. */
 export function fitFootprint(
   extent: Rect,
   axis: "down" | "right" | "left",
@@ -110,28 +120,14 @@ export function fitFootprint(
   }
   const rightward = axis === "right";
   const farX = rightward ? extent.x : extent.x + extent.w;
-  if (want.w + run <= extent.w) {
-    const boxX = rightward ? extent.x : farX - want.w;
-    return {
-      box: { x: boxX, y: extent.y + (extent.h - want.h) / 2, w: want.w, h: want.h },
-      start: boxX + want.w / 2,
-      clamped: false,
-    };
-  }
-  const avail = extent.w - run;
-  if (avail > 0) {
-    let w = avail;
-    let h = w * aspect;
-    if (h > extent.h) {
-      h = extent.h;
-      w = h / aspect;
-    }
-    const boxX = rightward ? extent.x : farX - w;
-    return { box: { x: boxX, y: extent.y + (extent.h - h) / 2, w, h }, start: boxX + w / 2, clamped: false };
-  }
-  const box = fitIn(extent, aspect);
-  const boxX = rightward ? extent.x : farX - box.w;
-  return { box: { ...box, x: boxX }, start: boxX + box.w / 2, clamped: true };
+  // the lying frame (spec E14): the row's back is exactly the card box rotated —
+  // it tracks the card 1:1 at every window, never yields; overflow shifts, never shrinks
+  const boxX = rightward ? extent.x : farX - want.h;
+  return {
+    box: { x: boxX, y: extent.y + (extent.h - want.w) / 2, w: want.h, h: want.w },
+    start: boxX + want.h / 2,
+    clamped: false,
+  };
 }
 
 /** The options every stack build takes: identity, the anchor cell, the wanted card box, and the shoe state. */
@@ -178,13 +174,12 @@ function buildStack(
   if (axis === "left" && fit.clamped) {
     planted = placeStripesLeft(plan.total, perCard, planted, extent.x + fitted.w / 2).anchor;
   }
-  const cutIdx = axis === "right" ? plan.cut - 1 : plan.total - plan.cut;
+  const cutIdx = cutSpriteIdx(axis, plan.total, plan.cut);
   const cx = extent.x + extent.w / 2;
   const cy = extent.y + extent.h / 2;
   const out: (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] = [];
   for (let i = 0; i < plan.total; i++) {
-    // the dealt end: the deck sheds from its top, a rightward row from its right, a leftward from its left
-    const fromDealtEnd = axis === "right" ? plan.total - 1 - i : i;
+    const fromDealtEnd = dealtOrder(axis, plan.total, i);
     const visible = fromDealtEnd >= hidden;
     const x = axis === "down" ? cx : axis === "left" ? planted - i * perCard : planted + i * perCard;
     const y = axis === "down" ? planted + i * perCard : cy;
