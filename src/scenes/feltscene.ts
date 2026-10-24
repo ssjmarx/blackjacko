@@ -20,7 +20,7 @@ const ZONE_COLORS = {
   dealer: 0x3b82f6,
   player: 0x22c55e,
   shoe: 0xf97316,
-  penBar: 0x94a3b8,
+  pit: 0x94a3b8,
   chipTray: 0xa855f7,
   controls: 0xf59e0b,
   countHud: 0xeab308,
@@ -28,14 +28,13 @@ const ZONE_COLORS = {
   insuranceSpot: 0xec4899,
   lineSlot: 0xffffff,
   betSpot: 0x22d3ee,
-  lowerThird: 0x64748b,
 } as const;
 
 /** The one Phaser scene: boots the felt and re-flows it on every resize. */
 export class FeltScene extends Phaser.Scene {
   private readout?: Phaser.GameObjects.Text;
   private overlay: { obj: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text; id: string }[] = [];
-  private cards: { obj: Phaser.GameObjects.Image; id: string }[] = [];
+  private cards: { obj: Phaser.GameObjects.Image | Phaser.GameObjects.Graphics; id: string }[] = [];
   private layout?: TableLayout;
   private deck?: Deck;
   private bus = new CommandBus();
@@ -93,7 +92,7 @@ export class FeltScene extends Phaser.Scene {
     if (this.deck) this.proveDeck();
   }
 
-  /** The pt3 proof: A♠ in the dealer zone, the count-true stack, the row form. */
+  /** The pt3 proof: A♠ in the dealer zone; the stacks show the cut card at 75% pen. */
   private proveDeck(): void {
     const l = this.layout;
     const d = this.deck;
@@ -106,32 +105,33 @@ export class FeltScene extends Phaser.Scene {
     };
     const ace = cardSprite(this, d, 0, aceBox, { id: "proof ace of spades", debug: true });
     this.cards.push({ obj: ace, id: "proof ace of spades" });
-    const stack = deckStack(this, d, CARD_STACK.maxDeck, l.shoe, CARD_STACK.deckPx, {
+    const deckTail = Math.round(0.25 * CARD_STACK.maxDeck);
+    const stack = deckStack(this, d, l.shoe, {
       id: "proof deck stack",
       debug: true,
-      clampMin: l.safe.y + l.metrics.cardH / 2,
+      remaining: CARD_STACK.maxDeck - deckTail,
+      pen: 0.75,
+      max: CARD_STACK.maxDeck,
+      perCard: CARD_STACK.deckPx,
     });
     for (const img of stack) this.cards.push({ obj: img, id: "proof deck stack" });
-    const rowBox: Rect = {
-      x: l.safe.x + l.safe.w * 0.15,
-      y: l.dealer.y + l.dealer.h + 12,
-      w: l.safe.w * 0.7,
-      h: l.metrics.cardH * 0.8,
-    };
-    const row = shoeRow(this, d, CARD_STACK.maxShoe, rowBox, CARD_STACK.shoePx, {
+    const shoeTail = Math.round(0.25 * CARD_STACK.maxShoe);
+    const row = shoeRow(this, d, l.pit, {
       id: "proof shoe row",
       debug: true,
-      clampMax: l.safe.x + l.safe.w - l.metrics.cardW / 2,
+      remaining: CARD_STACK.maxShoe - shoeTail,
+      pen: 0.75,
+      max: CARD_STACK.maxShoe,
+      perCard: CARD_STACK.shoePx,
     });
     for (const img of row) this.cards.push({ obj: img, id: "proof shoe row" });
-    showLowerThird(d.creditLines().join("\n"), l);
   }
 
   /** Update the size/axis readout (flips with the aspect, per goal 1). */
   private paintReadout(w: number, h: number): void {
     if (!this.readout) return;
     const portrait = h > w;
-    const axis = portrait ? "PORTRAIT — dealer top, player bottom" : "LANDSCAPE — dealer left, player right";
+    const axis = `${portrait ? "PORTRAIT" : "LANDSCAPE"} — dealer top, player bottom`;
     this.readout.setText(`${w}×${h} · ${axis}`);
   }
 
@@ -155,19 +155,19 @@ export class FeltScene extends Phaser.Scene {
     add(l.dealer, ZONE_COLORS.dealer, "dealer", "The dealer's cards.");
     add(l.player, ZONE_COLORS.player, "player", "Your hands.");
     add(l.shoe, ZONE_COLORS.shoe, "shoe", "The dealing shoe, with the cut card.");
-    add(l.penBar, ZONE_COLORS.penBar, "penBar", "The penetration bar.");
+    add(l.pit, ZONE_COLORS.pit, "pit", "The middle of the table.");
     add(l.chipTray, ZONE_COLORS.chipTray, "chipTray", "Your chip tray.");
     add(l.controls, ZONE_COLORS.controls, "controls", "The action bar.");
     add(l.countHud, ZONE_COLORS.countHud, "countHud", "The running and true count.");
-    add(l.contextPanel, ZONE_COLORS.contextPanel, "contextPanel", "Betting limits and bankroll.");
-    if (l.contextButton.w > 0) add(l.contextButton, ZONE_COLORS.contextPanel, "strategyButton", "Opens the strategy card.");
-    add(l.insuranceSpot, ZONE_COLORS.insuranceSpot, "insuranceSpot", "The insurance line.");
-    add(l.lowerThird, ZONE_COLORS.lowerThird, "lowerThird", "The deck credit band.");
+    add(l.contextPanel, ZONE_COLORS.contextPanel, "contextPanel", "Limits, bankroll, the strategy card.");
     for (const [i, s] of l.lineSlots.entries()) {
       add(s, ZONE_COLORS.lineSlot, `slot${i + 1}`, `Player line slot ${i + 1}.`);
     }
     for (const [i, b] of l.betSpots.entries()) {
       add(b, ZONE_COLORS.betSpot, `bet${i + 1}`, `Bet spot ${i + 1}.`);
+    }
+    for (const [i, s] of l.insuranceSpots.entries()) {
+      add(s, ZONE_COLORS.insuranceSpot, `insurance${i + 1}`, `Insurance spot ${i + 1}.`);
     }
   }
 }

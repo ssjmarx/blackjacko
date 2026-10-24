@@ -308,6 +308,33 @@ provenance; the law lives in the spec and the roadmap.
 
 
 
+## Entry #13 — 2026-10-22 · FELT pt4 batches 1–1.10 — the relational grid
+
+- Batches 1 through 1.9 (six commits, not logged individually): the command
+  bus + the five-button law table, the bar mounted and compressed, the
+  deconfliction rounds — culminating in the ruled always-visible bar (D
+  Deal/Double, H Hit/Take, S Stand/Pass, P Split, R Surrender/Forfeit).
+- **The full solver redesign (batch 1.10, spec E11):** the human scrapped the
+  two-layout solver for ONE banded grid at every aspect (21:9–9:21) — dealer
+  top, player bottom, always; every zone a viewport fraction; no pixel
+  constants, no minimums; cards resize when splits subdivide slots. The
+  pen bar, the edge lower-third, contextButton, and the pit insurance spot
+  are dead; `pit` and per-slot `insuranceSpots` replace them.
+- **The cut card is the pen bar now:** a red rounded card rides the pen mark
+  inside the count-true stack — the sprite containing the pen card's
+  position goes red (26th card → 7th sprite at 4-grouping), shifting one
+  sprite per 4 cards of pen change, re-derived on every update. Exposure =
+  last hand (the slide-out lands with the animation kit in batch 2).
+- Buttons: always visible, fixed positions; labels and keys rebind by
+  context; unbound = disabled at the base label. Button CSS is fully
+  relative, driven by the controls cell height.
+- The deck credit sprouts from the context panel's outer top corner (up and
+  away), auto-sized, once per session, SR-panel-only.
+- Gate: typecheck + 134/134 tests + audit (31 modules) + kit law holds +
+  build clean + purity. New law suites: the banded-grid ratio sweep (12
+  sizes from 21:9 to 9:21, × flip × hands), the cut-card pen-mark laws, the
+  always-visible button table.
+
 ## Entry #8 — 2026-10-22 · two menu rulings while the pt2 eyeball runs
 
 - **Starting true count** joins the E8 accessibility menu: speeds the game

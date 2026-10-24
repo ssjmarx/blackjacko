@@ -27,23 +27,27 @@
       .bj-btn {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        justify-content: center;
+        gap: 0.45em;
         background: #10241b;
         color: #f5f0e1;
         border: 1px solid #2f6b4f;
-        border-radius: 6px;
-        padding: 8px 14px;
-        font: 600 15px system-ui, sans-serif;
+        border-radius: 0.4em;
+        padding: 0.25em 0.8em;
+        font: 600 calc(var(--bjz-controls-h, 44px) * 0.3) system-ui, sans-serif;
         cursor: pointer;
         min-width: 0;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 0 1 auto;
       }
       .bj-btn kbd {
         background: #f5f0e1;
         color: #10241b;
-        border-radius: 4px;
-        padding: 1px 6px;
-        font: 700 13px monospace;
+        border-radius: 0.3em;
+        padding: 0.05em 0.4em;
+        font: 700 0.82em monospace;
       }
       .bj-btn:not(:disabled):hover {
         border-color: #f5f0e1;
@@ -57,22 +61,12 @@
         display: flex;
         flex-wrap: nowrap;
         justify-content: flex-end;
-        gap: 8px;
+        gap: 0.5em;
         align-items: stretch;
         z-index: 35;
       }
       #bj-controls.flipped {
         justify-content: flex-start;
-      }
-      #bj-controls.portrait {
-        gap: 6px;
-      }
-      #bj-controls.portrait .bj-btn {
-        padding: 4px 8px;
-        font-size: 13px;
-      }
-      #bj-controls.portrait .bj-btn kbd {
-        display: none;
       }
       .sr-only {
         position: absolute;

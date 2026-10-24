@@ -37,29 +37,29 @@ describe("command bus", () => {
   });
 });
 
-describe("the five-button law table", () => {
-  it("idle shows exactly Deal, bound to D", () => {
+describe("the five-button law table (always visible)", () => {
+  it("idle: Deal enabled on D; the other four visible and disabled at base labels", () => {
     const r = resolveButtons("idle");
-    const shown = r.filter((b) => b.label);
-    expect(shown).toHaveLength(1);
-    expect(shown[0]).toMatchObject({ label: "Deal", key: "D", kind: "deal", enabled: true });
+    expect(r.map((b) => b.label)).toEqual(["Deal", "Hit", "Stand", "Split", "Surrender"]);
+    expect(r.map((b) => b.key)).toEqual(["D", "H", "S", "P", "R"]);
+    expect(r.find((b) => b.id === "deal-double")).toMatchObject({ enabled: true, kind: "deal" });
     expect(r.filter((b) => b.enabled)).toHaveLength(1);
   });
 
-  it("play shows five buttons; H and S always legal, the rest by flag", () => {
+  it("play: five visible; H and S always legal, the rest by flag", () => {
     const none = resolveButtons("play", {});
+    expect(none.map((b) => b.label)).toEqual(["Double", "Hit", "Stand", "Split", "Surrender"]);
     expect(none.filter((b) => b.enabled).map((b) => b.kind)).toEqual(["hit", "stand"]);
     const all = resolveButtons("play", { double: true, split: true, surrender: true });
     expect(all.filter((b) => b.enabled)).toHaveLength(5);
     expect(all.find((b) => b.kind === "double")).toMatchObject({ key: "D", label: "Double" });
   });
 
-  it("insurance mode shows only the Y/N pair, rebound onto buttons 2 and 3", () => {
+  it("insurance: the Y/N pair rebinds onto buttons 2 and 3; the rest disabled at base labels", () => {
     const r = resolveButtons("insurance");
-    const shown = r.filter((b) => b.label);
-    expect(shown.map((b) => b.label)).toEqual(["Take Insurance", "Pass Insurance"]);
-    expect(shown.map((b) => b.key)).toEqual(["Y", "N"]);
-    expect(shown.every((b) => b.enabled)).toBe(true);
+    expect(r.map((b) => b.label)).toEqual(["Deal", "Take Insurance", "Pass Insurance", "Split", "Surrender"]);
+    expect(r.map((b) => b.key)).toEqual(["D", "Y", "N", "P", "R"]);
+    expect(r.filter((b) => b.enabled).map((b) => b.label)).toEqual(["Take Insurance", "Pass Insurance"]);
   });
 
   it("a rescue-legal doubled hand rebinds R to F Forfeit", () => {
@@ -71,7 +71,6 @@ describe("the five-button law table", () => {
   it("rescue legality alone does not enable double/split/surrender", () => {
     const r = resolveButtons("play", { rescue: true });
     expect(r.find((b) => b.kind === "double")?.enabled).toBe(false);
-    expect(r.find((b) => b.kind === "split")?.enabled).toBe(false);
     expect(r.filter((b) => b.enabled).map((b) => b.kind)).toEqual(["hit", "stand", "rescue"]);
   });
 });

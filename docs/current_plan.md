@@ -6,7 +6,8 @@ record rulings in the dev log.
 
 ## The five goals (ruled 2026-10-22)
 
-1. **Any aspect ratio** — 20:9 through 9:20. The table reflows; nothing letterboxes.
+1. **Any aspect ratio** — 21:9 through 9:21 (widened 2026-10-22). One banded
+   layout serves every aspect (spec E11); nothing letterboxes.
 2. **Screen-reader compatible** — all information is mirrored to the DOM (aria-live
    announcer + state panel); the game is playable without the canvas.
 3. **Distribution-ready** — Steam / itch / Android stay open doors: static builds
@@ -21,9 +22,11 @@ record rulings in the dev log.
 ## Presentation law (ruled 2026-10-22)
 
 - **Adaptive layout from day 1:** one pure zone solver drives both the canvas and
-  the DOM overlay. Dealer top/left, player bottom/right (left/right axis
-  reversible in a later options ruling); the dealing axis follows the longer
-  screen dimension.
+  the DOM overlay. One banded grid at every aspect (spec E11, ruled 2026-10-22):
+  dealer top, player bottom, always — shoe 1/8 | dealer 7/8; pit | count hud 1/4;
+  player full width; context panel 1/4 | controls 3/4; chip tray 1/8 of safe
+  height. Fully relational: every element sizes from its cell, no pixel
+  minimums; the axis option mirrors the horizontal anchors only.
 - **Vector-first assets:** cards come from the English-pattern SVG (wikimedia,
   CC0, Loren Osborn) first — per-property decks arrive later through a `Deck`
   interface. Chips, bet circles, side-bet spots, the pen bar, and the cut card
@@ -35,11 +38,13 @@ record rulings in the dev log.
 - **Animation law:** a card flip = the back lerps full-width → a single line,
   then the front lerps out the same way; placement = fly from the shoe. Flip
   and placement are independent, composable functions.
-- **HUD placement:** RC/TC top right. Context info bottom left (min/max bet +
-  bankroll while betting; strategy card while playing). The HUD flips with the
-  reversed axis. Penetration bar on top: the whole shoe, played part black, cut
-  tail red, updating live when the cut moves. The cut card sits in the shoe as
-  a red rounded square, roughly card-sized.
+- **HUD placement (spec E11):** RC/TC in its band-2 cell, right side. Context
+  info in the band-4 panel (min/max bet + bankroll while betting; strategy
+  card while playing; the deck credit sprouting from its outer top corner).
+  The pen bar is cancelled — the count-true deck/shoe graphic carries a red
+  rounded cut card riding the pen mark, shifting one sprite per `group`
+  cards of pen change; when exposed it slides out and lands by the dealer
+  hand: last hand.
 - **Chips:** diegetic circles along the bottom, denomination-sorted, promo area
   reserved (empty until 0.3.0). Click+drag plays them; keyboard selects and
   plays them.
@@ -64,7 +69,7 @@ record rulings in the dev log.
 | pt3 | the deck | `scripts/extract-deck.ts`: parse the English-pattern SVG (grid-positional — the source has no labels — calibrated once against your eyes) → per-card SVGs + manifest in `public/assets/decks/english/`; green background dropped, the four white-outlined backs preserved; number and face art extracted in separable layers (the large-number option swaps them independently — E8); Deck interface; device-scaled rasterization; lower-third deck credit at start of play | A♠ lands where A♠ should |
 | pt4 | the hand | HumanStrategy over the command bus; DOM buttons + keybinds; events → animation kit; a full Tony's round (hit/stand/double/split/surrender, insurance, peek); settlement flash | the first playable hand |
 | pt5 | the money | drawn chip tray (denomination-sorted, promo area reserved), click+drag + keyboard chips, bet circle, bankroll + min/max context, rebet | betting plays by all three input modes |
-| pt6 | the counter | RC/TC top right; penetration bar (black played / red cut tail, live cut updates) + the rounded red cut card in the shoe; strategy card bottom-left during play; a11y layer complete end-to-end; HUD flips with the axis | SR-playable; counts never drift from the engine |
+| pt6 | the counter | RC/TC in its grid cell; the count visualizer; strategy card in the context panel; a11y layer complete end-to-end | SR-playable; counts never drift from the engine |
 | pt7 | the gate | exit tests (50 hands by hand; seeded card-for-card replay vs the harness; purity greps; the a11y lint; check); the gate's dev_log entry; spec erratum E10 (presentation law); roadmap 0.1.0 scope rewrite; tag v0.1.0 on the go | the gate passes or it doesn't |
 
 ## Architecture notes

@@ -1,7 +1,7 @@
 /**
  * The table layout solver — the single home for every coordinate on screen.
- * Pure geometry: viewport, insets, hand count, and the axis option in; named zones out for both surfaces.
- * Cards target 10% of width; player hands stack; dealer rows grow right and squash.
+ * One banded grid serves every aspect (spec E11): dealer top, player bottom,
+ * every zone a viewport fraction — no pixel constants, no minimums.
  */
 
 /** A rectangle in logical pixels; every zone is one. */
@@ -20,7 +20,7 @@ export interface Insets {
   left: number;
 }
 
-/** The dealing axis follows the longer screen dimension; flips at square. */
+/** Reported for readouts and CSS; the grid geometry itself never branches on it. */
 export type Orientation = "portrait" | "landscape";
 
 /** Solver options: safe insets, the axis mirror, and the active hand count. */
@@ -51,49 +51,37 @@ export interface TableLayout {
   axisFlip: boolean;
   hands: number;
   safe: Rect;
-  penBar: Rect;
-  chipTray: Rect;
-  controls: Rect;
-  dealer: Rect;
+  pit: Rect;
   shoe: Rect;
+  dealer: Rect;
   player: Rect;
   lineSlots: Rect[];
   betSpots: Rect[];
-  insuranceSpot: Rect;
+  insuranceSpots: Rect[];
   countHud: Rect;
   contextPanel: Rect;
-  contextButton: Rect;
-  lowerThird: Rect;
+  controls: Rect;
+  chipTray: Rect;
   metrics: TableMetrics;
 }
 
-// --- geometry constants: the tunables, each with one home ---
+// --- the grid fractions: the tunables, each with one home (spec E11) ---
 
-const MARGIN = 12;
-const PEN_BAR_H = 24;
-const CHIP_TRAY_FRAC = 0.12;
-const CHIP_TRAY_MIN = 64;
-const CHIP_TRAY_MAX = 110;
-const CARD_TARGET = 0.1;
-const MIN_CARD_W = 36;
-const CARD_H_OVER_W = 7 / 5;
-const STACK_DX = 0.2;
-const STACK_DY = 0.08;
-const DEALER_GAP = 0.08;
-const HUD_W = 220;
-const HUD_H = 56;
-const PANEL_W = 260;
-const PANEL_H = 148;
-const CONTEXT_BUTTON = 48;
-const CHIP_R_MIN = 14;
-const PORTRAIT_DEALER = 0.24;
-const PORTRAIT_PLAYER = 0.32;
-const LANDSCAPE_DEALER = 0.26;
-const LANDSCAPE_PLAYER = 0.36;
-const PORTRAIT_BAND_AT_REST = 0.5;
-const CONTEXT_COLLAPSE_AT = 4;
-const CONTROLS_H = 56;
-const PORTRAIT_CONTROLS_H = 96;
+const TRAY_FRAC = 1 / 8; // chip tray height vs safe height
+const BANDS = 4; // equal content bands above the tray
+const SHOE_W = 1 / 8; // shoe cell width vs safe width (band 1)
+const HUD_W = 1 / 4; // count hud width vs safe width (band 2)
+const PANEL_W = 1 / 4; // context panel width vs safe width (band 4)
+const CARD_BOX_ASPECT = 7 / 5; // the canonical card box ratio (art fits within)
+const STACK_DX = 0.2; // stacked-card horizontal bias vs card width
+const STACK_DY = 0.08; // stacked-card vertical bias vs card height
+const DEALER_GAP = 0.08; // dealer row pitch vs card width
+const HAND_W = 1.2; // a stacked hand's width vs card width
+const SPOT_H = 0.15; // spot diameter vs slot height
+const SPOT_W = 0.45; // spot diameter vs slot width
+const SPOT_INSET = 0.03; // spot inset vs slot height
+const SLOT_CARD_H = 1 - 2 * (SPOT_H + SPOT_INSET); // the cards' share of a slot
+const DEALER_CARD_H = 0.85; // dealer cards' share of their band height
 
 /** Clamp a value into [lo, hi]. */
 function clamp(v: number, lo: number, hi: number): number {
@@ -108,176 +96,81 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
   const orientation: Orientation = height > width ? "portrait" : "landscape";
 
   const safe: Rect = {
-    x: ins.left + MARGIN,
-    y: ins.top + MARGIN,
-    w: Math.max(0, width - ins.left - ins.right - 2 * MARGIN),
-    h: Math.max(0, height - ins.top - ins.bottom - 2 * MARGIN),
+    x: ins.left,
+    y: ins.top,
+    w: Math.max(0, width - ins.left - ins.right),
+    h: Math.max(0, height - ins.top - ins.bottom),
   };
 
-  // chrome bands, both orientations
-  const penBar: Rect = { x: safe.x, y: safe.y, w: safe.w, h: Math.min(PEN_BAR_H, safe.h * 0.06) };
-  const fieldY = penBar.y + penBar.h;
-  const trayH = clamp(height * CHIP_TRAY_FRAC, CHIP_TRAY_MIN, CHIP_TRAY_MAX);
+  // the five bands: four equal content quarters, then the chip tray
+  const trayH = safe.h * TRAY_FRAC;
   const chipTray: Rect = { x: safe.x, y: safe.y + safe.h - trayH, w: safe.w, h: trayH };
-  const controlsH = Math.min(
-    orientation === "portrait" ? PORTRAIT_CONTROLS_H : CONTROLS_H,
-    (chipTray.y - fieldY) * 0.35,
-  );
-  // the button area: the half opposite the lower third, mirrored by axisFlip
-  const controls: Rect = {
-    x: axisFlip ? safe.x : safe.x + safe.w * 0.5,
-    y: chipTray.y - controlsH - 6,
-    w: safe.w * 0.5,
-    h: controlsH,
-  };
-  const fieldH = controls.y - 6 - fieldY;
-  const bandBottom = controls.y - 6;
+  const bandH = (safe.h - trayH) / BANDS;
 
-  // card metrics from the ruled target (10% of screen width, floored)
-  const cardW = Math.max(MIN_CARD_W, CARD_TARGET * width);
-  const cardH = cardW * CARD_H_OVER_W;
+  /** One content band of the grid, by index. */
+  function band(i: number): Rect {
+    return { x: safe.x, y: safe.y + i * bandH, w: safe.w, h: bandH };
+  }
+  const b1 = band(0);
+  const b2 = band(1);
+  const b3 = band(2);
+  const b4 = band(3);
+
+  // band 1: shoe 1/8 | dealer 7/8; band 2: pit | hud 1/4; band 4: panel 1/4 | controls 3/4
+  const shoe: Rect = axisFlip
+    ? { x: safe.x + safe.w - safe.w * SHOE_W, y: b1.y, w: safe.w * SHOE_W, h: b1.h }
+    : { x: safe.x, y: b1.y, w: safe.w * SHOE_W, h: b1.h };
+  const dealer: Rect = axisFlip
+    ? { x: safe.x, y: b1.y, w: safe.w - shoe.w, h: b1.h }
+    : { x: safe.x + shoe.w, y: b1.y, w: safe.w - shoe.w, h: b1.h };
+  const hudW = safe.w * HUD_W;
+  const countHud: Rect = axisFlip
+    ? { x: safe.x, y: b2.y, w: hudW, h: b2.h }
+    : { x: safe.x + safe.w - hudW, y: b2.y, w: hudW, h: b2.h };
+  const pit: Rect = axisFlip
+    ? { x: safe.x + hudW, y: b2.y, w: safe.w - hudW, h: b2.h }
+    : { x: safe.x, y: b2.y, w: safe.w - hudW, h: b2.h };
+  const player: Rect = { ...b3 };
+  const panelW = safe.w * PANEL_W;
+  const contextPanel: Rect = axisFlip
+    ? { x: safe.x + safe.w - panelW, y: b4.y, w: panelW, h: b4.h }
+    : { x: safe.x, y: b4.y, w: panelW, h: b4.h };
+  const controls: Rect = axisFlip
+    ? { x: safe.x, y: b4.y, w: safe.w - panelW, h: b4.h }
+    : { x: safe.x + panelW, y: b4.y, w: safe.w - panelW, h: b4.h };
+
+  // hand slots: one per active line, side by side across the player band
+  const slots: Rect[] = [];
+  for (let i = 0; i < hands; i++) {
+    slots.push({ x: player.x + (i * player.w) / hands, y: player.y, w: player.w / hands, h: player.h });
+  }
+
+  // one shared card box: fit within slot and dealer constraints — no minimums
+  const cardW = Math.min(
+    slots[0].w / HAND_W,
+    (slots[0].h * SLOT_CARD_H) / CARD_BOX_ASPECT,
+    (dealer.h * DEALER_CARD_H) / CARD_BOX_ASPECT,
+  );
+  const cardH = cardW * CARD_BOX_ASPECT;
   const metrics: TableMetrics = {
     cardW,
     cardH,
     stackDX: STACK_DX * cardW,
     stackDY: STACK_DY * cardH,
-    chipR: 0,
+    chipR: Math.min(cardW * 0.45, chipTray.h * 0.42),
     dealerGap: DEALER_GAP * cardW,
-    dealerFits: 0,
+    dealerFits: Math.max(1, Math.floor((dealer.w + DEALER_GAP * cardW) / (cardW * (1 + DEALER_GAP)))),
   };
 
-  const shoeW = cardW * 1.15;
-  const shoeH = cardH * 0.6;
-  const chipR = clamp(trayH * 0.38, CHIP_R_MIN, cardH * 0.3);
-  metrics.chipR = chipR;
-
-  // the HUD reservation: it flips sides with the player band, so both yield to it
-  const hudW = Math.min(HUD_W, safe.w * 0.45);
-  const countHud: Rect = {
-    x: axisFlip ? safe.x + 4 : safe.x + safe.w - hudW - 4,
-    y: fieldY + 4,
-    w: hudW,
-    h: HUD_H,
-  };
-  const hudBottom = countHud.y + countHud.h + 6;
-
-  // dealing bands: portrait = horizontal strips (dealer top, player bottom);
-  // landscape = vertical columns (dealer left, player right); axisFlip mirrors.
-  let dealer: Rect;
-  let player: Rect;
-  const shoe: Rect = { x: 0, y: 0, w: shoeW, h: shoeH };
-  const slots: Rect[] = [];
-  if (orientation === "portrait") {
-    // the count HUD is a reservation: the dealer band starts below it
-    const dealerY = Math.max(fieldY, hudBottom);
-    const dealerH = fieldH * PORTRAIT_DEALER;
-    const playerH = fieldH * PORTRAIT_PLAYER;
-    const bandY = fieldY + fieldH - playerH;
-    const bandW = hands >= CONTEXT_COLLAPSE_AT ? safe.w : safe.w * PORTRAIT_BAND_AT_REST;
-    const bandX = axisFlip ? safe.x : safe.x + safe.w - bandW;
-    dealer = { x: safe.x, y: dealerY, w: safe.w, h: dealerH };
-    player = { x: bandX, y: bandY, w: bandW, h: playerH };
-    shoe.x = axisFlip ? dealer.x + dealer.w - shoeW - 4 : dealer.x + 4;
-    shoe.y = fieldY + 4;
-    for (let i = 0; i < hands; i++) {
-      slots.push({ x: player.x + (i * player.w) / hands, y: player.y, w: player.w / hands, h: player.h });
-    }
-  } else {
-    const dealerW = safe.w * LANDSCAPE_DEALER;
-    const playerW = safe.w * LANDSCAPE_PLAYER;
-    const dealerX = axisFlip ? safe.x + safe.w - dealerW : safe.x;
-    const playerX = axisFlip ? safe.x : safe.x + safe.w - playerW;
-    // the dealer column: shoe on top, cards in the middle, the context panel below
-    shoe.x = axisFlip ? dealerX + dealerW - shoeW - 4 : dealerX + 4;
-    shoe.y = fieldY + 4;
-    const panelH = Math.min(PANEL_H, chipTray.y - fieldY - 8);
-    const panelY = Math.max(fieldY + 4, chipTray.y - panelH - 4);
-    dealer = {
-      x: dealerX,
-      y: shoe.y + shoe.h + 8,
-      w: dealerW,
-      h: Math.max(0, panelY - 8 - (shoe.y + shoe.h + 8)),
-    };
-    player = { x: playerX, y: hudBottom, w: playerW, h: Math.max(0, bandBottom - hudBottom) };
-    for (let i = 0; i < hands; i++) {
-      slots.push({ x: player.x, y: player.y + (i * player.h) / hands, w: player.w, h: player.h / hands });
-    }
-  }
-
-  // dealer rows grow inward from the shoe; squash when they outgrow the table
-  const rowAvail = axisFlip ? shoe.x - safe.x - 8 : safe.x + safe.w - (shoe.x + shoe.w) - 8;
-  metrics.dealerFits = Math.max(2, Math.floor((rowAvail + metrics.dealerGap) / (cardW * (1 + DEALER_GAP))));
-
-  // bet spots: inside each line slot (portrait: below the hand; landscape: beside it);
-  // diameter and inset yield to the slot's tightest dimension on extreme screens
+  // the stakes: bet bottom-center of its slot, insurance top-center (spec E11)
   const betSpots: Rect[] = slots.map((s) => {
-    const d = Math.min(cardH * 0.5, s.w * 0.5, s.h * 0.6);
-    const inset = Math.min(6, s.w * 0.05, s.h * 0.05);
-    return orientation === "portrait"
-      ? { x: s.x + s.w / 2 - d / 2, y: s.y + s.h - d - inset, w: d, h: d }
-      : { x: s.x + s.w - d - inset, y: s.y + s.h / 2 - d / 2, w: d, h: d };
+    const d = Math.min(s.w * SPOT_W, s.h * SPOT_H);
+    return { x: s.x + s.w / 2 - d / 2, y: s.y + s.h - s.h * SPOT_INSET - d, w: d, h: d };
   });
-
-  // insurance lives in the pit, on the dealer's player-facing side
-  const insW = cardW * 2.2;
-  const insuranceSpot: Rect =
-    orientation === "portrait"
-      ? { x: safe.x + safe.w / 2 - insW / 2, y: dealer.y + dealer.h + 8, w: insW, h: cardH * 0.5 }
-      : {
-          x: axisFlip ? Math.max(safe.x + 4, dealer.x - insW - 8) : dealer.x + dealer.w + 8,
-          y: fieldY + 8,
-          w: insW,
-          h: cardH * 0.5,
-        };
-
-  // the context block: full panel at rest; collapses to a button when the
-  // player band expands over it (portrait, 4 hands). Landscape keeps the panel.
-  let contextPanel: Rect;
-  let contextButton: Rect;
-  if (orientation === "portrait" && hands < CONTEXT_COLLAPSE_AT) {
-    const stripW = Math.max(0, safe.w - player.w - 8);
-    const panelW = Math.min(PANEL_W, stripW);
-    contextPanel = {
-      x: axisFlip ? safe.x + safe.w - panelW - 4 : safe.x + 4,
-      y: player.y + 4,
-      w: panelW,
-      h: Math.min(PANEL_H, player.h),
-    };
-    contextButton = { x: contextPanel.x, y: contextPanel.y, w: 0, h: 0 };
-  } else if (orientation === "portrait") {
-    contextPanel = { x: 0, y: 0, w: 0, h: 0 };
-    contextButton = {
-      x: axisFlip ? safe.x + safe.w - CONTEXT_BUTTON - 4 : safe.x + 4,
-      y: player.y + 4,
-      w: CONTEXT_BUTTON,
-      h: CONTEXT_BUTTON,
-    };
-  } else {
-    const panelW = Math.min(PANEL_W, safe.w * 0.4);
-    const panelH = Math.min(PANEL_H, chipTray.y - fieldY - 8);
-    const panelX = axisFlip ? safe.x + safe.w - panelW - 4 : safe.x + 4;
-    const panelY = Math.max(fieldY + 4, chipTray.y - panelH - 4);
-    contextPanel = {
-      x: panelX,
-      y: panelY,
-      w: panelW,
-      h: panelH,
-    };
-    contextButton = {
-      x: panelX,
-      y: chipTray.y - CONTEXT_BUTTON - 4,
-      w: 0,
-      h: 0,
-    };
-  }
-
-  // transient band: the deck credit hugs its half of the screen (television credit)
-  const lowerThird: Rect = {
-    x: axisFlip ? safe.x + safe.w * 0.5 : safe.x,
-    y: chipTray.y - 76,
-    w: safe.w * 0.5,
-    h: 64,
-  };
+  const insuranceSpots: Rect[] = slots.map((s) => {
+    const d = Math.min(s.w * SPOT_W, s.h * SPOT_H);
+    return { x: s.x + s.w / 2 - d / 2, y: s.y + s.h * SPOT_INSET, w: d, h: d };
+  });
 
   return {
     width,
@@ -286,19 +179,17 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
     axisFlip,
     hands,
     safe,
-    penBar,
-    chipTray,
-    controls,
-    dealer,
+    pit,
     shoe,
+    dealer,
     player,
     lineSlots: slots,
     betSpots,
-    insuranceSpot,
+    insuranceSpots,
     countHud,
     contextPanel,
-    contextButton,
-    lowerThird,
+    controls,
+    chipTray,
     metrics,
   };
 }

@@ -49,6 +49,12 @@ export const CARD_STACK = {
   maxShoe: 416,
 } as const;
 
+/** The cut card (spec E11): a red rounded square riding the pen mark in the stack graphic. */
+export const CUT_CARD = {
+  red: 0xc8102e,
+  radius: 0.08,
+} as const;
+
 /** Animation kit timings (ms) — the composable tween durations. */
 export const ANIM = {
   place: 260,

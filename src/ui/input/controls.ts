@@ -1,7 +1,7 @@
 /**
- * The control bar — five context-rebinding buttons, one row, right-aligned:
- * D deals/doubles, H hits/takes, S stands/passes, R surrenders/forfeits.
- * resolveButtons is the tested law table; mountControls renders and wires it.
+ * The control bar — five always-visible buttons, one row, right-aligned:
+ * D deals/doubles, H hits/takes, S stands/passes, R surrenders/forfeits;
+ * context only changes labels and enabled state, never visibility (spec E11).
  */
 import type { TableLayout } from "../../layout/table.ts";
 import type { Command, CommandKind } from "./bus.ts";
@@ -29,7 +29,9 @@ export interface Binding {
 
 interface Spec {
   id: string;
-  /** bindings per context; a context without a binding hides the button */
+  /** the rest identity, shown (disabled) whenever the context has no binding */
+  base: { label: string; key: string };
+  /** bindings per context; a context without a binding disables at base */
   bindings: Partial<Record<ControlMode | "rescue", Binding>>;
 }
 
@@ -37,6 +39,7 @@ interface Spec {
 export const CONTROL_SPECS: Spec[] = [
   {
     id: "deal-double",
+    base: { label: "Deal", key: "D" },
     bindings: {
       idle: { label: "Deal", key: "D", kind: "deal" },
       play: { label: "Double", key: "D", kind: "double" },
@@ -44,6 +47,7 @@ export const CONTROL_SPECS: Spec[] = [
   },
   {
     id: "hit-take",
+    base: { label: "Hit", key: "H" },
     bindings: {
       play: { label: "Hit", key: "H", kind: "hit" },
       insurance: { label: "Take Insurance", key: "Y", kind: "insurance", take: true },
@@ -51,14 +55,20 @@ export const CONTROL_SPECS: Spec[] = [
   },
   {
     id: "stand-pass",
+    base: { label: "Stand", key: "S" },
     bindings: {
       play: { label: "Stand", key: "S", kind: "stand" },
       insurance: { label: "Pass Insurance", key: "N", kind: "insurance", take: false },
     },
   },
-  { id: "split", bindings: { play: { label: "Split", key: "P", kind: "split" } } },
+  {
+    id: "split",
+    base: { label: "Split", key: "P" },
+    bindings: { play: { label: "Split", key: "P", kind: "split" } },
+  },
   {
     id: "surrender-forfeit",
+    base: { label: "Surrender", key: "R" },
     bindings: {
       play: { label: "Surrender", key: "R", kind: "surrender" },
       rescue: { label: "Forfeit", key: "F", kind: "rescue" },
@@ -84,8 +94,8 @@ export function resolveButtons(mode: ControlMode, legal: ControlLegality = {}): 
       mode === "play" && legal.rescue === true && spec.bindings.rescue ? "rescue" : mode;
     const binding = spec.bindings[ctx];
     let enabled = false;
-    if (mode === "play") {
-      if (binding)
+    if (binding) {
+      if (mode === "play") {
         enabled =
           ctx === "rescue" ||
           binding.kind === "hit" ||
@@ -93,13 +103,14 @@ export function resolveButtons(mode: ControlMode, legal: ControlLegality = {}): 
           (binding.kind === "double" && legal.double === true) ||
           (binding.kind === "split" && legal.split === true) ||
           (binding.kind === "surrender" && legal.surrender === true);
-    } else {
-      enabled = binding !== undefined;
+      } else {
+        enabled = true;
+      }
     }
     return {
       id: spec.id,
-      label: binding?.label ?? "",
-      key: binding?.key ?? "",
+      label: binding?.label ?? spec.base.label,
+      key: binding?.key ?? spec.base.key,
       kind: binding?.kind ?? "hit",
       take: binding?.take,
       enabled,
@@ -139,7 +150,6 @@ export function mountControls(bus: CommandBus): ControlsHandle {
     for (const r of resolveButtons(mode, legal)) {
       const b = buttons.get(r.id);
       if (!b) continue;
-      b.style.display = r.label ? "" : "none";
       b.disabled = !r.enabled;
       b.setAttribute("aria-label", `${r.label} (key ${r.key})`);
       const kbd = b.querySelector("kbd");
@@ -186,7 +196,6 @@ export function mountControls(bus: CommandBus): ControlsHandle {
     },
     layout(l: TableLayout) {
       const c = l.controls;
-      bar.classList.toggle("portrait", l.orientation === "portrait");
       bar.classList.toggle("flipped", l.axisFlip);
       Object.assign(bar.style, {
         left: `${c.x}px`,

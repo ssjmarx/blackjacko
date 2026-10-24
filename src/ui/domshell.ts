@@ -54,17 +54,14 @@ export function mountDomShell(): void {
 function zoneMap(l: TableLayout): Record<string, Rect> {
   return {
     safe: l.safe,
-    penBar: l.penBar,
-    chipTray: l.chipTray,
-    controls: l.controls,
-    dealer: l.dealer,
+    pit: l.pit,
     shoe: l.shoe,
+    dealer: l.dealer,
     player: l.player,
-    insurance: l.insuranceSpot,
     countHud: l.countHud,
     context: l.contextPanel,
-    contextButton: l.contextButton,
-    lowerThird: l.lowerThird,
+    controls: l.controls,
+    chipTray: l.chipTray,
   };
 }
 
@@ -177,11 +174,15 @@ export function showLowerThird(text: string, l: TableLayout): void {
     });
     document.body.appendChild(state.lowerThird);
   }
-  const b = l.lowerThird;
+  // the credit sprouts up and away from the context panel's outer top corner (spec E11)
+  const p = l.contextPanel;
+  const anchorX = l.axisFlip ? p.x : p.x + p.w;
   Object.assign(state.lowerThird.style, {
-    left: `${b.x}px`,
-    top: `${b.y}px`,
-    maxWidth: `${b.w}px`,
+    left: l.axisFlip ? "auto" : `${anchorX}px`,
+    right: l.axisFlip ? `${window.innerWidth - anchorX}px` : "auto",
+    bottom: `${window.innerHeight - p.y}px`,
+    maxWidth: `${l.axisFlip ? anchorX - l.safe.x : l.safe.x + l.safe.w - anchorX}px`,
+    fontSize: `${Math.max(11, Math.round(p.h * 0.18))}px`,
   });
   if (state.creditShown) return;
   state.creditShown = true;

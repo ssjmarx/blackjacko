@@ -71,10 +71,38 @@ export function image(
   return img;
 }
 
+/** Options for a kit-created rounded rectangle. */
+export interface KitRoundRectOptions {
+  id: string;
+  sr: string;
+  color: number;
+  alpha?: number;
+  /** corner radius in px */
+  radius: number;
+  debug?: boolean;
+}
+
+/** Create a described rounded rectangle (the cut card, drawn chips). */
+export function roundRect(
+  scene: Phaser.Scene,
+  r: Rect,
+  opts: KitRoundRectOptions,
+): Phaser.GameObjects.Graphics {
+  const g = scene.add.graphics();
+  g.fillStyle(opts.color, opts.alpha ?? 1);
+  g.fillRoundedRect(r.x, r.y, r.w, r.h, opts.radius);
+  registerObject(opts.id, opts.debug ? "debug" : "region", opts.sr);
+  return g;
+}
+
 /** Destroy a kit-created object and drop its registry entries. */
 export function destroy(
   scene: Phaser.Scene,
-  obj: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text | Phaser.GameObjects.Image,
+  obj:
+    | Phaser.GameObjects.Rectangle
+    | Phaser.GameObjects.Text
+    | Phaser.GameObjects.Image
+    | Phaser.GameObjects.Graphics,
   id: string,
 ): void {
   unregisterObject(id);

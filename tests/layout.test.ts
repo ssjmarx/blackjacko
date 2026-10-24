@@ -1,7 +1,7 @@
 /**
- * The layout solver's contract: zone placement, card metrics, the ratio
- * sweep, the axis flip, and the hand-count expansion. The pure heart of
- * goal 1 — if these hold, the felt reflows honestly at any aspect.
+ * The relational grid's contract (spec E11): one banded layout at every
+ * aspect, dealer top and player bottom forever, fractions not pixels, spots
+ * centered in their slots, and the axis option mirroring horizontally only.
  */
 import { describe, it, expect } from "vitest";
 import { solveTable, type Rect, type TableLayout } from "../src/layout/table.ts";
@@ -16,38 +16,32 @@ function contains(outer: Rect, inner: Rect): boolean {
   );
 }
 
-/** True when two rects share any area. */
-function overlaps(a: Rect, b: Rect): boolean {
-  return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-}
-
-/** Every non-transient zone of a layout, for the on-screen invariant. */
+/** Every named zone of a layout, for the on-screen invariant. */
 function zonesOf(l: TableLayout): Record<string, Rect> {
   return {
     safe: l.safe,
-    penBar: l.penBar,
-    chipTray: l.chipTray,
-    controls: l.controls,
-    dealer: l.dealer,
+    pit: l.pit,
     shoe: l.shoe,
+    dealer: l.dealer,
     player: l.player,
-    insuranceSpot: l.insuranceSpot,
     countHud: l.countHud,
     contextPanel: l.contextPanel,
-    contextButton: l.contextButton,
-    lowerThird: l.lowerThird,
+    controls: l.controls,
+    chipTray: l.chipTray,
   };
 }
 
-/** The ruled ratio ladder, from 20:9 landscape to 9:20 portrait. */
+/** The ruled ratio ladder, 21:9 landscape through 9:21 portrait. */
 const SIZES: [number, number][] = [
-  [1920, 864],
+  [2520, 1080],
+  [1680, 720],
   [1920, 1080],
   [1280, 720],
   [1024, 768],
   [768, 768],
   [768, 1024],
   [360, 800],
+  [360, 840],
   [480, 216],
   [216, 480],
   [100, 180],
@@ -60,155 +54,126 @@ describe("layout: the ratio sweep", () => {
         for (const hands of [1, 2, 4]) {
           const l = solveTable(w, h, { axisFlip, hands });
           const where = `${w}x${h} flip=${axisFlip} hands=${hands}`;
+          const trayH = l.safe.h / 8;
+          const bandH = (l.safe.h - trayH) / 4;
 
-          // the card law: 10% of screen width, floored; always upright 5:7
-          expect(l.metrics.cardW, where).toBe(Math.max(36, w * 0.1));
-          expect(l.metrics.cardH, where).toBeCloseTo(l.metrics.cardW * 1.4);
-
-          // the hand cap: a stacked hand fits half the screen width
-          expect(l.metrics.cardW * 1.2, where).toBeLessThanOrEqual(w * 0.5 + 0.01);
-
-          // orientation flips at square (landscape wins the tie)
+          // orientation is reported; the grid never branches on it
           expect(l.orientation, where).toBe(h > w ? "portrait" : "landscape");
+
+          // the banded grid: equal content quarters + the 1/8 tray, touching
+          expect(l.chipTray.h, where).toBeCloseTo(trayH);
+          expect(l.dealer.y, where).toBeCloseTo(l.safe.y);
+          expect(l.countHud.y, where).toBeCloseTo(l.safe.y + bandH);
+          expect(l.player.y, where).toBeCloseTo(l.safe.y + 2 * bandH);
+          expect(l.contextPanel.y, where).toBeCloseTo(l.safe.y + 3 * bandH);
+          expect(l.chipTray.y, where).toBeCloseTo(l.safe.y + 4 * bandH);
+          expect(l.countHud.h, where).toBeCloseTo(bandH);
+          expect(l.player.h, where).toBeCloseTo(bandH);
+          expect(l.contextPanel.h, where).toBeCloseTo(bandH);
+          expect(l.controls.h, where).toBeCloseTo(bandH);
+
+          // the width fractions: shoe 1/8, pit 3/4, hud 1/4, panel 1/4, controls 3/4
+          expect(l.shoe.w, where).toBeCloseTo(l.safe.w / 8);
+          expect(l.dealer.w, where).toBeCloseTo((l.safe.w * 7) / 8);
+          expect(l.pit.w, where).toBeCloseTo((l.safe.w * 3) / 4);
+          expect(l.countHud.w, where).toBeCloseTo(l.safe.w / 4);
+          expect(l.contextPanel.w, where).toBeCloseTo(l.safe.w / 4);
+          expect(l.controls.w, where).toBeCloseTo((l.safe.w * 3) / 4);
 
           // every zone stays on screen
           for (const [name, r] of Object.entries(zonesOf(l))) {
-            if (r.w === 0 && r.h === 0) continue;
             expect(contains({ x: 0, y: 0, w, h }, r), `${name} off-screen at ${where}`).toBe(true);
           }
 
-          // field zones never collide with the chrome bands
-          expect(overlaps(l.dealer, l.penBar), where).toBe(false);
-          expect(overlaps(l.player, l.chipTray), where).toBe(false);
-          expect(overlaps(l.controls, l.chipTray), where).toBe(false);
-          expect(overlaps(l.player, l.controls), where).toBe(false);
-          expect(overlaps(l.controls, l.contextPanel), where).toBe(false);
-          expect(overlaps(l.countHud, l.chipTray), where).toBe(false);
+          // the card box: one shared size, relational, no floors
+          const slot = l.lineSlots[0];
+          const expectW = Math.min(slot.w / 1.2, (slot.h * 0.64) / 1.4, (l.dealer.h * 0.85) / 1.4);
+          expect(l.metrics.cardW, where).toBeCloseTo(expectW);
+          expect(l.metrics.cardH, where).toBeCloseTo(l.metrics.cardW * 1.4);
 
-          // line slots live inside the player band; bet spots inside their slot
-          for (const s of l.lineSlots) expect(contains(l.player, s), where).toBe(true);
-          for (const [i, b] of l.betSpots.entries()) {
-            expect(contains(l.lineSlots[i]!, b), `${where} bet ${i + 1}`).toBe(true);
+          // the stakes: bet bottom-center, insurance top-center, per slot
+          for (const [i, s] of l.lineSlots.entries()) {
+            const bet = l.betSpots[i];
+            const ins = l.insuranceSpots[i];
+            expect(bet.x + bet.w / 2, where).toBeCloseTo(s.x + s.w / 2);
+            expect(bet.y + bet.h, where).toBeCloseTo(s.y + s.h - s.h * 0.03);
+            expect(ins.x + ins.w / 2, where).toBeCloseTo(s.x + s.w / 2);
+            expect(ins.y, where).toBeCloseTo(s.y + s.h * 0.03);
           }
-
-          // the dealer row reports at least two cards fit before squashing
-          expect(l.metrics.dealerFits, where).toBeGreaterThanOrEqual(2);
         }
       }
     });
   }
 });
 
-describe("layout: rulings", () => {
-  it("portrait player band is half the width at rest, full width at four hands", () => {
-    const rest = solveTable(360, 800, { hands: 1 });
-    const four = solveTable(360, 800, { hands: 4 });
-    expect(rest.player.w).toBeCloseTo(rest.safe.w * 0.5);
-    expect(four.player.w).toBeCloseTo(four.safe.w);
-  });
-
-  it("the context panel collapses to the button at four hands (portrait)", () => {
-    const rest = solveTable(360, 800, { hands: 1 });
-    const four = solveTable(360, 800, { hands: 4 });
-    expect(rest.contextPanel.w).toBeGreaterThan(0);
-    expect(four.contextPanel.w).toBe(0);
-    expect(four.contextButton.w).toBe(48);
-  });
-
-  it("axisFlip mirrors the hand locations", () => {
-    const plain = solveTable(1280, 720);
-    const flipped = solveTable(1280, 720, { axisFlip: true });
-    expect(plain.dealer.x).toBeLessThan(plain.player.x);
-    expect(flipped.dealer.x).toBeGreaterThan(flipped.player.x);
-    const pPlain = solveTable(360, 800);
-    const pFlip = solveTable(360, 800, { axisFlip: true });
-    expect(pPlain.player.x).toBeGreaterThan(pFlip.player.x); // the band moves left
-    expect(pPlain.dealer.y).toBeLessThan(pPlain.player.y); // dealer stays top in portrait
-  });
-
-  it("the axis flips exactly at square (landscape wins the tie)", () => {
-    expect(solveTable(768, 768).orientation).toBe("landscape");
-    expect(solveTable(767, 768).orientation).toBe("portrait");
-  });
-
-  it("the lower third hugs the lower-left edge (television credit)", () => {
-    const l = solveTable(1280, 720);
-    expect(l.lowerThird.x).toBe(l.safe.x);
-    expect(l.lowerThird.y + l.lowerThird.h).toBeLessThanOrEqual(l.chipTray.y);
-  });
-
-  it("the controls strip sits above the chip tray, inside the safe area", () => {
-    const l = solveTable(1280, 720);
-    expect(l.controls.y + l.controls.h + 6).toBe(l.chipTray.y);
-    expect(l.controls.w).toBeCloseTo(l.safe.w * 0.5);
-    expect(l.controls.x).toBeCloseTo(l.safe.x + l.safe.w * 0.5);
-    expect(l.controls.h).toBe(56);
-    const flipped = solveTable(1280, 720, { axisFlip: true });
-    expect(flipped.controls.x).toBeCloseTo(flipped.safe.x);
-  });
-
-  it("the control bar grows to two rows in portrait", () => {
-    const l = solveTable(360, 800);
-    expect(l.controls.h).toBe(96);
-    expect(l.controls.y + l.controls.h + 6).toBe(l.chipTray.y);
-  });
-
-  it("the shoe anchors at the field top, aligned with the count hud, above the dealer zone", () => {
-    for (const axisFlip of [false, true]) {
-      const portrait = solveTable(360, 800, { axisFlip });
-      expect(portrait.shoe.y).toBe(portrait.countHud.y);
-      expect(portrait.shoe.y).toBeGreaterThanOrEqual(portrait.penBar.y + portrait.penBar.h);
-      expect(portrait.shoe.y + portrait.shoe.h).toBeLessThanOrEqual(portrait.dealer.y);
-      const landscape = solveTable(1280, 720, { axisFlip });
-      expect(landscape.dealer.y).toBeGreaterThanOrEqual(landscape.shoe.y + landscape.shoe.h);
+describe("layout: the named laws", () => {
+  it("the dealer and player never move: bands 1 and 3 in every aspect and flip", () => {
+    for (const [w, h] of SIZES) {
+      for (const axisFlip of [false, true]) {
+        const l = solveTable(w, h, { axisFlip });
+        const where = `${w}x${h} flip=${axisFlip}`;
+        expect(l.dealer.y, where).toBe(l.safe.y);
+        expect(l.player.y + l.player.h, where).toBeCloseTo(l.contextPanel.y);
+        const flipped = solveTable(w, h, { axisFlip: !axisFlip });
+        expect(flipped.dealer.y, where).toBe(l.dealer.y);
+        expect(flipped.player.y, where).toBe(l.player.y);
+        expect(flipped.dealer.h, where).toBe(l.dealer.h);
+        expect(flipped.player.h, where).toBe(l.player.h);
+      }
     }
   });
 
-  it("the controls zone clears the context panel", () => {
-    for (const axisFlip of [false, true]) {
-      const l = solveTable(1280, 720, { axisFlip });
-      expect(overlaps(l.controls, l.contextPanel), `flip=${axisFlip}`).toBe(false);
-    }
-  });
-
-  it("the count hud is a reservation the bands yield to", () => {
-    const portrait = solveTable(360, 800);
-    expect(portrait.dealer.y).toBeGreaterThanOrEqual(portrait.countHud.y + portrait.countHud.h);
-    const landscape = solveTable(1280, 720);
-    expect(landscape.player.y).toBeGreaterThanOrEqual(landscape.countHud.y + landscape.countHud.h);
-    expect(landscape.dealer.y).toBeGreaterThanOrEqual(landscape.shoe.y + landscape.shoe.h);
-    expect(landscape.dealer.y + landscape.dealer.h).toBeLessThanOrEqual(landscape.contextPanel.y);
+  it("axisFlip mirrors the horizontal anchors only", () => {
+    const l = solveTable(1280, 720);
+    const f = solveTable(1280, 720, { axisFlip: true });
+    expect(f.shoe.x + f.shoe.w).toBeCloseTo(l.safe.x + l.safe.w);
+    expect(f.countHud.x).toBeCloseTo(l.safe.x);
+    expect(f.contextPanel.x + f.contextPanel.w).toBeCloseTo(l.safe.x + l.safe.w);
+    expect(f.controls.x).toBeCloseTo(l.safe.x);
+    expect(f.dealer.y).toBe(l.dealer.y);
+    expect(f.player.y).toBe(l.player.y);
   });
 
   it("line slots are context-sensitive: one at rest, subdividing to the cap", () => {
     expect(solveTable(360, 800, { hands: 1 }).lineSlots).toHaveLength(1);
     expect(solveTable(360, 800, { hands: 2 }).lineSlots).toHaveLength(2);
-    expect(solveTable(360, 800, { hands: 4 }).lineSlots).toHaveLength(4);
     const four = solveTable(360, 800, { hands: 4 });
-    for (const s of four.lineSlots) expect(contains(four.player, s)).toBe(true);
+    expect(four.lineSlots).toHaveLength(4);
+    let x = four.player.x;
+    for (const s of four.lineSlots) {
+      expect(s.x).toBeCloseTo(x);
+      expect(s.y).toBe(four.player.y);
+      expect(s.h).toBeCloseTo(four.player.h);
+      x += s.w;
+    }
+    expect(x).toBeCloseTo(four.player.x + four.player.w);
   });
 
-  it("the lower third caps at half the width, mirroring with the controls", () => {
-    const plain = solveTable(1280, 720);
-    expect(plain.lowerThird.w).toBeLessThanOrEqual(plain.safe.w * 0.5 + 0.01);
-    expect(plain.lowerThird.x).toBe(plain.safe.x);
-    const flipped = solveTable(1280, 720, { axisFlip: true });
-    expect(flipped.lowerThird.x).toBeGreaterThanOrEqual(flipped.safe.x + flipped.safe.w * 0.5 - 0.01);
+  it("cards resize when hands split", () => {
+    const one = solveTable(360, 800, { hands: 1 });
+    const four = solveTable(360, 800, { hands: 4 });
+    expect(four.metrics.cardW).toBeLessThanOrEqual(one.metrics.cardW);
   });
 
   it("goldens: canonical sizes", () => {
-    const desktop = solveTable(1280, 720);
-    expect(desktop.metrics.cardW).toBe(128);
-    expect(desktop.metrics.cardH).toBeCloseTo(179.2);
-    expect(desktop.player.w).toBeCloseTo(desktop.safe.w * 0.36);
-    const phone = solveTable(360, 800, { hands: 1 });
-    expect(phone.metrics.cardW).toBe(36);
-    expect(phone.player.w).toBeCloseTo(phone.safe.w * 0.5);
+    const d = solveTable(1280, 720);
+    expect(d.safe).toEqual({ x: 0, y: 0, w: 1280, h: 720 });
+    expect(d.chipTray.h).toBe(90);
+    const bandH = 630 / 4;
+    expect(d.metrics.cardW).toBeCloseTo(Math.min(1280 / 1.2, (bandH * 0.64) / 1.4, (bandH * 0.85) / 1.4));
+    expect(d.metrics.cardW).toBeCloseTo(72);
+    expect(d.metrics.cardH).toBeCloseTo(100.8);
+    expect(d.controls.w).toBeCloseTo(960);
+    expect(d.contextPanel.w).toBeCloseTo(320);
+    expect(d.countHud.w).toBe(320);
+    const p = solveTable(360, 800);
+    expect(p.chipTray.h).toBe(100);
+    expect(p.metrics.cardW).toBeCloseTo(Math.min(360 / 1.2, (175 * 0.64) / 1.4, (175 * 0.85) / 1.4));
   });
 
-  it("the dealer row squashes before leaving the screen", () => {
+  it("the dealer row squashes before leaving its cell", () => {
     const l = solveTable(1280, 720);
     const rowW = l.metrics.dealerFits * l.metrics.cardW * 1.08;
-    expect(rowW).toBeLessThanOrEqual(l.safe.w + 0.01);
+    expect(rowW).toBeLessThanOrEqual(l.dealer.w + 0.01);
   });
 });

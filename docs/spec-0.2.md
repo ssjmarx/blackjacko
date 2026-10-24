@@ -368,6 +368,36 @@ human's personal site with promo chips disabled and every other feature
 live (the deploy ruling's web target). Roadmap placement is an open ruling
 ✎ — natural candidates: alongside the POC gate, or as its own gate.
 
+**E11 — the relational grid (ruled 2026-10-22, FELT pt4):** one banded layout
+serves every aspect ratio from 21:9 through 9:21 — the two-orientation solver
+is retired. Dealer top, player bottom, always (the classic table view); every
+zone is a viewport fraction and every element sizes from its cell — no pixel
+constants, no minimums; cards resize live when splits subdivide the slots.
+The bands, top to bottom: shoe (1/8 width) | dealer (7/8); pit (3/4) | count
+hud (1/4); player (full width, hand slots side by side); context panel (1/4)
+| controls (3/4); chip tray (full width, 1/8 of safe height). The axis
+option mirrors the horizontal anchors only — dealer and player never move.
+
+- **The pen bar is cancelled.** Penetration is read from the count-true
+  deck/shoe graphic itself: a red rounded cut card, card-footprint, rides
+  the pen mark inside the stack — the never-dealt tail below it, the
+  dealable remaining above. Deterministic sprite law: the sprite containing
+  the pen card's position goes red (the 26th card marks the 7th sprite at
+  4-card grouping); every 4 cards of pen change shifts the red sprite
+  exactly one step, re-derived identically on every pen update (half-shoeing
+  by the pit, the Deep Pen chip). When the dealable run empties, the cut
+  card is exposed — it slides out and lands by the dealer hand: last hand.
+- **Lower thirds live at the context panel** — the panel is a static spot
+  (click for the strategy card); the credit sprouts up and away from its
+  outer top corner, auto-sized, once per session, SR-panel-only (never a
+  caption).
+- **Insurance spots move into the player zone** — one per hand slot: the bet
+  bottom-center, insurance top-center.
+- **The five buttons are always visible** — fixed order D H S P R, positions
+  never move; context changes labels and enabled state only (unbound =
+  disabled at the base label). Button sizing is fully relative, driven by
+  the controls cell.
+
 **E6 — S6 chip catalog superseded (roster ruling 2026-10-22):** the S6 table
 above is replaced by the ruled 12-chip POC roster below. All rarities are
 SPECULATIVE — a per-chip battery assigns each chip to Common / Uncommon /

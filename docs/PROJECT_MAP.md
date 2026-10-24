@@ -187,8 +187,8 @@ standard fallbacks (D->H, Ds->S).
 ## src/layout/table.ts
 
 The table layout solver — the single home for every coordinate on screen.
-Pure geometry: viewport, insets, hand count, and the axis option in; named zones out for both surfaces.
-Cards target 10% of width; player hands stack; dealer rows grow right and squash.
+One banded grid serves every aspect (spec E11): dealer top, player bottom,
+every zone a viewport fraction — no pixel constants, no minimums.
 
 - `clamp(v: number, lo: number, hi: number)` — Clamp a value into [lo, hi].
 - `solveTable(width: number, height: number, opts: TableOptions = {})` — Solve the table for a viewport — pure: identical inputs, identical layout.
@@ -210,7 +210,7 @@ zones, the DOM probes, and the size/axis readout, live on every resize.
   - `preload()` — Load the deck's art files before the scene boots.
   - `create()` — Boot the felt: camera background, the readout, and the resize hook.
   - `reflow(w: number, h: number)` — Re-solve the table and repaint every debug zone for the viewport.
-  - `proveDeck()` — The pt3 proof: A♠ in the dealer zone, the count-true stack, the row form.
+  - `proveDeck()` — The pt3 proof: A♠ in the dealer zone; the stacks show the cut card at 75% pen.
   - `paintReadout(w: number, h: number)` — Update the size/axis readout (flips with the aspect, per goal 1).
   - `paintZones()` — Draw the debug zone overlay: one outlined, labeled rect per zone.
 
@@ -293,13 +293,16 @@ fit within the solver's card box; registry cleanup rides through the kit.
 
 ## src/ui/cardstack.ts
 
-The count-true card visuals (ruled): a deck stacks straight up, a shoe lays
-its cards down — drawn from the actual card count, one white-outlined stripe
-per group of cards. Identical stripes are one SR fact, not one per card.
+The count-true card visuals (spec E11): a deck stacks straight up, a shoe
+lays its cards down — drawn from the actual remaining count, one stripe per
+group, with the ruled cut card riding red at the penetration mark.
 
 - `placeStripes(…)` — Place a clamped stripe run: sprites step `step` from the anchor; overflow shifts the run inward, never shrinks it.
-- `deckStack(…)` — Create a vertical deck stack of `count` cards; one stripe per group, bottom-anchored, clamped down.
-- `shoeRow(…)` — Create a horizontal shoe row of `count` laid-down cards; one stripe per group, clamped inward.
+- `cutSpriteIndex(pen: number, max: number, group: number)` — The ruled cut-card law: the sprite containing the pen card goes red — one sprite per `group` cards of pen.
+- `stackPlan(pen: number, max: number, remaining: number, group: number)` — Plan a stack's sprites from pen, shoe size, and the dealable remaining count.
+- `buildStack(…)` — Build the stack along one axis: backs step out, the cut card swaps in at the plan's mark.
+- `deckStack(…)` — Create a vertical deck stack: tail, the red cut card, then the dealable run, bottom-anchored.
+- `shoeRow(…)` — Create a horizontal shoe row: the same plan laid end to end, clamped inward.
 
 ## src/ui/decks/deck.ts
 
@@ -348,9 +351,9 @@ the only listener that acts on them. Pure routing, no DOM.
 
 ## src/ui/input/controls.ts
 
-The control bar — five context-rebinding buttons, one row, right-aligned:
-D deals/doubles, H hits/takes, S stands/passes, R surrenders/forfeits.
-resolveButtons is the tested law table; mountControls renders and wires it.
+The control bar — five always-visible buttons, one row, right-aligned:
+D deals/doubles, H hits/takes, S stands/passes, R surrenders/forfeits;
+context only changes labels and enabled state, never visibility (spec E11).
 
 - `resolveButtons(mode: ControlMode, legal: ControlLegality = {})` — Resolve the five buttons for a mode — pure, unit-tested, no DOM.
 - `mountControls(bus: CommandBus)` — Mount the control bar: five buttons, keyboard map, SR registration.
@@ -376,4 +379,5 @@ description and registers with the registry; undescribed objects cannot compile.
 - `rect(scene: Phaser.Scene, r: Rect, opts: KitRectOptions)` — Create a described rectangle: the felt, zones, spots — everything boxy.
 - `text(…)` — Create a described text object: readouts, labels, zone tags.
 - `image(…)` — Create a described image (a card, a chip — anything textured).
+- `roundRect(…)` — Create a described rounded rectangle (the cut card, drawn chips).
 - `destroy(…)` — Destroy a kit-created object and drop its registry entries.
