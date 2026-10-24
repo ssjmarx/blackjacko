@@ -7,6 +7,7 @@
 /** The felt: table surface colors (camera background + readout ink). */
 export const FELT = {
   background: "#0b5d3b",
+  fill: 0x0b5d3b,
   readout: "#e8f5ee",
 } as const;
 

@@ -1,7 +1,7 @@
 /**
- * The wood rail — a procedural dark-walnut frame drawn in the margin ring
- * (spec E13): seeded grain lines along each rail, knots ringed darkest.
- * Same session seed, same grain — a child stream, so the shuffle is untouched.
+ * The wood rail — procedural growth-ring wood (spec E13): 2-4 squished
+ * knots, warped ring grains growing from each until the packing blocks
+ * them, the frame filled; the felt insets on top, cut clean.
  */
 import Phaser from "phaser";
 import type { Rect } from "../layout/table.ts";
@@ -9,7 +9,34 @@ import { WOOD } from "../config.ts";
 import { graphics } from "./kit.ts";
 import { deriveStream } from "./session.ts";
 
-/** Paint the wood ring between the window and the safe area; deterministic per seed. */
+/** A drawn shape's collision envelope: which knot, center, outer reach. */
+interface Envelope {
+  knot: number;
+  cx: number;
+  cy: number;
+  r: number;
+}
+
+/** One knot and its grain family's growth state. */
+interface Knot {
+  cx: number;
+  cy: number;
+  r: number;
+  base: number;
+  squish: number;
+  angle: number;
+  gap: number;
+  a1: number;
+  a2: number;
+  f1: number;
+  f2: number;
+  p1: number;
+  p2: number;
+  aMax: number;
+  blocked: boolean;
+}
+
+/** Paint full-window growth-ring wood; the caller insets the felt on top. */
 export function paintWood(
   scene: Phaser.Scene,
   outer: Rect,
@@ -18,81 +45,133 @@ export function paintWood(
 ): Phaser.GameObjects.Graphics {
   const rng = deriveStream(seed, WOOD.salt);
   const g = graphics(scene, { id: "wood rail", sr: "Decorative wood rail framing the table." });
-  // four rails tile the ring exactly: top and bottom full-width, sides between
-  const rails: Rect[] = [
-    { x: outer.x, y: outer.y, w: outer.w, h: inner.y - outer.y },
-    { x: outer.x, y: inner.y + inner.h, w: outer.w, h: outer.y + outer.h - (inner.y + inner.h) },
-    { x: outer.x, y: inner.y, w: inner.x - outer.x, h: inner.h },
-    { x: inner.x + inner.w, y: inner.y, w: outer.x + outer.w - (inner.x + inner.w), h: inner.h },
-  ];
-  for (const r of rails) {
-    if (r.w <= 0 || r.h <= 0) continue;
-    paintRail(g, r, rng);
+  g.fillStyle(WOOD.base, 1);
+  g.fillRect(outer.x, outer.y, outer.w, outer.h);
+  const knots = seedKnots(outer, inner, rng);
+  const envs: Envelope[] = [];
+  for (const [i, k] of knots.entries()) {
+    paintKnot(g, k, rng);
+    envs.push({ knot: i, cx: k.cx, cy: k.cy, r: k.r * (1 + k.aMax) + 2 });
   }
+  growGrains(g, outer, knots, envs, rng);
   g.setDepth(-10);
   return g;
 }
 
-/** Fill one rail and streak it with wavy grain lines and a knot or two. */
-function paintRail(
-  g: Phaser.GameObjects.Graphics,
-  r: Rect,
-  rng: () => number,
-): void {
-  g.fillStyle(WOOD.base, 1);
-  g.fillRect(r.x, r.y, r.w, r.h);
-  const along = Math.max(r.w, r.h);
-  const lines = 8 + Math.floor(rng() * 8);
-  for (let i = 0; i < lines; i++) {
-    grainLine(g, r, along, rng);
+/** Seed 2-4 knots in the visible rail, rejection-sampled so none collide. */
+function seedKnots(outer: Rect, inner: Rect, rng: () => number): Knot[] {
+  const count = 2 + Math.floor(rng() * 3);
+  const base = Math.min(outer.w, outer.h);
+  const knots: Knot[] = [];
+  let attempts = 0;
+  while (knots.length < count && attempts++ < 60) {
+    const cx = outer.x + 8 + rng() * (outer.w - 16);
+    const cy = outer.y + 8 + rng() * (outer.h - 16);
+    const inFelt = cx > inner.x && cx < inner.x + inner.w && cy > inner.y && cy < inner.y + inner.h;
+    if (inFelt) continue;
+    const r = base * (0.02 + rng() * 0.02);
+    if (knots.some((o) => Math.hypot(o.cx - cx, o.cy - cy) < (o.base + r) * 3.5)) continue;
+    const a1 = 0.02 + rng() * 0.02;
+    const a2 = 0.015 + rng() * 0.02;
+    knots.push({
+      cx,
+      cy,
+      r,
+      base: r,
+      squish: 0.75 + rng() * 0.2,
+      angle: rng() * Math.PI,
+      gap: 3.5 + rng() * 2,
+      a1,
+      a2,
+      f1: 2 + Math.floor(rng() * 3),
+      f2: 5 + Math.floor(rng() * 5),
+      p1: rng() * Math.PI * 2,
+      p2: rng() * Math.PI * 2,
+      aMax: a1 + a2,
+      blocked: false,
+    });
   }
-  const knots = Math.floor(rng() * 3);
-  for (let i = 0; i < knots; i++) {
-    knot(g, r, rng);
-  }
+  return knots;
 }
 
-/** One wavy grain stroke, running the rail's long axis with seeded wander. */
-function grainLine(
-  g: Phaser.GameObjects.Graphics,
-  r: Rect,
-  along: number,
-  rng: () => number,
-): void {
-  const horizontal = r.w >= r.h;
-  const thick = horizontal ? r.h : r.w;
-  const pos = r.y + 2 + rng() * Math.max(1, thick - 4);
-  const amp = 0.6 + rng() * 2.2;
-  const wavelength = along / (5 + rng() * 7);
-  const phase = rng() * Math.PI * 2;
-  g.lineStyle(0.7 + rng() * 1.6, WOOD.grain, 0.25 + rng() * 0.4);
-  g.beginPath();
-  const steps = 24;
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const s = (r.x + t * r.w) || 0;
-    const wob = Math.sin(phase + (t * along) / wavelength) * amp + Math.sin(phase * 2 + t * 9) * amp * 0.4;
-    const x = horizontal ? s : pos + wob;
-    const y = horizontal ? pos + wob : r.y + t * r.h;
-    if (i === 0) g.moveTo(x, y);
-    else g.lineTo(x, y);
-  }
-  g.strokePath();
-}
-
-/** A knot: concentric dark ellipses, the growth rings around a seeded heart. */
-function knot(
-  g: Phaser.GameObjects.Graphics,
-  r: Rect,
-  rng: () => number,
-): void {
-  const cx = r.x + r.w * (0.2 + rng() * 0.6);
-  const cy = r.y + r.h * (0.25 + rng() * 0.5);
-  const rings = 3 + Math.floor(rng() * 4);
-  const reach = Math.min(r.w, r.h) * (0.25 + rng() * 0.35);
+/** Draw one knot: tight concentric squished ellipses, the darkest strokes on the frame. */
+function paintKnot(g: Phaser.GameObjects.Graphics, k: Knot, rng: () => number): void {
+  const rings = 2 + Math.floor(rng() * 3);
   for (let i = rings; i >= 1; i--) {
-    const rad = (reach * i) / rings;
-    g.lineStyle(1 + rng(), WOOD.knot, 0.4 + rng() * 0.35);
-    g.strokeEllipse(cx, cy, rad * 2.4, rad * 2);
+    const rr = k.base * (0.4 + (0.6 * i) / rings);
+    g.lineStyle(2 + rng(), WOOD.knot, 0.85);
+    strokeSquished(g, k.cx, k.cy, rr, k.squish, k.angle);
   }
+}
+
+/** Stroke a squished circle: 40 sampled points, rotated by angle. */
+function strokeSquished(
+  g: Phaser.GameObjects.Graphics,
+  cx: number,
+  cy: number,
+  r: number,
+  squish: number,
+  angle: number,
+): void {
+  const pts: Phaser.Math.Vector2[] = [];
+  for (let i = 0; i <= 40; i++) {
+    const t = (i / 40) * Math.PI * 2;
+    const ex = Math.cos(t) * r;
+    const ey = Math.sin(t) * r * squish;
+    pts.push(
+      new Phaser.Math.Vector2(
+        cx + ex * Math.cos(angle) - ey * Math.sin(angle),
+        cy + ex * Math.sin(angle) + ey * Math.cos(angle),
+      ),
+    );
+  }
+  g.strokePoints(pts, true);
+}
+
+/** Grow warped ring grains from every knot until the packing blocks them all. */
+function growGrains(
+  g: Phaser.GameObjects.Graphics,
+  outer: Rect,
+  knots: Knot[],
+  envs: Envelope[],
+  rng: () => number,
+): void {
+  const diag = Math.hypot(outer.w, outer.h);
+  let active = knots.length;
+  let guard = 0;
+  while (active > 0 && guard++ < 400) {
+    for (const [i, k] of knots.entries()) {
+      if (k.blocked) continue;
+      k.gap = Math.max(k.gap, 2.6 * k.r * k.aMax);
+      k.r += k.gap;
+      const reach = k.r * (1 + k.aMax);
+      if (reach > diag) {
+        k.blocked = true;
+        active--;
+        continue;
+      }
+      const hit = envs.some(
+        (s) => s.knot !== i && Math.hypot(s.cx - k.cx, s.cy - k.cy) < s.r + reach + 1.5,
+      );
+      if (hit) {
+        k.blocked = true;
+        active--;
+        continue;
+      }
+      drawGrain(g, k, rng);
+      envs.push({ knot: i, cx: k.cx, cy: k.cy, r: reach + 1.5 });
+    }
+  }
+}
+
+/** One warped ring: 40 sampled points around the knot's coherent warp profile. */
+function drawGrain(g: Phaser.GameObjects.Graphics, k: Knot, rng: () => number): void {
+  g.lineStyle(1.6 + rng() * 1.2, WOOD.grain, 0.5 + rng() * 0.3);
+  const pts: Phaser.Math.Vector2[] = [];
+  for (let i = 0; i <= 40; i++) {
+    const t = (i / 40) * Math.PI * 2;
+    const rr = k.r * (1 + k.a1 * Math.sin(k.f1 * t + k.p1) + k.a2 * Math.sin(k.f2 * t + k.p2));
+    pts.push(new Phaser.Math.Vector2(k.cx + Math.cos(t) * rr, k.cy + Math.sin(t) * rr));
+  }
+  g.strokePoints(pts, true);
 }

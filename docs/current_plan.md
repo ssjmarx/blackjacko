@@ -29,10 +29,11 @@ record rulings in the dev log.
   count hud 1/4; player full width; chip tray (band 4); context panel 1/4 |
   controls 3/4 (band 5). Fully relational: every element sizes from its
   cell, no pixel minimums; the axis option mirrors the horizontal anchors
-  only. The five action buttons are exactly card-sized when five fit
+  only. The five action buttons are card-shaped and fill the controls band
   (the `buttonMetrics` law), placeholders until the human's vector art
-  lands. A procedural wood rail fills the margin ring, seeded from a child
-  stream of the session seed (same seed, same table; the shuffle untouched).
+  lands. Procedural growth-ring wood fills the frame with the felt inset on
+  top, seeded from a child stream of the session seed (same seed, same
+  table; the shuffle untouched).
 - **Vector-first assets:** cards come from the English-pattern SVG (wikimedia,
   CC0, Loren Osborn) first — per-property decks arrive later through a `Deck`
   interface. Chips, bet circles, side-bet spots, the pen bar, and the cut card

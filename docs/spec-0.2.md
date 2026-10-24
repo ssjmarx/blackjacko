@@ -443,14 +443,24 @@ amends E11/E12):**
   a decision while the dealer hits); the squash policy remains the last
   resort. `dealerFits` measures the cell-plus-hud extent.
 - **Buttons are cards, by metrics:** a tested `buttonMetrics` law — the five
-  buttons are **exactly the game-card box** whenever five fit the controls
-  cell; capped with the 5:7 shape held when they don't; sizing rides
-  explicit CSS vars from the solver, never derived CSS. (The earlier
-  "buttons look small" report traced to an oversized proof A♠, not the bar.)
-- **The wood rail:** a procedural dark-walnut frame fills the margin ring —
-  seeded grain lines along each rail, darker knots. Its RNG is a **child
-  stream of the session seed** (`?seed=`), so the same seed draws the same
-  table: visual verification that can never perturb the shuffle stream.
+  buttons are **card-shaped (5:7) and fill the controls band vertically**
+  (96% of the cell height), width-capped with the shape held only when five
+  cannot fit across; sizing rides explicit CSS vars from the solver, never
+  derived CSS. (The "buttons look small" report traced to an oversized proof
+  A♠ plus band-filling, not the bar — both fixed 2026-10-23.)
+- **The wood rail:** procedural growth-ring wood fills the whole window —
+  2-4 squished knots seeded in the visible rail, warped ring grains growing
+  from each (coherent warp phase per family, geometric spacing) under
+  circle-envelope collision packing, drawn only when they touch nothing,
+  until every knot is blocked or envelops the frame; **the felt insets on
+  top**, cut clean — overlap is structurally impossible. Its RNG is a
+  **child stream of the session seed** (`?seed=`), so the same seed draws
+  the same table: visual verification that can never perturb the shuffle
+  stream.
+- **Card sizing** rides the slot law, loosened 2026-10-23: spot reservations
+  slim to 0.12 + 0.02 inset (cards take 0.72 of a hand slot), dealer cards
+  take 0.95 of their band, stack bias 0.07 — the felt keeps its margin and
+  the cards grow past their pre-margin size.
 
 **E6 — S6 chip catalog superseded (roster ruling 2026-10-22):** the S6 table
 above is replaced by the ruled 12-chip POC roster below. All rarities are

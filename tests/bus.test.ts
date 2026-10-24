@@ -75,17 +75,18 @@ describe("the five-button law table (always visible)", () => {
   });
 });
 
-describe("buttonMetrics — the buttons-are-cards law", () => {
-  it("desktop: the buttons are exactly the game card box", () => {
-    const m = buttonMetrics(59.2457, 82.944, 864, 129.6, 5);
-    expect(m.w).toBeCloseTo(59.2457, 3);
-    expect(m.h).toBeCloseTo(82.944, 3);
+describe("buttonMetrics — the band-filling card law", () => {
+  it("desktop: card-shaped buttons fill the controls band vertically", () => {
+    const m = buttonMetrics(66.65, 93.31, 864, 129.6, 5);
+    expect(m.h).toBeCloseTo(124.416, 2);
     expect(m.h / m.w).toBeCloseTo(1.4);
+    expect(m.h).toBeLessThanOrEqual(129.6);
+    expect(m.w * 5 + m.gap * 4).toBeLessThanOrEqual(864);
   });
 
   it("phone: five capped buttons plus gaps exactly fill the cell, shape held", () => {
-    const m = buttonMetrics(65.83, 92.16, 243, 144, 5);
-    expect(m.w).toBeLessThan(65.83);
+    const m = buttonMetrics(74.06, 103.68, 243, 144, 5);
+    expect(m.w).toBeLessThan(74.06);
     expect(m.h / m.w).toBeCloseTo(1.4);
     expect(m.w * 5 + m.gap * 4).toBeCloseTo(243);
     expect(m.h).toBeLessThanOrEqual(144);

@@ -360,7 +360,7 @@ D deals/doubles, H hits/takes, S stands/passes, R surrenders/forfeits;
 context only changes labels and enabled state, never visibility (spec E11).
 
 - `resolveButtons(mode: ControlMode, legal: ControlLegality = {})` — Resolve the five buttons for a mode — pure, unit-tested, no DOM.
-- `buttonMetrics(…)` — The button-box law (spec E13): card-sized whenever five fit the cell, uniformly capped with the shape held.
+- `buttonMetrics(…)` — The button-box law (spec E13): card-shaped 5:7, filling the controls band; width-capped only when five cannot fit.
 - `mountControls(bus: CommandBus)` — Mount the control bar: five buttons, keyboard map, SR registration.
 
 ## src/ui/input/human.ts
@@ -399,11 +399,13 @@ separate child streams, so decoration can never perturb the cards.
 
 ## src/ui/wood.ts
 
-The wood rail — a procedural dark-walnut frame drawn in the margin ring
-(spec E13): seeded grain lines along each rail, knots ringed darkest.
-Same session seed, same grain — a child stream, so the shuffle is untouched.
+The wood rail — procedural growth-ring wood (spec E13): 2-4 squished
+knots, warped ring grains growing from each until the packing blocks
+them, the frame filled; the felt insets on top, cut clean.
 
-- `paintWood(…)` — Paint the wood ring between the window and the safe area; deterministic per seed.
-- `paintRail(…)` — Fill one rail and streak it with wavy grain lines and a knot or two.
-- `grainLine(…)` — One wavy grain stroke, running the rail's long axis with seeded wander.
-- `knot(…)` — A knot: concentric dark ellipses, the growth rings around a seeded heart.
+- `paintWood(…)` — Paint full-window growth-ring wood; the caller insets the felt on top.
+- `seedKnots(outer: Rect, inner: Rect, rng: ()` — Seed 2-4 knots in the visible rail, rejection-sampled so none collide.
+- `paintKnot(g: Phaser.GameObjects.Graphics, k: Knot, rng: ()` — Draw one knot: tight concentric squished ellipses, the darkest strokes on the frame.
+- `strokeSquished(…)` — Stroke a squished circle: 40 sampled points, rotated by angle.
+- `growGrains(…)` — Grow warped ring grains from every knot until the packing blocks them all.
+- `drawGrain(g: Phaser.GameObjects.Graphics, k: Knot, rng: ()` — One warped ring: 40 sampled points around the knot's coherent warp profile.

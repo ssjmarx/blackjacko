@@ -411,3 +411,30 @@ provenance; the law lives in the spec and the roadmap.
   `sessionSeed`/`deriveStream` land in `src/ui/session.ts` for batch 2.
 - Gate: **142/142 tests**, audit 33 modules, kit law holds (12 files),
   build clean, purity clean.
+
+---
+
+## Entry #16 — batch 1.13: growth-ring wood, bigger cards, band-filling buttons (2026-10-23)
+
+- **The wood rail, rewritten as growth rings** (the rail-tiling hairline
+  version was illegible and bled onto the felt): 2-4 squished knots seeded
+  in the visible rail; warped ring grains grow from each — coherent per-knot
+  warp phase, geometric spacing — packed by circle-envelope collision
+  (drawn only when they touch nothing) until every knot is blocked or
+  envelops the window. **The felt insets on top** as a real kit rect: grain
+  over felt is structurally impossible now. Same seed, same table.
+- **Bug (mine):** the pt3-proof A♠ carried `y: 0` out of the TS2783 spread
+  fix and rendered on the wood border instead of the dealer band. Fixed via
+  a position-free `cardSize` template.
+- **Cards grow:** SLOT_CARD_H 0.64 → 0.72 (spots 0.15/0.03 → 0.12/0.02),
+  DEALER_CARD_H 0.85 → 0.95, STACK_DY 0.08 → 0.07 — the card box goes
+  59.2×82.9 → 66.65×93.31 at 720p, past its pre-margin size.
+- **Buttons fill the band:** `buttonMetrics` v2 — card-shaped 5:7, height
+  96% of the controls cell (88.9×124.4 at 720p, 17px font), width-capped
+  only when five cannot fit. E13's button + wood bullets amended in place
+  (E13 unpushed at amendment time).
+- New `tests/session.test.ts` — seed parsing (int / hashed string / default
+  1) and child-stream determinism (deterministic per (seed, salt),
+  salt-separated).
+- Gate: **145/145 tests** (12 files), audit 33 modules, kit law holds,
+  build clean, purity clean.

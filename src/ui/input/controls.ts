@@ -136,7 +136,7 @@ export interface ButtonMetrics {
   gap: number;
 }
 
-/** The button-box law (spec E13): card-sized whenever five fit the cell, uniformly capped with the shape held. */
+/** The button-box law (spec E13): card-shaped 5:7, filling the controls band; width-capped only when five cannot fit. */
 export function buttonMetrics(
   cardW: number,
   cardH: number,
@@ -144,14 +144,14 @@ export function buttonMetrics(
   cellH: number,
   count: number,
 ): ButtonMetrics {
-  const pad = cellH * 0.08;
   const gap = Math.min(cardW * 0.15, cellW * 0.02);
-  let w = Math.min(cardW, (cellW - gap * (count - 1)) / count);
-  let h = w * (cardH / cardW);
-  const maxH = cellH - pad * 2;
-  if (h > maxH) {
-    h = maxH;
-    w = h * (cardW / cardH);
+  const maxW = (cellW - gap * (count - 1)) / count;
+  const maxH = cellH * 0.96;
+  let h = maxH;
+  let w = h * (cardW / cardH);
+  if (w > maxW) {
+    w = maxW;
+    h = w * (cardH / cardW);
   }
   return { w, h, font: Math.max(9, h * 0.14), gap };
 }

@@ -79,14 +79,14 @@ const HUD_W = 1 / 4; // band 2: count hud width (also the deck-extra width)
 const PANEL_W = 1 / 4; // band 5: context panel width
 const CARD_BOX_ASPECT = 7 / 5; // the canonical card box ratio (art fits within)
 const STACK_DX = 0.2; // stacked-card horizontal bias vs card width
-const STACK_DY = 0.08; // stacked-card vertical bias vs card height
+const STACK_DY = 0.07; // stacked-card vertical bias vs card height
 const DEALER_GAP = 0.08; // dealer row pitch vs card width
 const HAND_W = 1.2; // a stacked hand's width vs card width
-const SPOT_H = 0.15; // spot diameter vs slot height
+const SPOT_H = 0.12; // spot diameter vs slot height
 const SPOT_W = 0.45; // spot diameter vs slot width
-const SPOT_INSET = 0.03; // spot inset vs slot height
+const SPOT_INSET = 0.02; // spot inset vs slot height
 const SLOT_CARD_H = 1 - 2 * (SPOT_H + SPOT_INSET); // the cards' share of a slot
-const DEALER_CARD_H = 0.85; // dealer cards' share of their band height
+const DEALER_CARD_H = 0.95; // dealer cards' share of their band height
 
 /** Clamp a value into [lo, hi]. */
 function clamp(v: number, lo: number, hi: number): number {

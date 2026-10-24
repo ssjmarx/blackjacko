@@ -40,6 +40,7 @@ export class FeltScene extends Phaser.Scene {
   private overlay: { obj: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text; id: string }[] = [];
   private cards: { obj: Phaser.GameObjects.Image | Phaser.GameObjects.Graphics; id: string }[] = [];
   private wood?: Phaser.GameObjects.Graphics;
+  private felt?: Phaser.GameObjects.Rectangle;
   private layout?: TableLayout;
   private deck?: Deck;
   private bus = new CommandBus();
@@ -89,6 +90,9 @@ export class FeltScene extends Phaser.Scene {
     this.layout = solveTable(w, h);
     if (this.wood) destroy(this, this.wood, "wood rail");
     this.wood = paintWood(this, { x: 0, y: 0, w, h }, this.layout.safe, sessionSeed());
+    if (this.felt) destroy(this, this.felt, "felt");
+    this.felt = rect(this, this.layout.safe, { id: "felt", sr: "The felt table surface.", color: FELT.fill });
+    this.felt.setDepth(-5);
     for (const o of this.overlay) destroy(this, o.obj, o.id);
     this.overlay = [];
     for (const c of this.cards) destroy(this, c.obj, c.id);
@@ -104,15 +108,15 @@ export class FeltScene extends Phaser.Scene {
     const l = this.layout;
     const d = this.deck;
     if (!l || !d) return;
-    const cardBox = { x: 0, y: 0, w: l.metrics.cardW, h: l.metrics.cardH };
-    const aceBox = { ...cardBox, x: l.dealer.x + l.metrics.cardW * 0.2 };
+    const cardSize = { w: l.metrics.cardW, h: l.metrics.cardH };
+    const aceBox = { x: l.dealer.x + l.metrics.cardW * 0.2, y: l.dealer.y, ...cardSize };
     const ace = cardSprite(this, d, 0, aceBox, { id: "proof ace of spades", debug: true });
     this.cards.push({ obj: ace, id: "proof ace of spades" });
     const deckExtent = unionRects(l.shoe, l.deckExtra);
     const stack = deckStack(this, d, deckExtent, {
       id: "proof deck stack",
       debug: true,
-      want: cardBox,
+      want: { x: 0, y: 0, ...cardSize },
       remaining: Math.round(0.75 * CARD_STACK.maxDeck) - 1,
       pen: 0.75,
       max: CARD_STACK.maxDeck,
@@ -125,7 +129,7 @@ export class FeltScene extends Phaser.Scene {
     const row = shoeRow(this, d, rowExtent, {
       id: "proof shoe row",
       debug: true,
-      want: cardBox,
+      want: { x: 0, y: 0, ...cardSize },
       remaining: Math.round(0.75 * CARD_STACK.maxShoe) - 1,
       pen: 0.75,
       max: CARD_STACK.maxShoe,

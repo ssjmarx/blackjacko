@@ -101,7 +101,7 @@ describe("layout: the ratio sweep", () => {
 
           // the card box: one shared size, relational, no floors
           const slot = l.lineSlots[0];
-          const expectW = Math.min(slot.w / 1.2, (slot.h * 0.64) / 1.4, (l.dealer.h * 0.85) / 1.4);
+          const expectW = Math.min(slot.w / 1.2, (slot.h * 0.72) / 1.4, (l.dealer.h * 0.95) / 1.4);
           expect(l.metrics.cardW, where).toBeCloseTo(expectW);
           expect(l.metrics.cardH, where).toBeCloseTo(l.metrics.cardW * 1.4);
 
@@ -110,9 +110,9 @@ describe("layout: the ratio sweep", () => {
             const bet = l.betSpots[i];
             const ins = l.insuranceSpots[i];
             expect(bet.x + bet.w / 2, where).toBeCloseTo(s.x + s.w / 2);
-            expect(bet.y + bet.h, where).toBeCloseTo(s.y + s.h - s.h * 0.03);
+            expect(bet.y + bet.h, where).toBeCloseTo(s.y + s.h - s.h * 0.02);
             expect(ins.x + ins.w / 2, where).toBeCloseTo(s.x + s.w / 2);
-            expect(ins.y, where).toBeCloseTo(s.y + s.h * 0.03);
+            expect(ins.y, where).toBeCloseTo(s.y + s.h * 0.02);
           }
         }
       }
@@ -179,9 +179,9 @@ describe("layout: the named laws", () => {
     expect(d.safe).toEqual({ x: 64, y: 36, w: 1152, h: 648 });
     const bandH = 129.6;
     expect(d.chipTray.h).toBeCloseTo(bandH);
-    expect(d.metrics.cardW).toBeCloseTo(Math.min(1152 / 1.2, (bandH * 0.64) / 1.4, (bandH * 0.85) / 1.4));
-    expect(d.metrics.cardW).toBeCloseTo(59.25, 2);
-    expect(d.metrics.cardH).toBeCloseTo(82.94, 2);
+    expect(d.metrics.cardW).toBeCloseTo(Math.min(1152 / 1.2, (bandH * 0.72) / 1.4, (bandH * 0.95) / 1.4));
+    expect(d.metrics.cardW).toBeCloseTo(66.65, 2);
+    expect(d.metrics.cardH).toBeCloseTo(93.31, 2);
     expect(d.controls.w).toBeCloseTo(864);
     expect(d.contextPanel.w).toBeCloseTo(288);
     expect(d.countHud.w).toBeCloseTo(288);
@@ -190,7 +190,7 @@ describe("layout: the named laws", () => {
     expect(d.discard.w).toBeCloseTo(384);
     const p = solveTable(360, 800);
     expect(p.chipTray.h).toBeCloseTo(144);
-    expect(p.metrics.cardW).toBeCloseTo(Math.min(324 / 1.2, (144 * 0.64) / 1.4, (144 * 0.85) / 1.4));
+    expect(p.metrics.cardW).toBeCloseTo(Math.min(324 / 1.2, (144 * 0.72) / 1.4, (144 * 0.95) / 1.4));
   });
 
   it("the margin frames the table: 5% per window edge, insets compose", () => {
