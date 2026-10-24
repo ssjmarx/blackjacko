@@ -1,20 +1,24 @@
 /**
- * The felt scene — the table surface everything else lands on. pt2 adds the
- * debug zone overlay through the render kit: one solve drives the canvas
- * zones, the DOM probes, and the size/axis readout, live on every resize.
+ * The felt scene — composition: the static furniture (felt, wood, zones,
+ * readouts) plus the live round driver and its renderer. One solve drives
+ * everything; the driver owns the game, the scene owns the table.
  */
 import Phaser from "phaser";
-import { solveTable, unionRects, MARGIN_FRAC, type Rect, type TableLayout } from "../layout/table.ts";
-import { CARD_STACK, DEBUG, FELT, TONYS } from "../config.ts";
+import { solveTable, MARGIN_FRAC, type Rect, type TableLayout } from "../layout/table.ts";
+import { DEBUG, FELT, SHOE_SALT, TONYS } from "../config.ts";
 import { destroy, rect, text } from "../ui/kit.ts";
 import { announce, registerObject, showLowerThird } from "../ui/domshell.ts";
 import { englishDeck } from "../ui/decks/english.ts";
-import { cardSprite } from "../ui/cardart.ts";
-import { deckStack, shoeRow } from "../ui/cardstack.ts";
 import { paintCutIn, paintWood } from "../ui/wood.ts";
-import { sessionSeed } from "../ui/session.ts";
+import { sessionSeed, deriveStream } from "../ui/session.ts";
 import { CommandBus } from "../ui/input/bus.ts";
 import { mountControls } from "../ui/input/controls.ts";
+import type { ControlLegality, ControlMode, ControlsHandle } from "../ui/input/controls.ts";
+import { HumanStrategy } from "../ui/input/human.ts";
+import { RoundDriver } from "../ui/round/driver.ts";
+import { TableRenderer } from "../ui/round/render.ts";
+import { Shoe } from "../core/shoe.ts";
+import { blackjackRuleset } from "../core/rules.ts";
 import type { Deck } from "../ui/decks/deck.ts";
 
 /** Debug zone colors (canvas numbers) — readable ink on the felt, debug-only. */
@@ -37,7 +41,6 @@ const ZONE_COLORS = {
 export class FeltScene extends Phaser.Scene {
   private readout?: Phaser.GameObjects.Text;
   private overlay: { obj: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text; id: string }[] = [];
-  private cards: { obj: Phaser.GameObjects.Image | Phaser.GameObjects.Graphics; id: string }[] = [];
   private readouts: { obj: Phaser.GameObjects.Text; id: string }[] = [];
   private wood?: Phaser.GameObjects.Image;
   private shadow?: Phaser.GameObjects.Graphics;
@@ -46,6 +49,9 @@ export class FeltScene extends Phaser.Scene {
   private deck?: Deck;
   private bus = new CommandBus();
   private controls?: ReturnType<typeof mountControls>;
+  private render?: TableRenderer;
+  private driver?: RoundDriver;
+  private human?: HumanStrategy;
 
   constructor() {
     super("felt");
@@ -80,15 +86,41 @@ export class FeltScene extends Phaser.Scene {
     this.controls = mountControls(this.bus);
     if (this.layout) this.controls.layout(this.layout);
     this.controls.setMode("idle");
+    // the live game: renderer, human strategy, driver — the felt comes alive
+    if (this.deck && this.layout) {
+      this.render = new TableRenderer(this, this.deck, this.layout, TONYS.bankroll);
+      this.render.setLayout(this.layout);
+      const ruleset = blackjackRuleset({ decks: 1 });
+      let driver: RoundDriver | undefined;
+      const gated: ControlsHandle = {
+        setMode: (mode: ControlMode, legal?: ControlLegality) => driver?.promptGate(mode, legal),
+        layout: (l: TableLayout) => this.controls?.layout(l),
+        destroy: () => this.controls?.destroy(),
+      };
+      this.human = new HumanStrategy(this.bus, gated);
+      driver = new RoundDriver({
+        bus: this.bus,
+        strategy: this.human,
+        port: this.render,
+        controls: {
+          setMode: (mode: ControlMode, legal?: ControlLegality) => this.controls?.setMode(mode, legal),
+        },
+        announce,
+        ruleset,
+        makeShoe: () => new Shoe(ruleset, deriveStream(sessionSeed(), SHOE_SALT)),
+        bankroll: TONYS.bankroll,
+        betUnits: TONYS.betUnits,
+      });
+      this.driver = driver;
+    }
     this.bus.on((c) => {
       if (c.kind === "book") announce("The strategy card opens here in pt6 — the basic strategy and index tables.");
     });
-    announce("Welcome to blackjacko. Tony's Backroom: one deck, dealer stands on all 17s, blackjack pays 3 to 2.");
+    announce("Welcome to blackjacko. Tony's Backroom: one deck, dealer stands on all 17s, blackjack pays 3 to 2. Press deal when ready.");
     if (this.deck && this.layout) {
       showLowerThird(this.deck.creditLines().join("\n"), this.layout);
       registerObject("deck credit", "text", `Deck: ${this.deck.creditLines().join(", ")}.`);
     }
-    if (this.deck) this.proveDeck();
   }
 
   /** Re-solve the table, repaint the wood rail and every debug zone for the viewport. */
@@ -104,29 +136,23 @@ export class FeltScene extends Phaser.Scene {
     this.shadow = paintCutIn(this, this.layout.safe, Math.min(w, h) * MARGIN_FRAC);
     for (const o of this.overlay) destroy(this, o.obj, o.id);
     this.overlay = [];
-    for (const c of this.cards) destroy(this, c.obj, c.id);
-    this.cards = [];
     for (const r of this.readouts) destroy(this, r.obj, r.id);
     this.readouts = [];
     if (DEBUG.layout) this.paintReadout(w, h);
     this.paintTableReadouts();
     if (DEBUG.layout) this.paintZones();
     this.controls?.layout(this.layout);
-    if (this.deck) this.proveDeck();
+    if (this.render && this.layout) {
+      this.render.setLayout(this.layout);
+      this.render.relayout();
+      this.driver?.relayout();
+    }
   }
 
-  /** The table's standing readouts: bankroll on the chip column's floor, stakes on the pit's floor (spec E14). */
+  /** The table's standing readouts: stakes on the pit's floor, rules on deck extra's floor (spec E14). */
   private paintTableReadouts(): void {
     const l = this.layout;
     if (!l) return;
-    const bank = text(this, l.bankrollPoint.x, l.bankrollPoint.y, `Bankroll ${TONYS.bankroll}`, {
-      id: "bankroll",
-      sr: `Bankroll ${TONYS.bankroll} units.`,
-      color: FELT.readout,
-      size: 15,
-    });
-    bank.setOrigin(0.5, 1);
-    this.readouts.push({ obj: bank, id: "bankroll" });
     const stakes = text(this, l.stakesPoint.x, l.stakesPoint.y, `Table ${TONYS.min} – ${TONYS.max}`, {
       id: "table stakes",
       sr: `Table minimum ${TONYS.min}, maximum ${TONYS.max}.`,
@@ -153,45 +179,7 @@ export class FeltScene extends Phaser.Scene {
     this.readouts.push({ obj: rules, id: "table rules" });
   }
 
-  /** The pt3 proof: A♠ at true card metrics; the deck stack bleeds into deck extra at 75% pen. */
-  private proveDeck(): void {
-    const l = this.layout;
-    const d = this.deck;
-    if (!l || !d) return;
-    const cardSize = { w: l.metrics.cardW, h: l.metrics.cardH };
-    const aceBox = {
-      x: l.dealer.x + (l.dealer.w - cardSize.w) / 2,
-      y: l.dealer.y + (l.dealer.h - cardSize.h) / 2,
-      ...cardSize,
-    };
-    const ace = cardSprite(this, d, 0, aceBox, { id: "proof ace of spades", debug: true });
-    this.cards.push({ obj: ace, id: "proof ace of spades" });
-    const deckExtent = unionRects(l.shoe, l.deckExtra);
-    const stack = deckStack(this, d, deckExtent, {
-      id: "proof deck stack",
-      debug: true,
-      cell: l.shoe,
-      want: { x: 0, y: 0, ...cardSize },
-      remaining: Math.round(0.75 * CARD_STACK.maxDeck) - 1,
-      pen: 0.75,
-      max: CARD_STACK.maxDeck,
-      perCard: CARD_STACK.deckPx,
-    });
-    for (const img of stack) this.cards.push({ obj: img, id: "proof deck stack" });
-    // the row-form sample runs the pit from its window-side edge (its true plant is the
-    // shoe cell, which hosts the deck stack in this proof; the extents are unit-tested)
-    const row = shoeRow(this, d, l.pit, {
-      id: "proof shoe row",
-      debug: true,
-      cell: l.shoe,
-      want: { x: 0, y: 0, ...cardSize },
-      remaining: Math.round(0.75 * CARD_STACK.maxShoe) - 1,
-      pen: 0.75,
-      max: CARD_STACK.maxShoe,
-      perCard: CARD_STACK.shoePx,
-    });
-    for (const img of row) this.cards.push({ obj: img, id: "proof shoe row" });
-  }
+
 
   /** Update the size/axis readout (flips with the aspect, per goal 1). */
   private paintReadout(w: number, h: number): void {

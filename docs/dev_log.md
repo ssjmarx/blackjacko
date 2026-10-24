@@ -603,3 +603,40 @@ A+D+C with B folded in) renders the wood **per-pixel as a density field**:
   rect draws the footprint as-is.** The rules readout also gained the
   ruled stacking (two centered lines) and a safe-edge clamp that pulls it
   toward screen center when the letters would bleed.
+
+## Entry #22 — batch 2a: the first playable hand (2026-10-23)
+
+The felt comes alive. Three new modules and one core seam amendment:
+
+- **`src/ui/anim.ts`** — the skippable animation engine, ruled from the
+  jump: a time-driven `AnimRunner` (injectable clock, scene-update driven)
+  where **any keypress or pointer input snaps every in-flight animation to
+  its end state**. Builders compose: `place`, `flip` (the ruled
+  squash-swap-lerp, texture swap exactly once at the halfway line), `flash`
+  (tint pulse), `fade` — mixed and matched anywhere.
+- **`src/ui/round/driver.ts`** — the state machine, **headless** (a renderer
+  port + injected controls/announce; no Phaser, no DOM): owns the shoe
+  (child stream of `?seed=` through `SHOE_SALT` — the wood/noise/shuffle
+  triad), the bankroll, the fixed 1-unit bet, and a **paced event pump**:
+  the core's resolver emits instantly, the pump applies with animation, and
+  the control bar lights only when the queue lands (the prompt gate). The
+  cut card slides at exhaustion — the **renderer owns that moment**.
+- **`src/ui/round/render.ts`** — the Phaser adapter: hand groups under the
+  stacking law, the dealer choreography (hole face-down, up card on top,
+  slide right + flip at reveal, draws marching right), the count HUD fed by
+  the engine (RC/TC — never recounted; exposure-driven so the hole never
+  leaks), the live bankroll, the bet marker, the live count-true stack with
+  per-deal erosion, the discard sweep at round end.
+- **Core seam amendment:** the dealer's draw loop now **emits card events**
+  (role `hit`) — the pt0 feed missed it, so dealer draws never animated.
+  Presentation-only; no game logic touched. Dealer-hit phrasing added to
+  the announcements map ("Dealer draws X.").
+- The **debug overlay stands down** (zones, probes, readout) and
+  `proveDeck` retires — the live cards are the proof now.
+- Tests: the driver **headless against scripted shoes and strategies**
+  (stood loss, 3:2 blackjack, insurance prompt, split — exact port-call
+  sequences, bankroll arithmetic, mode gating, Deal inert while busy), the
+  **seeded replay law** (driver's shoe ≡ sim's shoe, card-for-card), and
+  the animation engine (progress, skip, the flip's single swap).
+- Gate: **171/171 tests** (15 files), audit 36 modules, kit law holds,
+  build clean, purity clean.

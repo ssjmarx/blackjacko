@@ -14,7 +14,12 @@ export const FELT = {
 /** Debug flags: off in play — the felt renders as its single shade of green. */
 export const DEBUG = {
   layout: false,
+  /** the dealt-card sequence logs to console — the seeded replay evidence */
+  replay: true,
 } as const;
+
+/** The shoe's child-stream salt: the shuffle derives from ?seed=, touching nothing else. */
+export const SHOE_SALT = 0x5bcd0e5;
 
 /** The card palette: face, ink, and the red suit — the contrast law's subjects (spec E8). */
 export const CARD = {
@@ -48,6 +53,8 @@ export const CARD_STACK = {
   group: 4,
   maxDeck: 104,
   maxShoe: 416,
+  /** the visual pen — matches the felt ruleset's pen (Tony's: 0.75) */
+  pen: 0.75,
 } as const;
 
 /**

@@ -395,6 +395,7 @@ export async function playRound(env: RoundEnv): Promise<RoundResult> {
       roundCards.push(c);
       dealerCards.push(c);
       shoe.count.expose(c);
+      emit({ kind: 'card', to: 'dealer', line: 0, role: 'hit', card: c });
       dt = handTotal(dealerCards);
     }
     const dealerTotal = dt.total;

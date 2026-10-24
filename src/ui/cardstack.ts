@@ -219,14 +219,35 @@ function buildStack(
   return out;
 }
 
+/** A built stack's handle: the sprites, live erosion, and the exposed cut card. */
+export interface StackHandle {
+  sprites: (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[];
+  /** apply the erosion law: hide sprites dealt from the dealt end */
+  setDealt(dealt: number): void;
+  /** the cut card's sprite, once it is on the table */
+  cut(): Phaser.GameObjects.Graphics | null;
+}
+
 /** Create the vertical deck stack: card-sized in its shoe cell, bleeding down, the top card on top. */
 export function deckStack(
   scene: Phaser.Scene,
   deck: Deck,
   extent: Rect,
   opts: StackOpts,
-): (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] {
-  return buildStack(scene, deck, extent, "down", opts.perCard, opts);
+): StackHandle {
+  const plan = stackPlan(opts.pen, opts.max, CARD_STACK.group);
+  const sprites = buildStack(scene, deck, extent, "down", opts.perCard, opts);
+  return {
+    sprites,
+    setDealt(dealt: number): void {
+      const hidden = hiddenSprites(dealtFrom(opts.pen, opts.max, dealt), CARD_STACK.group);
+      for (const [i, s] of sprites.entries()) s.setVisible(dealtOrder("down", plan.total, i) >= hidden);
+    },
+    cut(): Phaser.GameObjects.Graphics | null {
+      const idx = cutSpriteIdx("down", plan.total, plan.cut);
+      return (sprites[idx] as Phaser.GameObjects.Graphics) ?? null;
+    },
+  };
 }
 
 /** Create the horizontal shoe row: planted at the window-side edge, running toward the pit, the tail planted. */

@@ -68,6 +68,12 @@ describe("the five-button law table (always visible)", () => {
     expect(fifth).toMatchObject({ label: "Forfeit", key: "F", kind: "rescue", enabled: true });
   });
 
+  it("busy: everything at base labels, nothing enabled — a round is in flight", () => {
+    const r = resolveButtons("busy");
+    expect(r.map((b) => b.label)).toEqual(["Deal", "Hit", "Stand", "Split", "Surrender"]);
+    expect(r.filter((b) => b.enabled)).toHaveLength(0);
+  });
+
   it("rescue legality alone does not enable double/split/surrender", () => {
     const r = resolveButtons("play", { rescue: true });
     expect(r.find((b) => b.kind === "double")?.enabled).toBe(false);

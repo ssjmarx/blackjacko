@@ -41,7 +41,9 @@ export function phraseFor(e: RoundEvent): string {
     case "card": {
       if (e.role === "hole") return "Dealer takes a card face down.";
       const name = e.card === undefined ? "a card" : speakCard(e.card);
-      if (e.to === "dealer") return `Dealer shows ${name}.`;
+      if (e.to === "dealer") {
+        return e.role === "hit" ? `Dealer draws ${name}.` : `Dealer shows ${name}.`;
+      }
       if (e.role === "double") return `Doubled — ${name}.`;
       return `You receive ${name}.`;
     }

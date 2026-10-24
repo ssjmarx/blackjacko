@@ -8,7 +8,8 @@ import type { Command, CommandKind } from "./bus.ts";
 import type { CommandBus } from "./bus.ts";
 import { registerObject } from "../domshell.ts";
 
-export type ControlMode = "idle" | "play" | "insurance";
+/** The bar's context: idle (Deal only), play, insurance, or busy (a round in flight). */
+export type ControlMode = "idle" | "play" | "insurance" | "busy";
 
 /** Legality flags the round driver passes alongside the play mode. */
 export interface ControlLegality {

@@ -203,16 +203,15 @@ layer and zone variables; both surfaces re-solve from the one solver.
 
 ## src/scenes/feltscene.ts
 
-The felt scene — the table surface everything else lands on. pt2 adds the
-debug zone overlay through the render kit: one solve drives the canvas
-zones, the DOM probes, and the size/axis readout, live on every resize.
+The felt scene — composition: the static furniture (felt, wood, zones,
+readouts) plus the live round driver and its renderer. One solve drives
+everything; the driver owns the game, the scene owns the table.
 
 - **class FeltScene** — The one Phaser scene: boots the felt and re-flows it on every resize.
   - `preload()` — Load the deck's art files before the scene boots.
   - `create()` — Boot the felt: camera background, the readout, and the resize hook.
   - `reflow(w: number, h: number)` — Re-solve the table, repaint the wood rail and every debug zone for the viewport.
-  - `paintTableReadouts()` — The table's standing readouts: bankroll on the chip column's floor, stakes on the pit's floor (spec E14).
-  - `proveDeck()` — The pt3 proof: A♠ at true card metrics; the deck stack bleeds into deck extra at 75% pen.
+  - `paintTableReadouts()` — The table's standing readouts: stakes on the pit's floor, rules on deck extra's floor (spec E14).
   - `paintReadout(w: number, h: number)` — Update the size/axis readout (flips with the aspect, per goal 1).
   - `paintZones()` — Draw the debug zone overlay: one outlined, labeled rect per zone.
 
@@ -273,6 +272,22 @@ bankroll curve (peak / max drawdown).
   - `handsPerShoe()` — Hands per shoe (0 when no shoe boundary was counted).
 - `fmt(n: number, digits = 3)` — Fixed-digits format; normalizes negative zero; '–' for non-finite.
 - `pct(n: number, digits = 3)` — Fraction to a percent string.
+
+## src/ui/anim.ts
+
+The animation engine (spec E14): a time-driven runner whose every animation
+is skippable — any player input snaps all in-flight work to its end state.
+Builders compose: place, flip, flash, slide — mixed and matched anywhere.
+
+- **class AnimRunner** — One animation on the runner's clock: eased progress, resolved at done or skip.
+  - `skip()` — Any player input: every active animation snaps to its end state.
+  - `update()` — Drive from the scene's update loop; completes and resolves finished items.
+  - `busy()` — True while anything is in flight.
+  - `finish(it: Item)` — Complete one item early: apply(1), resolve its promise, drop it.
+- `place(…)` — Fly a drawable from one point to another.
+- `flip(…)` — The ruled flip: the back squashes to a line, the face lerps out — one input skips both.
+- `flash(…)` — Pulse a tint over a drawable and settle back to clear.
+- `fade(runner: AnimRunner, d: { setAlpha(n: number)` — Fade a drawable out in place.
 
 ## src/ui/announcements.ts
 
@@ -391,6 +406,48 @@ description and registers with the registry; undescribed objects cannot compile.
 - `graphics(…)` — Create a described graphics canvas — the sanctioned escape hatch for bespoke vector art (the wood rail).
 - `canvasImage(…)` — Mount a pre-rendered canvas (a procedural texture) as a described image.
 - `destroy(…)` — Destroy a kit-created object and drop its registry entries.
+
+## src/ui/round/driver.ts
+
+The round driver — the felt's state machine (spec E14): one shoe from the
+session seed, a fixed-unit bet, and the core's async resolver wired to the
+human's bus strategy. Pure orchestration; the port and controls inject.
+
+- **class RoundDriver** — The felt's state machine: Deal in, one full round through the core, bankroll out.
+  - `balance()` — The bankroll right now (units).
+  - `activeHands()` — The active hand count — the renderer re-solves the band from it.
+  - `relayout()` — Re-place every live sprite from a fresh solve.
+  - `promptGate(mode: ControlMode, legal?: ControlLegality)` — The strategy's prompt gate: light the bar only once the pump has landed.
+  - `startRound()` — One full round: shuffle beat if due, deal, play, settle — bankroll lands.
+  - `drain()` — The event sink: every event phrases itself, paces, and updates the counts.
+  - `pumpIdle()` — Resolves once the pump has applied every queued event.
+  - `apply(e: RoundEvent, dealt: number)` — Apply one event: phrase it, animate it, keep the counts honest.
+  - `announceEvent(e: RoundEvent)` — Phrase one event through the a11y map — speech and captions, one string.
+
+## src/ui/round/render.ts
+
+The live table renderer — the driver's Phaser side (spec E14): hand groups
+under the stacking law, the dealer's choreography, the HUD fed by the
+engine, and every animation through the skippable runner.
+
+- **class TableRenderer** — The dealt shoe's live rendering: hand groups, dealer row, HUD, stack, marker.
+  - `mount()` — Build the standing furniture: the count HUD, the bankroll, the live stack.
+  - `rebuildStack()` — The count-true deck stack: rebuilt at any size change, eroded per deal.
+  - `shoePoint()` — The shoe stack's position — every card flies from here.
+  - `playerPoint(line: number, index: number)` — A player card's position: the slot's center, stacked by the alternating-corner law.
+  - `dealerPoint(index: number)` — A dealer card's position: slot 0 holds the hole, later cards grow right.
+  - `setLayout(l: TableLayout)` — Hand the renderer a fresh solve; every later placement uses it.
+  - `beginRound()` — A round begins: the bet marker shows the fixed unit on the first spot.
+  - `dealCard(…)` — Deal one card into its choreographed spot.
+  - `revealHole(card: number)` — The hole flips face-up and the up card slides aside — the ruled reveal.
+  - `createLine()` — A split: the band re-solves, the cards resize and re-place.
+  - `settleLine(line: number, outcome: LineOutcome)` — A line settles: its cards pulse the outcome's tint.
+  - `endRound()` — The round's cards sweep to the discard tray and go out.
+  - `updateCounts(rc: number, decksRemaining: number, dealt: number)` — Counts and shoe state after the latest event — the HUD never recounts; the cut slides at exhaustion.
+  - `setBankroll(units: number)` — The bankroll readout, live at the chip column's floor.
+  - `cutCardOut()` — The cut card slides across the table to the dealer — last hand (idempotent).
+  - `shuffleBeat()` — The shuffle beat: the stack rebuilds fresh, the HUD resets.
+  - `relayout()` — Re-place every live sprite from a fresh solve (resize, split).
 
 ## src/ui/session.ts
 
