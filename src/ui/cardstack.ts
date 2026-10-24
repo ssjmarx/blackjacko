@@ -184,26 +184,33 @@ function buildStack(
     const x = axis === "down" ? cx : axis === "left" ? planted - i * perCard : planted + i * perCard;
     const y = axis === "down" ? planted + i * perCard : cy;
     if (i === cutIdx) {
-      const w = axis === "down" ? fitted.w : fitted.h;
-      const h = axis === "down" ? fitted.h : fitted.w;
+      // the cut rect draws the footprint as-is: upright for the deck, lying for the row
       const g = roundRect(
         scene,
-        { x: x - w / 2, y: y - h / 2, w, h },
+        { x: x - fitted.w / 2, y: y - fitted.h / 2, w: fitted.w, h: fitted.h },
         {
           id: `${opts.id} cut card`,
           sr: "The cut card.",
           color: CUT_CARD.red,
-          radius: Math.min(w, h) * CUT_CARD.radius,
+          radius: Math.min(fitted.w, fitted.h) * CUT_CARD.radius,
           debug: true,
         },
       );
       g.setDepth(axis === "down" ? 10 + (plan.total - 1 - i) : 10 + i).setVisible(visible);
       out.push(g);
     } else {
-      const b = backSprite(scene, deck, i % deck.backCount, fitted, { id: `${opts.id} ${i + 1}`, debug: true });
+      // the back scales from the upright card box; the rotation lays it down
+      const b = backSprite(
+        scene,
+        deck,
+        i % deck.backCount,
+        { x: x - opts.want.w / 2, y: y - opts.want.h / 2, w: opts.want.w, h: opts.want.h },
+        {
+          id: `${opts.id} ${i + 1}`,
+          debug: true,
+        },
+      );
       b.setDepth(axis === "down" ? 10 + (plan.total - 1 - i) : 10 + i).setVisible(visible);
-      b.x = x;
-      b.y = y;
       if (axis !== "down") b.setAngle(90);
       out.push(b);
     }

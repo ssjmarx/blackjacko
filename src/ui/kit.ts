@@ -23,6 +23,8 @@ export interface KitTextOptions {
   sr: string;
   color?: string;
   size?: number;
+  /** multi-line alignment (Phaser defaults to left) */
+  align?: "left" | "center" | "right";
   debug?: boolean;
 }
 
@@ -46,6 +48,7 @@ export function text(
     fontFamily: "monospace",
     fontSize: `${opts.size ?? 14}px`,
     color: opts.color ?? "#e8f5ee",
+    align: opts.align ?? "left",
   });
   registerObject(opts.id, opts.debug ? "debug" : "text", opts.sr);
   return t;

@@ -593,3 +593,13 @@ A+D+C with B folded in) renders the wood **per-pixel as a density field**:
   the strings from the live ruleset.
 - Gate: **158/158 tests** (13 files), audit 33 modules, kit law holds,
   build clean, purity clean.
+- **Addendum (same session, caught on eyeball):** the lying-frame box was
+  being **double-transformed** — `backSprite` scales the art upright into
+  whatever box it gets, then the 90° rotation laid it down again, so the
+  row's backs rendered at ~⅔ card size and the cut rect (dimensions
+  swapped for the old frame) stood upright among lying backs. The
+  correction: **the fit/reservation math owns the lying frame; the sprite
+  scales from the upright card box and the rotation lays it down; the cut
+  rect draws the footprint as-is.** The rules readout also gained the
+  ruled stacking (two centered lines) and a safe-edge clamp that pulls it
+  toward screen center when the letters would bleed.

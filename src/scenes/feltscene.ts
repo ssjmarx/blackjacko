@@ -135,13 +135,21 @@ export class FeltScene extends Phaser.Scene {
     });
     stakes.setOrigin(0.5, 1);
     this.readouts.push({ obj: stakes, id: "table stakes" });
-    const rules = text(this, l.rulesPoint.x, l.rulesPoint.y, TONYS.ruleTags.join(" · "), {
+    const rules = text(this, l.rulesPoint.x, l.rulesPoint.y, TONYS.ruleTags.join("\n"), {
       id: "table rules",
       sr: `Table rules: ${TONYS.ruleTags.join("; ")}.`,
       color: FELT.readout,
       size: 15,
+      align: "center",
     });
     rules.setOrigin(0.5, 1);
+    // pulled toward the screen's center whenever the letters would bleed past the safe edge
+    rules.setX(
+      Math.min(
+        Math.max(l.rulesPoint.x, l.safe.x + rules.width / 2 + 4),
+        l.safe.x + l.safe.w - rules.width / 2 - 4,
+      ),
+    );
     this.readouts.push({ obj: rules, id: "table rules" });
   }
 
