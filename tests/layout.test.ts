@@ -141,7 +141,13 @@ describe("layout: rulings", () => {
     expect(l.controls.y + l.controls.h + 6).toBe(l.chipTray.y);
     expect(l.controls.w).toBe(l.safe.w);
     expect(l.controls.x).toBe(l.safe.x);
-    expect(l.controls.h).toBeGreaterThan(0);
+    expect(l.controls.h).toBe(56);
+  });
+
+  it("the control bar grows to two rows in portrait", () => {
+    const l = solveTable(360, 800);
+    expect(l.controls.h).toBe(96);
+    expect(l.controls.y + l.controls.h + 6).toBe(l.chipTray.y);
   });
 
   it("goldens: canonical sizes", () => {

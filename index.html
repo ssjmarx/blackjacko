@@ -53,9 +53,23 @@
       #bj-controls {
         position: fixed;
         display: flex;
+        flex-wrap: wrap;
         gap: 8px;
         align-items: stretch;
         z-index: 35;
+      }
+      #bj-controls.portrait {
+        flex-wrap: wrap;
+        justify-content: center;
+        align-content: center;
+        gap: 6px;
+      }
+      #bj-controls.portrait .bj-btn {
+        padding: 5px 10px;
+        font-size: 14px;
+      }
+      #bj-controls.portrait .bj-btn kbd {
+        display: none;
       }
       .sr-only {
         position: absolute;

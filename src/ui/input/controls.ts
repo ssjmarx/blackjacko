@@ -99,10 +99,13 @@ export function mountControls(bus: CommandBus): ControlsHandle {
             (spec.kind === "split" && (legal.split ?? false)) ||
             (spec.kind === "surrender" && (legal.surrender ?? false));
         b.disabled = !enabled;
+        // the insurance pair is prompt-time furniture: visible only when asked
+        b.style.display = spec.group === "insurance" && mode !== "insurance" ? "none" : "";
       }
     },
     layout(l: TableLayout) {
       const c = l.controls;
+      bar.classList.toggle("portrait", l.orientation === "portrait");
       Object.assign(bar.style, {
         left: `${c.x}px`,
         top: `${c.y}px`,

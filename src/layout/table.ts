@@ -93,6 +93,7 @@ const LANDSCAPE_PLAYER = 0.36;
 const PORTRAIT_BAND_AT_REST = 0.5;
 const CONTEXT_COLLAPSE_AT = 4;
 const CONTROLS_H = 56;
+const PORTRAIT_CONTROLS_H = 96;
 
 /** Clamp a value into [lo, hi]. */
 function clamp(v: number, lo: number, hi: number): number {
@@ -115,11 +116,14 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
 
   // chrome bands, both orientations
   const penBar: Rect = { x: safe.x, y: safe.y, w: safe.w, h: Math.min(PEN_BAR_H, safe.h * 0.06) };
+  const fieldY = penBar.y + penBar.h;
   const trayH = clamp(height * CHIP_TRAY_FRAC, CHIP_TRAY_MIN, CHIP_TRAY_MAX);
   const chipTray: Rect = { x: safe.x, y: safe.y + safe.h - trayH, w: safe.w, h: trayH };
-  const controlsH = Math.min(CONTROLS_H, trayH * 0.8);
+  const controlsH = Math.min(
+    orientation === "portrait" ? PORTRAIT_CONTROLS_H : CONTROLS_H,
+    (chipTray.y - fieldY) * 0.35,
+  );
   const controls: Rect = { x: safe.x, y: chipTray.y - controlsH - 6, w: safe.w, h: controlsH };
-  const fieldY = penBar.y + penBar.h;
   const fieldH = controls.y - 6 - fieldY;
 
   // card metrics from the ruled target (10% of screen width, floored)
