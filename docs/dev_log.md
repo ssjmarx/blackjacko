@@ -640,3 +640,15 @@ The felt comes alive. Three new modules and one core seam amendment:
   the animation engine (progress, skip, the flip's single swap).
 - Gate: **171/171 tests** (15 files), audit 36 modules, kit law holds,
   build clean, purity clean.
+- **Addendum 2 (eyeball round, same session):** three visual bugs, two roots.
+  The **hole flip animated absolute scale** (`1 → 0 → 1`) while sprites live
+  at `setDisplaySize` scales (~0.26) — the hole jumped to full texture size
+  and stayed huge. The flip now animates **relative to the sprite's rest
+  scale**, re-captured at the halfway swap (the face's natural size writes
+  its own scale there). **Player hits and doubles never emitted card
+  events** — the pt0 feed gap was broader than the dealer draws; both cases
+  now emit (role `hit`/`double`), with driver flows law-testing them. And
+  the 2a stack-mount **flattened the stack's per-sprite depths to −2**, killing
+  buildStack's inverted order (the deck read upside down again); replaced
+  with an order-preserving depth band (−1 − i×0.25: top card highest, whole
+  stack above the felt, below the live cards).

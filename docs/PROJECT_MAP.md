@@ -285,7 +285,7 @@ Builders compose: place, flip, flash, slide — mixed and matched anywhere.
   - `busy()` — True while anything is in flight.
   - `finish(it: Item)` — Complete one item early: apply(1), resolve its promise, drop it.
 - `place(…)` — Fly a drawable from one point to another.
-- `flip(…)` — The ruled flip: the back squashes to a line, the face lerps out — one input skips both.
+- `flip(…)` — The ruled flip: the back squashes to a line, the face lerps out — relative to the sprite's own rest scale, one input skips both.
 - `flash(…)` — Pulse a tint over a drawable and settle back to clear.
 - `fade(runner: AnimRunner, d: { setAlpha(n: number)` — Fade a drawable out in place.
 

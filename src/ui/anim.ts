@@ -95,7 +95,7 @@ export function place(
   }, easeInOutSine);
 }
 
-/** The ruled flip: the back squashes to a line, the face lerps out — one input skips both. */
+/** The ruled flip: the back squashes to a line, the face lerps out — relative to the sprite's own rest scale, one input skips both. */
 export function flip(
   runner: AnimRunner,
   d: Squishable,
@@ -103,12 +103,14 @@ export function flip(
   ms: number,
 ): Promise<void> {
   let swapped = false;
+  let restX = d.scaleX; // the sprite's own resting scale — never animate to 1
   return runner.add(ms, (k) => {
     if (!swapped && k >= 0.5) {
       swapped = true;
       swap();
+      restX = d.scaleX; // the face's natural size writes its own scale — re-capture
     }
-    d.scaleX = k < 0.5 ? 1 - 2 * k : 2 * k - 1;
+    d.scaleX = restX * (k < 0.5 ? 1 - 2 * k : 2 * k - 1);
   }, easeInOutSine);
 }
 

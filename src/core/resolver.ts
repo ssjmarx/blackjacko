@@ -314,6 +314,7 @@ export async function playRound(env: RoundEnv): Promise<RoundResult> {
         roundCards.push(c);
         line.cards.push(c);
         shoe.count.expose(c);
+        emit({ kind: 'card', to: 'player', line: idx, role: 'hit', card: c });
         const t2 = handTotal(line.cards);
         if (t2.total > 21) {
           line.net = -line.stake * (line.doubled ? 2 : 1);
@@ -336,6 +337,7 @@ export async function playRound(env: RoundEnv): Promise<RoundResult> {
         roundCards.push(c);
         line.cards.push(c);
         shoe.count.expose(c);
+        emit({ kind: 'card', to: 'player', line: idx, role: 'double', card: c });
         line.doubled = true;
         atRisk += line.stake;
         if (tally) tally.doubles++;

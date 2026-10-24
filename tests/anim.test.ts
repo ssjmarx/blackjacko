@@ -68,7 +68,10 @@ describe("the builders", () => {
     const { runner, advance } = makeRunner(t);
     const img = { scaleX: 1 };
     let swaps = 0;
-    const done = flip(runner, img, () => swaps++, 100);
+    const done = flip(runner, img, () => {
+      swaps++;
+      img.scaleX = 1; // the face's natural size writes its own rest scale
+    }, 100);
     advance(10);
     advance(60);
     expect(swaps).toBe(1);
@@ -77,6 +80,24 @@ describe("the builders", () => {
     await done;
     expect(swaps).toBe(1);
     expect(img.scaleX).toBe(1);
+  });
+
+  it("flip is relative to the sprite's rest scale and lands back at rest", async () => {
+    const t = { now: 0 };
+    const { runner, advance } = makeRunner(t);
+    const img = { scaleX: 0.3 };
+    let swaps = 0;
+    const done = flip(runner, img, () => {
+      swaps++;
+      img.scaleX = 0.31; // the face's natural size writes a fresh scale at the swap
+    }, 100);
+    advance(10);
+    // mid-squash: below rest, never at 1
+    expect(img.scaleX).toBeLessThan(0.3);
+    advance(100);
+    await done;
+    expect(swaps).toBe(1);
+    expect(img.scaleX).toBeCloseTo(0.31, 5);
   });
 
   it("fade runs to zero", async () => {

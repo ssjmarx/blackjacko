@@ -91,7 +91,8 @@ export class TableRenderer implements RenderPort {
       max: CARD_STACK.maxDeck,
       perCard: CARD_STACK.deckPx,
     });
-    for (const s of this.stack.sprites) s.setDepth(-2);
+    // the depth band: the top card rides highest, the whole stack below the live cards (spec E14)
+    for (const [i, s] of this.stack.sprites.entries()) s.setDepth(-1 - i * 0.25);
   }
 
   /** The shoe stack's position — every card flies from here. */

@@ -238,6 +238,26 @@ describe("the round driver (spec E14)", () => {
     expect(t.driver.balance).toBe(198);
   });
 
+  it("a hit deals its card onto the felt and the stood 19 wins", async () => {
+    // player 5+9 = 14; hit a 5 into 19, stand; dealer 5+9 draws a 9 into 23 — bust, win
+    const t = build(["H", "S"], [S(4), S(4), S(9), S(9), S(4), S(9), S(9)]);
+    t.bus.emit({ kind: "deal" });
+    await until(() => t.controls.modes.at(-1) === "idle");
+    expect(t.port.log.filter((x) => x === "card player hit L0")).toHaveLength(1);
+    expect(t.port.log).toContain("settle L0 win");
+    expect(t.driver.balance).toBe(201);
+  });
+
+  it("a double deals its card and pays double on the dealer bust", async () => {
+    // player 5+5 = 10, doubled into 15; dealer 5+9 draws a 9 into 23 — bust, pays double
+    const t = build(["D"], [S(4), S(4), S(4), S(9), S(4), S(9), S(9)]);
+    t.bus.emit({ kind: "deal" });
+    await until(() => t.controls.modes.at(-1) === "idle");
+    expect(t.port.log.filter((x) => x === "card player double L0")).toHaveLength(1);
+    expect(t.port.log).toContain("settle L0 win");
+    expect(t.driver.balance).toBe(202);
+  });
+
   it("the seeded shoe replays card-for-card against the sim's own shoe", () => {
     const a = new Shoe(ruleset, mulberry32(((1234 ^ SHOE_SALT) >>> 0) || 1));
     const b = new Shoe(ruleset, mulberry32(((1234 ^ SHOE_SALT) >>> 0) || 1));
