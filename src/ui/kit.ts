@@ -95,6 +95,16 @@ export function roundRect(
   return g;
 }
 
+/** Create a described graphics canvas — the sanctioned escape hatch for bespoke vector art (the wood rail). */
+export function graphics(
+  scene: Phaser.Scene,
+  opts: { id: string; sr: string; debug?: boolean },
+): Phaser.GameObjects.Graphics {
+  const g = scene.add.graphics();
+  registerObject(opts.id, opts.debug ? "debug" : "region", opts.sr);
+  return g;
+}
+
 /** Destroy a kit-created object and drop its registry entries. */
 export function destroy(
   scene: Phaser.Scene,

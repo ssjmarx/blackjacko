@@ -4,13 +4,15 @@
  * zones, the DOM probes, and the size/axis readout, live on every resize.
  */
 import Phaser from "phaser";
-import { solveTable, type Rect, type TableLayout } from "../layout/table.ts";
+import { solveTable, unionRects, type Rect, type TableLayout } from "../layout/table.ts";
 import { CARD_STACK, DEBUG, FELT } from "../config.ts";
 import { destroy, rect, text } from "../ui/kit.ts";
 import { announce, registerObject, showLowerThird } from "../ui/domshell.ts";
 import { englishDeck } from "../ui/decks/english.ts";
 import { cardSprite } from "../ui/cardart.ts";
 import { deckStack, shoeRow } from "../ui/cardstack.ts";
+import { paintWood } from "../ui/wood.ts";
+import { sessionSeed } from "../ui/session.ts";
 import { CommandBus } from "../ui/input/bus.ts";
 import { mountControls } from "../ui/input/controls.ts";
 import type { Deck } from "../ui/decks/deck.ts";
@@ -20,6 +22,7 @@ const ZONE_COLORS = {
   dealer: 0x3b82f6,
   player: 0x22c55e,
   shoe: 0xf97316,
+  deckExtra: 0xc2410c,
   pit: 0x94a3b8,
   discard: 0x14b8a6,
   chipTray: 0xa855f7,
@@ -36,6 +39,7 @@ export class FeltScene extends Phaser.Scene {
   private readout?: Phaser.GameObjects.Text;
   private overlay: { obj: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text; id: string }[] = [];
   private cards: { obj: Phaser.GameObjects.Image | Phaser.GameObjects.Graphics; id: string }[] = [];
+  private wood?: Phaser.GameObjects.Graphics;
   private layout?: TableLayout;
   private deck?: Deck;
   private bus = new CommandBus();
@@ -80,9 +84,11 @@ export class FeltScene extends Phaser.Scene {
     if (this.deck) this.proveDeck();
   }
 
-  /** Re-solve the table and repaint every debug zone for the viewport. */
+  /** Re-solve the table, repaint the wood rail and every debug zone for the viewport. */
   private reflow(w: number, h: number): void {
     this.layout = solveTable(w, h);
+    if (this.wood) destroy(this, this.wood, "wood rail");
+    this.wood = paintWood(this, { x: 0, y: 0, w, h }, this.layout.safe, sessionSeed());
     for (const o of this.overlay) destroy(this, o.obj, o.id);
     this.overlay = [];
     for (const c of this.cards) destroy(this, c.obj, c.id);
@@ -93,34 +99,34 @@ export class FeltScene extends Phaser.Scene {
     if (this.deck) this.proveDeck();
   }
 
-  /** The pt3 proof: A♠ in the dealer zone; the stacks show the cut card at 75% pen. */
+  /** The pt3 proof: A♠ at true card metrics; the deck stack bleeds into deck extra at 75% pen. */
   private proveDeck(): void {
     const l = this.layout;
     const d = this.deck;
     if (!l || !d) return;
-    const aceBox: Rect = {
-      x: l.dealer.x + l.metrics.cardW * 0.2,
-      y: l.dealer.y,
-      w: l.metrics.cardW * 1.6,
-      h: l.dealer.h,
-    };
+    const cardBox = { x: 0, y: 0, w: l.metrics.cardW, h: l.metrics.cardH };
+    const aceBox = { ...cardBox, x: l.dealer.x + l.metrics.cardW * 0.2 };
     const ace = cardSprite(this, d, 0, aceBox, { id: "proof ace of spades", debug: true });
     this.cards.push({ obj: ace, id: "proof ace of spades" });
-    const deckTail = Math.round(0.25 * CARD_STACK.maxDeck);
-    const stack = deckStack(this, d, l.shoe, {
+    const deckExtent = unionRects(l.shoe, l.deckExtra);
+    const stack = deckStack(this, d, deckExtent, {
       id: "proof deck stack",
       debug: true,
-      remaining: CARD_STACK.maxDeck - deckTail,
+      want: cardBox,
+      remaining: Math.round(0.75 * CARD_STACK.maxDeck) - 1,
       pen: 0.75,
       max: CARD_STACK.maxDeck,
       perCard: CARD_STACK.deckPx,
     });
     for (const img of stack) this.cards.push({ obj: img, id: "proof deck stack" });
-    const shoeTail = Math.round(0.25 * CARD_STACK.maxShoe);
-    const row = shoeRow(this, d, l.pit, {
+    // the shoe-form sample runs across the pit and discard cells (its true home, the
+    // shoe cell, hosts the deck stack in this proof; the extents are unit-tested)
+    const rowExtent = unionRects(l.pit, l.discard);
+    const row = shoeRow(this, d, rowExtent, {
       id: "proof shoe row",
       debug: true,
-      remaining: CARD_STACK.maxShoe - shoeTail,
+      want: cardBox,
+      remaining: Math.round(0.75 * CARD_STACK.maxShoe) - 1,
       pen: 0.75,
       max: CARD_STACK.maxShoe,
       perCard: CARD_STACK.shoePx,
@@ -156,6 +162,7 @@ export class FeltScene extends Phaser.Scene {
     add(l.dealer, ZONE_COLORS.dealer, "dealer", "The dealer's cards.");
     add(l.player, ZONE_COLORS.player, "player", "Your hands.");
     add(l.shoe, ZONE_COLORS.shoe, "shoe", "The dealing shoe, with the cut card.");
+    add(l.deckExtra, ZONE_COLORS.deckExtra, "deckExtra", "The deck stack's bleed room.");
     add(l.pit, ZONE_COLORS.pit, "pit", "The middle of the table.");
     add(l.discard, ZONE_COLORS.discard, "discard", "The discard tray.");
     add(l.chipTray, ZONE_COLORS.chipTray, "chipTray", "Your chip tray.");

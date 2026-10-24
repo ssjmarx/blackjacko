@@ -415,6 +415,43 @@ settled cards somewhere to go) — and band 2 carries the dealer's cards at
   paper, black ink), the human's vector art to replace it later; five fit
   the controls cell with the shape held (uniform downscale, ratio kept).
 
+**E13 — the deck's double band, the margin, the rail (ruled 2026-10-23,
+amends E11/E12):**
+
+- **The margin law:** the play field shrinks **5% of the window per edge**
+  (90% in use), applied after device insets compose — nothing draws on the
+  window border again. Law-tested: safe = 90% centered; insets shrink it
+  further on the notched side.
+- **Band order:** the chip tray moves to **band 4, directly beside the
+  player band** (no dragging chips past the buttons); **band 5 is context
+  panel (1/4) | controls (3/4)**, the bottom row.
+- **The deck's double band:** band 1 is **deck/shoe 1/4 | pit 5/12 |
+  discard 1/3**; band 2 is **deck extra 1/4** (the deck stack's vertical
+  bleed room, directly under the shoe cell) **| dealer 1/2 | count hud 1/4**.
+- **The stack laws, v3:** card 1 anchors at the **top margin at full card
+  size** (the deck), the run bleeding down into deck extra; the shoe runs
+  **right into the pit**, left-planted. The graphic is **drawn once and
+  sticks in place**: dealt sprites vanish from the dealt end (hidden =
+  floor(dealt/group)), the planted end never moves. The footprint is
+  **card-size first**, yields to the run only on true overflow, and the
+  shift-clamp stays the last resort — stripes never shrink. The cut card
+  still rides the pen mark measured from the planted end (one sprite per
+  `group` cards of pen change) and is exposed exactly when the dealable
+  empties.
+- **The dealer bleed:** the dealer row grows in its cell, then may bleed
+  right into the count-hud cell on excessive draws (the player isn't making
+  a decision while the dealer hits); the squash policy remains the last
+  resort. `dealerFits` measures the cell-plus-hud extent.
+- **Buttons are cards, by metrics:** a tested `buttonMetrics` law — the five
+  buttons are **exactly the game-card box** whenever five fit the controls
+  cell; capped with the 5:7 shape held when they don't; sizing rides
+  explicit CSS vars from the solver, never derived CSS. (The earlier
+  "buttons look small" report traced to an oversized proof A♠, not the bar.)
+- **The wood rail:** a procedural dark-walnut frame fills the margin ring —
+  seeded grain lines along each rail, darker knots. Its RNG is a **child
+  stream of the session seed** (`?seed=`), so the same seed draws the same
+  table: visual verification that can never perturb the shuffle stream.
+
 **E6 — S6 chip catalog superseded (roster ruling 2026-10-22):** the S6 table
 above is replaced by the ruled 12-chip POC roster below. All rarities are
 SPECULATIVE — a per-chip battery assigns each chip to Common / Uncommon /

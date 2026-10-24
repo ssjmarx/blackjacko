@@ -128,6 +128,34 @@ export interface ControlsHandle {
   destroy(): void;
 }
 
+/** The solved button box: exactly the game card when five fit, capped when they don't. */
+export interface ButtonMetrics {
+  w: number;
+  h: number;
+  font: number;
+  gap: number;
+}
+
+/** The button-box law (spec E13): card-sized whenever five fit the cell, uniformly capped with the shape held. */
+export function buttonMetrics(
+  cardW: number,
+  cardH: number,
+  cellW: number,
+  cellH: number,
+  count: number,
+): ButtonMetrics {
+  const pad = cellH * 0.08;
+  const gap = Math.min(cardW * 0.15, cellW * 0.02);
+  let w = Math.min(cardW, (cellW - gap * (count - 1)) / count);
+  let h = w * (cardH / cardW);
+  const maxH = cellH - pad * 2;
+  if (h > maxH) {
+    h = maxH;
+    w = h * (cardW / cardH);
+  }
+  return { w, h, font: Math.max(9, h * 0.14), gap };
+}
+
 /** Mount the control bar: five buttons, keyboard map, SR registration. */
 export function mountControls(bus: CommandBus): ControlsHandle {
   const bar = document.createElement("div");
@@ -203,6 +231,11 @@ export function mountControls(bus: CommandBus): ControlsHandle {
         width: `${c.w}px`,
         height: `${c.h}px`,
       });
+      const m = buttonMetrics(l.metrics.cardW, l.metrics.cardH, c.w, c.h, CONTROL_SPECS.length);
+      bar.style.setProperty("--bjz-btn-w", `${m.w}px`);
+      bar.style.setProperty("--bjz-btn-h", `${m.h}px`);
+      bar.style.setProperty("--bjz-btn-font", `${m.font}px`);
+      bar.style.setProperty("--bjz-btn-gap", `${m.gap}px`);
     },
     destroy() {
       window.removeEventListener("keydown", onKey);

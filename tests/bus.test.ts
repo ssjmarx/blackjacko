@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from "vitest";
 import { CommandBus } from "../src/ui/input/bus.ts";
-import { resolveButtons } from "../src/ui/input/controls.ts";
+import { buttonMetrics, resolveButtons } from "../src/ui/input/controls.ts";
 
 describe("command bus", () => {
   it("delivers a command to every registered handler", () => {
@@ -72,5 +72,22 @@ describe("the five-button law table (always visible)", () => {
     const r = resolveButtons("play", { rescue: true });
     expect(r.find((b) => b.kind === "double")?.enabled).toBe(false);
     expect(r.filter((b) => b.enabled).map((b) => b.kind)).toEqual(["hit", "stand", "rescue"]);
+  });
+});
+
+describe("buttonMetrics — the buttons-are-cards law", () => {
+  it("desktop: the buttons are exactly the game card box", () => {
+    const m = buttonMetrics(59.2457, 82.944, 864, 129.6, 5);
+    expect(m.w).toBeCloseTo(59.2457, 3);
+    expect(m.h).toBeCloseTo(82.944, 3);
+    expect(m.h / m.w).toBeCloseTo(1.4);
+  });
+
+  it("phone: five capped buttons plus gaps exactly fill the cell, shape held", () => {
+    const m = buttonMetrics(65.83, 92.16, 243, 144, 5);
+    expect(m.w).toBeLessThan(65.83);
+    expect(m.h / m.w).toBeCloseTo(1.4);
+    expect(m.w * 5 + m.gap * 4).toBeCloseTo(243);
+    expect(m.h).toBeLessThanOrEqual(144);
   });
 });

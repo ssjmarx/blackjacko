@@ -1,7 +1,7 @@
 /**
- * The count-true card visuals (spec E11): a deck stacks straight up, a shoe
- * lays its cards down — drawn from the actual remaining count, one stripe per
- * group, with the ruled cut card riding red at the penetration mark.
+ * The count-true card visuals (spec E11/E13): a deck hangs top-anchored and
+ * bleeds down into deck extra, a shoe runs right into the pit — card-sized
+ * first, stuck in place, dealt sprites vanishing from the dealt end.
  */
 import Phaser from "phaser";
 import type { Rect } from "../layout/table.ts";
@@ -22,34 +22,25 @@ export interface StripePlacement {
   shift: number;
 }
 
-/** The stack's sprite plan: tail sprites below, the red cut sprite, the dealable run above. */
+/** The full-shoe sprite plan: every card drawn once, positions fixed for the shoe's life. */
 export interface StackPlan {
-  /** sprites below the cut card (the never-dealt tail) */
+  /** sprites below the cut card, from the planted end (the never-dealt tail) */
   tail: number;
-  /** the 1-indexed sprite swapped for the red cut card */
+  /** the 1-indexed sprite swapped for the red cut card, from the planted end */
   cut: number;
-  /** tail + cut + dealable sprites */
+  /** every sprite of the full deck — dealable, cut, and tail */
   total: number;
 }
 
-/** Place a clamped stripe run: sprites step `step` from the anchor; overflow shifts the run inward, never shrinks it. */
+/** Place a stripe run stepping in the + direction from the anchor; overflow shifts the run inward, never shrinks it. */
 export function placeStripes(
   sprites: number,
   step: number,
   anchor: number,
-  axis: "up" | "right",
-  clampMin: number,
   clampMax: number,
 ): StripePlacement {
   const run = Math.max(0, (sprites - 1) * step);
-  let shift = 0;
-  if (axis === "up") {
-    const far = anchor - run;
-    if (far < clampMin) shift = clampMin - far;
-  } else {
-    const far = anchor + run;
-    if (far > clampMax) shift = clampMax - far;
-  }
+  const shift = Math.min(0, clampMax - (anchor + run));
   return { sprites, anchor: anchor + shift, step, shift };
 }
 
@@ -59,71 +50,105 @@ export function cutSpriteIndex(pen: number, max: number, group: number): number 
   return Math.max(1, Math.ceil(position / group));
 }
 
-/** Plan a stack's sprites from pen, shoe size, and the dealable remaining count. */
-export function stackPlan(pen: number, max: number, remaining: number, group: number): StackPlan {
+/** Plan the full stack: every sprite of the deck, the cut riding the pen mark from the planted end. */
+export function stackPlan(pen: number, max: number, group: number): StackPlan {
   const cut = cutSpriteIndex(pen, max, group);
-  const dealable = Math.ceil(Math.max(0, remaining) / group);
-  return { tail: cut - 1, cut, total: cut + dealable };
+  return { total: Math.ceil(max / group), cut, tail: cut - 1 };
 }
 
-/** The fit-the-cell law: the back footprint yields to the stripe run (spec E12); un-fittable runs fall back to the clamp. */
+/** Sprites fully dealt from the dealt end — the sticks-in-place erosion law. */
+export function hiddenSprites(dealt: number, group: number): number {
+  return Math.floor(Math.max(0, dealt) / group);
+}
+
+/** Cards already dealt, derived from the dealable remaining count. */
+export function dealtFrom(pen: number, max: number, remaining: number): number {
+  return Math.max(0, Math.round(pen * max) - 1 - Math.max(0, remaining));
+}
+
+/** The footprint law (spec E13): card size first, yield to the run, clamp only when the run alone cannot fit. */
 export function fitFootprint(
-  box: Rect,
-  axis: "up" | "right",
+  extent: Rect,
+  axis: "down" | "right",
   run: number,
   aspect: number,
+  want: Rect,
 ): { box: Rect; clamped: boolean } {
-  const canFit = axis === "up" ? run < box.h : run < box.w;
-  const fitBox =
-    !canFit
-      ? box
-      : axis === "up"
-        ? { x: box.x, y: box.y + run, w: box.w, h: box.h - run }
-        : { x: box.x, y: box.y, w: box.w - run, h: box.h };
-  return { box: fitIn(fitBox, aspect), clamped: !canFit };
+  if (axis === "down") {
+    if (want.h + run <= extent.h) {
+      return { box: { x: extent.x + (extent.w - want.w) / 2, y: extent.y, w: want.w, h: want.h }, clamped: false };
+    }
+    const avail = extent.h - run;
+    if (avail > 0) {
+      let h = avail;
+      let w = h / aspect;
+      if (w > extent.w) {
+        w = extent.w;
+        h = w * aspect;
+      }
+      return { box: { x: extent.x + (extent.w - w) / 2, y: extent.y, w, h }, clamped: false };
+    }
+    return { box: fitIn(extent, aspect), clamped: true };
+  }
+  if (want.w + run <= extent.w) {
+    return { box: { x: extent.x, y: extent.y + (extent.h - want.h) / 2, w: want.w, h: want.h }, clamped: false };
+  }
+  const avail = extent.w - run;
+  if (avail > 0) {
+    let w = avail;
+    let h = w * aspect;
+    if (h > extent.h) {
+      h = extent.h;
+      w = h / aspect;
+    }
+    return { box: { x: extent.x, y: extent.y + (extent.h - h) / 2, w, h }, clamped: false };
+  }
+  return { box: fitIn(extent, aspect), clamped: true };
 }
 
-/** Build the stack along one axis: backs step out, the cut card swaps in at the plan's mark. */
+/** The options every stack build takes: identity, the wanted card box, and the shoe state. */
+export interface StackOpts {
+  id: string;
+  debug?: boolean;
+  /** the card-size footprint the stack prefers (the solver's metrics box) */
+  want: Rect;
+  /** dealable cards left — the dealt count derives from it */
+  remaining: number;
+  pen: number;
+  max: number;
+  perCard: number;
+}
+
+/** Build the stack: the full deck drawn once at fixed positions, dealt sprites hidden from the dealt end. */
 function buildStack(
   scene: Phaser.Scene,
   deck: Deck,
-  box: Rect,
-  axis: "up" | "right",
+  extent: Rect,
+  axis: "down" | "right",
   perCard: number,
-  opts: {
-    id: string;
-    debug?: boolean;
-    clampMin?: number;
-    clampMax?: number;
-    remaining: number;
-    pen: number;
-    max: number;
-  },
+  opts: StackOpts,
 ): (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] {
-  const plan = stackPlan(opts.pen, opts.max, opts.remaining, CARD_STACK.group);
+  const plan = stackPlan(opts.pen, opts.max, CARD_STACK.group);
+  const hidden = hiddenSprites(dealtFrom(opts.pen, opts.max, opts.remaining), CARD_STACK.group);
   const run = (plan.total - 1) * perCard;
-  const fit = fitFootprint(box, axis, run, deck.aspect);
+  const fit = fitFootprint(extent, axis, run, deck.aspect, opts.want);
   const fitted = fit.box;
-  const anchor = axis === "up" ? box.y + box.h - fitted.h / 2 : box.x + fitted.w / 2;
-  const restMin = axis === "up" ? box.y + fitted.h / 2 : box.x + fitted.w / 2;
-  const restMax = axis === "up" ? box.y + box.h - fitted.h / 2 : box.x + box.w - fitted.w / 2;
-  const placed = placeStripes(
-    plan.total,
-    perCard,
-    anchor,
-    axis,
-    fit.clamped ? (opts.clampMin ?? restMin) : -1e9,
-    fit.clamped ? (opts.clampMax ?? restMax) : 1e9,
-  );
-  const cx = box.x + box.w / 2;
-  const cy = box.y + box.h / 2;
+  const anchor = axis === "down" ? extent.y + fitted.h / 2 : extent.x + fitted.w / 2;
+  const clampMax = axis === "down" ? extent.y + extent.h - fitted.h / 2 : extent.x + extent.w - fitted.w / 2;
+  const placed = placeStripes(plan.total, perCard, anchor, fit.clamped ? clampMax : 1e9);
+  // the cut sprite, 0-indexed from the planted end: bottom for a deck, left for a shoe
+  const cutIdx = axis === "down" ? plan.total - plan.cut : plan.cut - 1;
+  const cx = extent.x + extent.w / 2;
+  const cy = extent.y + extent.h / 2;
   const out: (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] = [];
   for (let i = 0; i < placed.sprites; i++) {
-    const x = axis === "up" ? cx : placed.anchor + i * placed.step;
-    const y = axis === "up" ? placed.anchor - i * placed.step : cy;
-    if (i === plan.cut - 1) {
-      const w = axis === "up" ? fitted.w : fitted.h;
-      const h = axis === "up" ? fitted.h : fitted.w;
+    const fromDealtEnd = axis === "down" ? i : placed.sprites - 1 - i;
+    const visible = fromDealtEnd >= hidden;
+    const x = axis === "down" ? cx : placed.anchor + i * placed.step;
+    const y = axis === "down" ? placed.anchor + i * placed.step : cy;
+    if (i === cutIdx) {
+      const w = axis === "down" ? fitted.w : fitted.h;
+      const h = axis === "down" ? fitted.h : fitted.w;
       const g = roundRect(
         scene,
         { x: x - w / 2, y: y - h / 2, w, h },
@@ -135,53 +160,37 @@ function buildStack(
           debug: true,
         },
       );
-      g.setDepth(10 + i);
+      g.setDepth(10 + i).setVisible(visible);
       out.push(g);
     } else {
-      const b = backSprite(scene, deck, i % deck.backCount, box, { id: `${opts.id} ${i + 1}`, debug: true });
-      b.setDepth(10 + i);
+      const b = backSprite(scene, deck, i % deck.backCount, fitted, { id: `${opts.id} ${i + 1}`, debug: true });
+      b.setDepth(10 + i).setVisible(visible);
       b.x = x;
       b.y = y;
       if (axis === "right") b.setAngle(90);
       out.push(b);
     }
   }
-  registerObject(opts.id, "stack", `${axis === "up" ? "Deck" : "Shoe"}: ${opts.remaining} cards before the cut card.`);
+  registerObject(opts.id, "stack", `${axis === "down" ? "Deck" : "Shoe"}: ${Math.max(0, opts.remaining)} cards before the cut card.`);
   return out;
 }
 
-/** Create a vertical deck stack: tail, the red cut card, then the dealable run, bottom-anchored. */
+/** Create the vertical deck stack: card-sized at the top margin, bleeding down, the tail planted at the bottom. */
 export function deckStack(
   scene: Phaser.Scene,
   deck: Deck,
-  box: Rect,
-  opts: {
-    id: string;
-    debug?: boolean;
-    clampMin?: number;
-    remaining: number;
-    pen: number;
-    max: number;
-    perCard: number;
-  },
+  extent: Rect,
+  opts: StackOpts,
 ): (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] {
-  return buildStack(scene, deck, box, "up", opts.perCard, opts);
+  return buildStack(scene, deck, extent, "down", opts.perCard, opts);
 }
 
-/** Create a horizontal shoe row: the same plan laid end to end, clamped inward. */
+/** Create the horizontal shoe row: card-sized at the left, running right into the pit, the tail planted. */
 export function shoeRow(
   scene: Phaser.Scene,
   deck: Deck,
-  box: Rect,
-  opts: {
-    id: string;
-    debug?: boolean;
-    clampMax?: number;
-    remaining: number;
-    pen: number;
-    max: number;
-    perCard: number;
-  },
+  extent: Rect,
+  opts: StackOpts,
 ): (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] {
-  return buildStack(scene, deck, box, "right", opts.perCard, opts);
+  return buildStack(scene, deck, extent, "right", opts.perCard, opts);
 }

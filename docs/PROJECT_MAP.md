@@ -187,10 +187,11 @@ standard fallbacks (D->H, Ds->S).
 ## src/layout/table.ts
 
 The table layout solver — the single home for every coordinate on screen.
-One banded grid serves every aspect (spec E11): dealer top, player bottom,
-every zone a viewport fraction — no pixel constants, no minimums.
+One banded grid serves every aspect (spec E11/E13): dealer top, player
+bottom, framed by the margin law — every zone a viewport fraction.
 
 - `clamp(v: number, lo: number, hi: number)` — Clamp a value into [lo, hi].
+- `unionRects(a: Rect, b: Rect)` — The bounding rectangle of two rects — the stack bleed extents live here too.
 - `solveTable(width: number, height: number, opts: TableOptions = {})` — Solve the table for a viewport — pure: identical inputs, identical layout.
 
 ## src/main.ts
@@ -209,8 +210,8 @@ zones, the DOM probes, and the size/axis readout, live on every resize.
 - **class FeltScene** — The one Phaser scene: boots the felt and re-flows it on every resize.
   - `preload()` — Load the deck's art files before the scene boots.
   - `create()` — Boot the felt: camera background, the readout, and the resize hook.
-  - `reflow(w: number, h: number)` — Re-solve the table and repaint every debug zone for the viewport.
-  - `proveDeck()` — The pt3 proof: A♠ in the dealer zone; the stacks show the cut card at 75% pen.
+  - `reflow(w: number, h: number)` — Re-solve the table, repaint the wood rail and every debug zone for the viewport.
+  - `proveDeck()` — The pt3 proof: A♠ at true card metrics; the deck stack bleeds into deck extra at 75% pen.
   - `paintReadout(w: number, h: number)` — Update the size/axis readout (flips with the aspect, per goal 1).
   - `paintZones()` — Draw the debug zone overlay: one outlined, labeled rect per zone.
 
@@ -293,17 +294,19 @@ fit within the solver's card box; registry cleanup rides through the kit.
 
 ## src/ui/cardstack.ts
 
-The count-true card visuals (spec E11): a deck stacks straight up, a shoe
-lays its cards down — drawn from the actual remaining count, one stripe per
-group, with the ruled cut card riding red at the penetration mark.
+The count-true card visuals (spec E11/E13): a deck hangs top-anchored and
+bleeds down into deck extra, a shoe runs right into the pit — card-sized
+first, stuck in place, dealt sprites vanishing from the dealt end.
 
-- `placeStripes(…)` — Place a clamped stripe run: sprites step `step` from the anchor; overflow shifts the run inward, never shrinks it.
+- `placeStripes(…)` — Place a stripe run stepping in the + direction from the anchor; overflow shifts the run inward, never shrinks it.
 - `cutSpriteIndex(pen: number, max: number, group: number)` — The ruled cut-card law: the sprite containing the pen card goes red — one sprite per `group` cards of pen.
-- `stackPlan(pen: number, max: number, remaining: number, group: number)` — Plan a stack's sprites from pen, shoe size, and the dealable remaining count.
-- `fitFootprint(…)` — The fit-the-cell law: the back footprint yields to the stripe run (spec E12); un-fittable runs fall back to the clamp.
-- `buildStack(…)` — Build the stack along one axis: backs step out, the cut card swaps in at the plan's mark.
-- `deckStack(…)` — Create a vertical deck stack: tail, the red cut card, then the dealable run, bottom-anchored.
-- `shoeRow(…)` — Create a horizontal shoe row: the same plan laid end to end, clamped inward.
+- `stackPlan(pen: number, max: number, group: number)` — Plan the full stack: every sprite of the deck, the cut riding the pen mark from the planted end.
+- `hiddenSprites(dealt: number, group: number)` — Sprites fully dealt from the dealt end — the sticks-in-place erosion law.
+- `dealtFrom(pen: number, max: number, remaining: number)` — Cards already dealt, derived from the dealable remaining count.
+- `fitFootprint(…)` — The footprint law (spec E13): card size first, yield to the run, clamp only when the run alone cannot fit.
+- `buildStack(…)` — Build the stack: the full deck drawn once at fixed positions, dealt sprites hidden from the dealt end.
+- `deckStack(…)` — Create the vertical deck stack: card-sized at the top margin, bleeding down, the tail planted at the bottom.
+- `shoeRow(…)` — Create the horizontal shoe row: card-sized at the left, running right into the pit, the tail planted.
 
 ## src/ui/decks/deck.ts
 
@@ -357,6 +360,7 @@ D deals/doubles, H hits/takes, S stands/passes, R surrenders/forfeits;
 context only changes labels and enabled state, never visibility (spec E11).
 
 - `resolveButtons(mode: ControlMode, legal: ControlLegality = {})` — Resolve the five buttons for a mode — pure, unit-tested, no DOM.
+- `buttonMetrics(…)` — The button-box law (spec E13): card-sized whenever five fit the cell, uniformly capped with the shape held.
 - `mountControls(bus: CommandBus)` — Mount the control bar: five buttons, keyboard map, SR registration.
 
 ## src/ui/input/human.ts
@@ -381,4 +385,25 @@ description and registers with the registry; undescribed objects cannot compile.
 - `text(…)` — Create a described text object: readouts, labels, zone tags.
 - `image(…)` — Create a described image (a card, a chip — anything textured).
 - `roundRect(…)` — Create a described rounded rectangle (the cut card, drawn chips).
+- `graphics(…)` — Create a described graphics canvas — the sanctioned escape hatch for bespoke vector art (the wood rail).
 - `destroy(…)` — Destroy a kit-created object and drop its registry entries.
+
+## src/ui/session.ts
+
+The session seed — the one number every deterministic stream derives from.
+`?seed=` names it; the wood rail and (batch 2) the shoe shuffle branch from
+separate child streams, so decoration can never perturb the cards.
+
+- `sessionSeed(search: string = window.location.search)` — The session seed: `?seed=` as an int (or hashed string); default 1.
+- `deriveStream(seed: number, salt: number)` — Branch a child stream off the session seed — deterministic, shuffle-safe.
+
+## src/ui/wood.ts
+
+The wood rail — a procedural dark-walnut frame drawn in the margin ring
+(spec E13): seeded grain lines along each rail, knots ringed darkest.
+Same session seed, same grain — a child stream, so the shuffle is untouched.
+
+- `paintWood(…)` — Paint the wood ring between the window and the safe area; deterministic per seed.
+- `paintRail(…)` — Fill one rail and streak it with wavy grain lines and a knot or two.
+- `grainLine(…)` — One wavy grain stroke, running the rail's long axis with seeded wander.
+- `knot(…)` — A knot: concentric dark ellipses, the growth rings around a seeded heart.

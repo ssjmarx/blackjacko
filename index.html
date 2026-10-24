@@ -30,20 +30,21 @@
         align-items: center;
         justify-content: center;
         gap: 0.3em;
+        box-sizing: border-box;
         background: var(--bjz-btn-paper, #ffffff);
         color: var(--bjz-btn-ink, #1a1a1a);
         border: 1px solid var(--bjz-btn-ink, #1a1a1a);
-        border-radius: 0.4em;
-        padding: 0.2em;
-        font: 600 calc(var(--bjz-card-h, 100px) * 0.13) system-ui, sans-serif;
+        border-radius: 6%;
+        padding: 2%;
+        font: 600 var(--bjz-btn-font, 13px) system-ui, sans-serif;
         cursor: pointer;
         min-width: 0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        flex: 0 1 auto;
-        width: min(var(--bjz-card-w, 72px), calc((100% - 2em) / 5));
-        aspect-ratio: 5 / 7;
+        flex: 0 0 auto;
+        width: var(--bjz-btn-w, 64px);
+        height: var(--bjz-btn-h, 90px);
       }
       .bj-btn kbd {
         background: var(--bjz-btn-ink, #1a1a1a);
@@ -64,7 +65,7 @@
         display: flex;
         flex-wrap: nowrap;
         justify-content: flex-end;
-        gap: 0.5em;
+        gap: var(--bjz-btn-gap, 8px);
         align-items: center;
         z-index: 35;
       }

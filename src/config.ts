@@ -49,6 +49,24 @@ export const CARD_STACK = {
   maxShoe: 416,
 } as const;
 
+/** The margin law (spec E13): 5% of the window per edge frames the play field. */
+export const MARGIN = {
+  frac: 0.05,
+} as const;
+
+/**
+ * The wood rail (spec E13): a procedural dark-walnut frame drawn in the
+ * margin — base fill, darker grain lines, darkest knots. The salt branches
+ * the rail's child RNG stream off the session seed (same seed, same grain;
+ * the shuffle's stream is never touched).
+ */
+export const WOOD = {
+  base: 0x4a2f1d,
+  grain: 0x33200f,
+  knot: 0x2a190b,
+  salt: 0x776f6f64,
+} as const;
+
 /** The cut card (spec E11): a red rounded square riding the pen mark in the stack graphic. */
 export const CUT_CARD = {
   red: 0xc8102e,

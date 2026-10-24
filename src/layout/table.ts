@@ -1,7 +1,7 @@
 /**
  * The table layout solver — the single home for every coordinate on screen.
- * One banded grid serves every aspect (spec E11): dealer top, player bottom,
- * every zone a viewport fraction — no pixel constants, no minimums.
+ * One banded grid serves every aspect (spec E11/E13): dealer top, player
+ * bottom, framed by the margin law — every zone a viewport fraction.
  */
 
 /** A rectangle in logical pixels; every zone is one. */
@@ -39,7 +39,7 @@ export interface TableMetrics {
   stackDY: number;
   chipR: number;
   dealerGap: number;
-  /** how many dealer cards fit un-squashed before the compression policy */
+  /** how many dealer cards fit the cell-plus-hud bleed before the squash policy */
   dealerFits: number;
 }
 
@@ -54,6 +54,8 @@ export interface TableLayout {
   pit: Rect;
   discard: Rect;
   shoe: Rect;
+  /** the deck stack's vertical bleed room, directly under the shoe cell */
+  deckExtra: Rect;
   dealer: Rect;
   player: Rect;
   lineSlots: Rect[];
@@ -68,10 +70,13 @@ export interface TableLayout {
 
 // --- the grid fractions: the tunables, each with one home (spec E11) ---
 
-const TRAY_FRAC = 1 / 5; // chip tray height vs safe height — clean fifths (spec E12)
-const BANDS = 4; // equal content bands above the tray, each also 1/5
-const HUD_W = 1 / 4; // count hud width vs safe width (band 2)
-const PANEL_W = 1 / 4; // context panel width vs safe width (band 4)
+const MARGIN_FRAC = 0.05; // the margin law: 5% of the window per edge (spec E13)
+const BANDS = 5; // five clean fifths of the safe area (spec E12/E13)
+const SHOE_W = 1 / 4; // band 1: shoe cell width
+const PIT_W = 5 / 12; // band 1: pit width (the shoe row bleeds into it)
+const DISCARD_W = 1 / 3; // band 1: discard tray width
+const HUD_W = 1 / 4; // band 2: count hud width (also the deck-extra width)
+const PANEL_W = 1 / 4; // band 5: context panel width
 const CARD_BOX_ASPECT = 7 / 5; // the canonical card box ratio (art fits within)
 const STACK_DX = 0.2; // stacked-card horizontal bias vs card width
 const STACK_DY = 0.08; // stacked-card vertical bias vs card height
@@ -88,6 +93,13 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v));
 }
 
+/** The bounding rectangle of two rects — the stack bleed extents live here too. */
+export function unionRects(a: Rect, b: Rect): Rect {
+  const x = Math.min(a.x, b.x);
+  const y = Math.min(a.y, b.y);
+  return { x, y, w: Math.max(a.x + a.w, b.x + b.w) - x, h: Math.max(a.y + a.h, b.y + b.h) - y };
+}
+
 /** Solve the table for a viewport — pure: identical inputs, identical layout. */
 export function solveTable(width: number, height: number, opts: TableOptions = {}): TableLayout {
   const ins = opts.insets ?? { top: 0, right: 0, bottom: 0, left: 0 };
@@ -95,17 +107,18 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
   const hands = clamp(Math.round(opts.hands ?? 1), 1, 4);
   const orientation: Orientation = height > width ? "portrait" : "landscape";
 
+  // the margin law (spec E13): device insets first, then 5% of the window per edge
+  const mx = width * MARGIN_FRAC;
+  const my = height * MARGIN_FRAC;
   const safe: Rect = {
-    x: ins.left,
-    y: ins.top,
-    w: Math.max(0, width - ins.left - ins.right),
-    h: Math.max(0, height - ins.top - ins.bottom),
+    x: ins.left + mx,
+    y: ins.top + my,
+    w: Math.max(0, width - ins.left - ins.right - mx * 2),
+    h: Math.max(0, height - ins.top - ins.bottom - my * 2),
   };
 
-  // the five bands: four equal content quarters, then the chip tray
-  const trayH = safe.h * TRAY_FRAC;
-  const chipTray: Rect = { x: safe.x, y: safe.y + safe.h - trayH, w: safe.w, h: trayH };
-  const bandH = (safe.h - trayH) / BANDS;
+  // the five bands: clean fifths of the safe area, touching (spec E12/E13)
+  const bandH = safe.h / BANDS;
 
   /** One content band of the grid, by index. */
   function band(i: number): Rect {
@@ -114,34 +127,41 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
   const b1 = band(0);
   const b2 = band(1);
   const b3 = band(2);
-  const b4 = band(3);
+  const trayBand = band(3);
+  const b5 = band(4);
 
-  // band 1: the back row — shoe 1/3 | pit 1/3 | discard 1/3 (the axis mirrors the ends)
-  const third = safe.w / 3;
+  // band 1: the back row — shoe 1/4 | pit 5/12 | discard 1/3 (the axis mirrors the ends)
+  const shoeW = safe.w * SHOE_W;
+  const pitW = safe.w * PIT_W;
+  const discardW = safe.w * DISCARD_W;
   const shoe: Rect = axisFlip
-    ? { x: safe.x + safe.w - third, y: b1.y, w: third, h: b1.h }
-    : { x: safe.x, y: b1.y, w: third, h: b1.h };
-  const pit: Rect = { x: safe.x + third, y: b1.y, w: third, h: b1.h };
+    ? { x: safe.x + safe.w - shoeW, y: b1.y, w: shoeW, h: b1.h }
+    : { x: safe.x, y: b1.y, w: shoeW, h: b1.h };
+  const pit: Rect = axisFlip
+    ? { x: safe.x + discardW, y: b1.y, w: pitW, h: b1.h }
+    : { x: safe.x + shoeW, y: b1.y, w: pitW, h: b1.h };
   const discard: Rect = axisFlip
-    ? { x: safe.x, y: b1.y, w: third, h: b1.h }
-    : { x: safe.x + safe.w - third, y: b1.y, w: third, h: b1.h };
+    ? { x: safe.x, y: b1.y, w: discardW, h: b1.h }
+    : { x: safe.x + safe.w - discardW, y: b1.y, w: discardW, h: b1.h };
 
-  // band 2: dealer 3/4 | count hud 1/4; band 4: panel 1/4 | controls 3/4
+  // band 2: deck extra 1/4 (under the shoe cell) | dealer 1/2 | count hud 1/4
   const hudW = safe.w * HUD_W;
-  const dealer: Rect = axisFlip
-    ? { x: safe.x + hudW, y: b2.y, w: safe.w - hudW, h: b2.h }
-    : { x: safe.x, y: b2.y, w: safe.w - hudW, h: b2.h };
+  const deckExtra: Rect = { x: shoe.x, y: b2.y, w: shoe.w, h: b2.h };
+  const dealer: Rect = { x: safe.x + hudW, y: b2.y, w: safe.w - hudW * 2, h: b2.h };
   const countHud: Rect = axisFlip
     ? { x: safe.x, y: b2.y, w: hudW, h: b2.h }
     : { x: safe.x + safe.w - hudW, y: b2.y, w: hudW, h: b2.h };
   const player: Rect = { ...b3 };
+  const chipTray: Rect = { ...trayBand };
+
+  // band 5: context panel 1/4 | controls 3/4 (the axis mirrors the ends)
   const panelW = safe.w * PANEL_W;
   const contextPanel: Rect = axisFlip
-    ? { x: safe.x + safe.w - panelW, y: b4.y, w: panelW, h: b4.h }
-    : { x: safe.x, y: b4.y, w: panelW, h: b4.h };
+    ? { x: safe.x + safe.w - panelW, y: b5.y, w: panelW, h: b5.h }
+    : { x: safe.x, y: b5.y, w: panelW, h: b5.h };
   const controls: Rect = axisFlip
-    ? { x: safe.x, y: b4.y, w: safe.w - panelW, h: b4.h }
-    : { x: safe.x + panelW, y: b4.y, w: safe.w - panelW, h: b4.h };
+    ? { x: safe.x, y: b5.y, w: safe.w - panelW, h: b5.h }
+    : { x: safe.x + panelW, y: b5.y, w: safe.w - panelW, h: b5.h };
 
   // hand slots: one per active line, side by side across the player band
   const slots: Rect[] = [];
@@ -163,7 +183,10 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
     stackDY: STACK_DY * cardH,
     chipR: Math.min(cardW * 0.45, chipTray.h * 0.42),
     dealerGap: DEALER_GAP * cardW,
-    dealerFits: Math.max(1, Math.floor((dealer.w + DEALER_GAP * cardW) / (cardW * (1 + DEALER_GAP)))),
+    dealerFits: Math.max(
+      1,
+      Math.floor((dealer.w + countHud.w + DEALER_GAP * cardW) / (cardW * (1 + DEALER_GAP))),
+    ),
   };
 
   // the stakes: bet bottom-center of its slot, insurance top-center (spec E11)
@@ -186,6 +209,7 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
     pit,
     discard,
     shoe,
+    deckExtra,
     dealer,
     player,
     lineSlots: slots,

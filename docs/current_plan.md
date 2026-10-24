@@ -22,13 +22,17 @@ record rulings in the dev log.
 ## Presentation law (ruled 2026-10-22)
 
 - **Adaptive layout from day 1:** one pure zone solver drives both the canvas and
-  the DOM overlay. One banded grid at every aspect (spec E11/E12, ruled
-  2026-10-22): dealer top, player bottom, always — five clean fifths; the
-  back row is shoe 1/3 | pit 1/3 | discard 1/3; dealer 3/4 | count hud 1/4;
-  player full width; context panel 1/4 | controls 3/4. Fully relational:
-  every element sizes from its cell, no pixel minimums; the axis option
-  mirrors the horizontal anchors only. The five action buttons are
-  card-shaped placeholders (the human's vector art later).
+  the DOM overlay. One banded grid at every aspect (spec E11/E13, ruled
+  2026-10-22/23): the margin law frames the table (5% of the window per
+  edge); dealer top, player bottom, always — five clean fifths; the back row
+  is deck/shoe 1/4 | pit 5/12 | discard 1/3; deck extra 1/4 | dealer 1/2 |
+  count hud 1/4; player full width; chip tray (band 4); context panel 1/4 |
+  controls 3/4 (band 5). Fully relational: every element sizes from its
+  cell, no pixel minimums; the axis option mirrors the horizontal anchors
+  only. The five action buttons are exactly card-sized when five fit
+  (the `buttonMetrics` law), placeholders until the human's vector art
+  lands. A procedural wood rail fills the margin ring, seeded from a child
+  stream of the session seed (same seed, same table; the shuffle untouched).
 - **Vector-first assets:** cards come from the English-pattern SVG (wikimedia,
   CC0, Loren Osborn) first — per-property decks arrive later through a `Deck`
   interface. Chips, bet circles, side-bet spots, the pen bar, and the cut card
@@ -40,8 +44,8 @@ record rulings in the dev log.
 - **Animation law:** a card flip = the back lerps full-width → a single line,
   then the front lerps out the same way; placement = fly from the shoe. Flip
   and placement are independent, composable functions.
-- **HUD placement (spec E11):** RC/TC in its band-2 cell, right side. Context
-  info in the band-4 panel (min/max bet + bankroll while betting; strategy
+- **HUD placement (spec E11/E13):** RC/TC in its band-2 cell, right side. Context
+  info in the band-5 panel (min/max bet + bankroll while betting; strategy
   card while playing; the deck credit sprouting from its outer top corner).
   The pen bar is cancelled — the count-true deck/shoe graphic carries a red
   rounded cut card riding the pen mark, shifting one sprite per `group`

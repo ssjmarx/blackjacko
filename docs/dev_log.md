@@ -375,3 +375,39 @@ provenance; the law lives in the spec and the roadmap.
   battery + per-chip ablation (Godot 4.3 export). Design input for promo
   balance: Airbag dominates EV (+43.9pp LOO); Tourist/Baker's Dozen/Bolt
   Cutter currently negative-LOO on blackjack CSM.
+
+---
+
+## Entry #15 — batch 1.12: the deck's double band, the margin, the rail (2026-10-23)
+
+- **The grid, v3 (spec E13):** bands 4/5 swapped — the chip tray sits beside
+  the player band, the controls row at the bottom. Band 1 is deck/shoe 1/4 |
+  pit 5/12 | discard 1/3; band 2 gains **deck extra** (1/4, the deck stack's
+  vertical bleed room, directly under the shoe cell) with dealer 1/2 |
+  count hud 1/4.
+- **The margin law:** safe = viewport − insets − 5% per window edge (90% in
+  use, law-tested with inset composition). Nothing draws on the border.
+- **The stack laws, v3:** the deck hangs top-anchored at full card size and
+  bleeds down into deck extra; the shoe runs right into the pit; drawn once
+  and **stuck in place**, dealt sprites hiding from the dealt end (hidden =
+  floor(dealt/group)); the cut card rides the pen mark from the planted end
+  and is exposed exactly when the dealable empties (tested at the 307/311/312
+  boundaries). The footprint is card-size first, yields only on true
+  overflow; the shift-clamp is the last resort. `placeStripes` simplified to
+  one +direction law; `stackPlan` plans the full shoe; `hiddenSprites` and
+  `dealtFrom` join the tested vocabulary.
+- **The dealer bleed:** grow in-cell → bleed into the count-hud cell →
+  squash as the last resort; `dealerFits` now measures cell-plus-hud.
+- **The buttons-are-cards law, enforced:** `buttonMetrics` (pure, tested) —
+  buttons are exactly the game-card box when five fit the controls cell,
+  capped with the 5:7 shape held when they don't; explicit CSS vars replace
+  derived CSS. Root cause of the "small buttons" report: the proof A♠ was
+  drawn in an oversized hand-made box — every real card looked small against
+  it. The proof now uses true card metrics.
+- **The wood rail:** procedural dark-walnut frame in the margin ring (new
+  kit `graphics` creator — the sanctioned escape hatch; one SR registry
+  entry, decorative). Grain derives from a child stream of the session seed
+  (`?seed=`) — same seed, same table, the shuffle stream untouched.
+  `sessionSeed`/`deriveStream` land in `src/ui/session.ts` for batch 2.
+- Gate: **142/142 tests**, audit 33 modules, kit law holds (12 files),
+  build clean, purity clean.
