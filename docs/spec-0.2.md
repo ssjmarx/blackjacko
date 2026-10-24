@@ -557,9 +557,17 @@ and made unconditional.
   **table min/max centered at the pit's floor** (a small backing plate keeps
   it legible over the row at shoe tables). **Closed captions center on the
   border between bands 3 and 4** — horizontally and vertically.
-- **The wood's inverse-knot pass:** after the families grow and merge, an
-  occupancy grid finds the **largest blank region**, a knot is seeded at its
-  center, and rings grow until they meet existing circles — repeated until
-  nothing blank is large enough. Plus a **seeded noise tile** (film grain,
-  under the felt) and a **cut-in shadow** (layered darkness just inside the
-  felt's edge) — the material pass against the plastic look.
+- **The wood's material model (rewritten 2026-10-23 as a flow-field
+  density):** seeded knots disturb a **stream function**
+  `ψ(p) = flow(p) + Σ Sᵢ·ln(|p − cᵢ|)` — the grain flows along the window's
+  long axis and *swirls around each knot* (potential flow), converging
+  automatically as it nears the center. Every pixel colors from the annual
+  phase through an **asymmetric ramp** (thin dark latewood, gradual
+  earlywood spring-back, sharp year edge), modulated by **8:1 stretched
+  fiber noise**, **ring-width years**, **figure bands**, a **knot core**
+  (red-shifted near-black), and **baked light** (vignette + a top-left
+  biased rim highlight along the felt). Placement stays seeded
+  (rejection-sampled) with the **inverse-knot pass** filling the largest
+  blank regions until **no blank 2-cell square remains** (law-tested:
+  wall-to-wall grain, deterministic per seed). Rendered per-pixel at ½
+  resolution and upscaled — soft, never aliased.

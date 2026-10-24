@@ -5,9 +5,7 @@
  */
 import Phaser from "phaser";
 import type { Rect } from "../layout/table.ts";
-import { WOOD_NOISE } from "../config.ts";
 import { registerObject, unregisterObject } from "./domshell.ts";
-import { deriveStream } from "./session.ts";
 
 /** Options for a kit-created rectangle. */
 export interface KitRectOptions {
@@ -107,47 +105,26 @@ export function graphics(
   return g;
 }
 
-/** Options for the seeded noise layer (the wood's material pass, spec E14). */
-export interface KitNoiseOptions {
+/** Options for mounting a pre-rendered canvas as a described image. */
+export interface KitCanvasOptions {
   id: string;
   sr: string;
-  /** the seed for the grain — a child stream, never the shuffle's */
-  seed: number;
-  /** tile edge in px */
-  size?: number;
-  alpha?: number;
   debug?: boolean;
 }
 
-/** Create a seeded noise texture tiled across the rect — resolution-agnostic film grain. */
-export function tiledNoise(
+/** Mount a pre-rendered canvas (a procedural texture) as a described image. */
+export function canvasImage(
   scene: Phaser.Scene,
   r: Rect,
-  opts: KitNoiseOptions,
-): Phaser.GameObjects.TileSprite {
-  const size = opts.size ?? 256;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  if (ctx) {
-    const img = ctx.createImageData(size, size);
-    const rng = deriveStream(opts.seed, WOOD_NOISE.salt);
-    for (let i = 0; i < img.data.length; i += 4) {
-      const v = 90 + Math.floor(rng() * 120);
-      img.data[i] = v;
-      img.data[i + 1] = v;
-      img.data[i + 2] = v;
-      img.data[i + 3] = 255;
-    }
-    ctx.putImageData(img, 0, 0);
-  }
-  const key = `noise-${opts.seed}-${size}`;
+  canvas: HTMLCanvasElement,
+  key: string,
+  opts: KitCanvasOptions,
+): Phaser.GameObjects.Image {
   if (!scene.textures.exists(key)) scene.textures.addCanvas(key, canvas);
-  const t = scene.add.tileSprite(r.x, r.y, r.w, r.h, key);
-  t.setAlpha(opts.alpha ?? 0.05);
-  registerObject(opts.id, opts.debug ? "debug" : "region", opts.sr);
-  return t;
+  const img = scene.add.image(r.x, r.y, key).setOrigin(0, 0);
+  img.setDisplaySize(r.w, r.h);
+  registerObject(opts.id, opts.debug ? "debug" : "image", opts.sr);
+  return img;
 }
 
 /** Destroy a kit-created object and drop its registry entries. */

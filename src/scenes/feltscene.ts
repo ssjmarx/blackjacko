@@ -5,8 +5,8 @@
  */
 import Phaser from "phaser";
 import { solveTable, unionRects, type Rect, type TableLayout } from "../layout/table.ts";
-import { CARD_STACK, DEBUG, FELT, MARGIN, TONYS, WOOD_NOISE } from "../config.ts";
-import { destroy, rect, text, tiledNoise } from "../ui/kit.ts";
+import { CARD_STACK, DEBUG, FELT, MARGIN, TONYS } from "../config.ts";
+import { destroy, rect, text } from "../ui/kit.ts";
 import { announce, registerObject, showLowerThird } from "../ui/domshell.ts";
 import { englishDeck } from "../ui/decks/english.ts";
 import { cardSprite } from "../ui/cardart.ts";
@@ -39,8 +39,7 @@ export class FeltScene extends Phaser.Scene {
   private overlay: { obj: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text; id: string }[] = [];
   private cards: { obj: Phaser.GameObjects.Image | Phaser.GameObjects.Graphics; id: string }[] = [];
   private readouts: { obj: Phaser.GameObjects.Text; id: string }[] = [];
-  private wood?: Phaser.GameObjects.Graphics;
-  private noise?: Phaser.GameObjects.TileSprite;
+  private wood?: Phaser.GameObjects.Image;
   private shadow?: Phaser.GameObjects.Graphics;
   private felt?: Phaser.GameObjects.Rectangle;
   private layout?: TableLayout;
@@ -68,12 +67,14 @@ export class FeltScene extends Phaser.Scene {
   /** Boot the felt: camera background, the readout, and the resize hook. */
   create(): void {
     this.cameras.main.setBackgroundColor(FELT.background);
-    this.readout = text(this, 8, 8, "", {
-      id: "readout",
-      sr: "Canvas size and dealing axis readout",
-      color: FELT.readout,
-      debug: true,
-    });
+    if (DEBUG.layout) {
+      this.readout = text(this, 8, 8, "", {
+        id: "readout",
+        sr: "Canvas size and dealing axis readout",
+        color: FELT.readout,
+        debug: true,
+      });
+    }
     this.reflow(this.scale.gameSize.width, this.scale.gameSize.height);
     this.scale.on("resize", (size: Phaser.Structs.Size) => this.reflow(size.width, size.height));
     this.controls = mountControls(this.bus);
@@ -94,16 +95,8 @@ export class FeltScene extends Phaser.Scene {
   private reflow(w: number, h: number): void {
     this.layout = solveTable(w, h);
     if (this.wood) destroy(this, this.wood, "wood rail");
-    this.wood = paintWood(this, { x: 0, y: 0, w, h }, sessionSeed());
-    if (this.noise) this.noise.destroy();
-    this.noise = tiledNoise(this, { x: 0, y: 0, w, h }, {
-      id: "wood noise",
-      sr: "Decorative wood grain texture.",
-      seed: sessionSeed(),
-      size: WOOD_NOISE.size,
-      alpha: WOOD_NOISE.alpha,
-    });
-    this.noise.setDepth(-11);
+    this.wood = paintWood(this, { x: 0, y: 0, w, h }, this.layout.safe, sessionSeed());
+    this.wood.setDepth(-12);
     if (this.felt) destroy(this, this.felt, "felt");
     this.felt = rect(this, this.layout.safe, { id: "felt", sr: "The felt table surface.", color: FELT.fill });
     this.felt.setDepth(-10);
@@ -115,7 +108,7 @@ export class FeltScene extends Phaser.Scene {
     this.cards = [];
     for (const r of this.readouts) destroy(this, r.obj, r.id);
     this.readouts = [];
-    this.paintReadout(w, h);
+    if (DEBUG.layout) this.paintReadout(w, h);
     this.paintTableReadouts();
     if (DEBUG.layout) this.paintZones();
     this.controls?.layout(this.layout);

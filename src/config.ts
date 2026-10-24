@@ -11,9 +11,9 @@ export const FELT = {
   readout: "#e8f5ee",
 } as const;
 
-/** Debug flags: the layout overlay shows until pt2's solver makes it honest. */
+/** Debug flags: off in play — the felt renders as its single shade of green. */
 export const DEBUG = {
-  layout: true,
+  layout: false,
 } as const;
 
 /** The card palette: face, ink, and the red suit — the contrast law's subjects (spec E8). */
@@ -56,23 +56,24 @@ export const MARGIN = {
 } as const;
 
 /**
- * The wood rail (spec E13): a procedural dark-walnut frame drawn in the
- * margin — base fill, darker grain lines, darkest knots. The salt branches
- * the rail's child RNG stream off the session seed (same seed, same grain;
- * the shuffle's stream is never touched).
+ * The wood rail (spec E14): a procedural flow-field density — seeded knots
+ * disturb a stream function whose level sets are the grain; every pixel is
+ * an asymmetric annual ramp modulated by fiber, figure, and baked light.
+ * The salt branches the rail's child RNG stream off the session seed (same
+ * seed, same table; the shuffle's stream is never touched).
  */
 export const WOOD = {
-  base: 0x4a2f1d,
-  grain: 0x33200f,
-  knot: 0x2a190b,
   salt: 0x776f6f64,
-} as const;
-
-/** The noise pass (spec E14): seeded film grain over the wood, under the felt. */
-export const WOOD_NOISE = {
-  size: 256,
-  alpha: 0.05,
-  salt: 0x6e6f6973,
+  early: 0x6b4423, // the light warm field between the annual lines
+  late: 0x241307, // the thin dark latewood band
+  knotCore: 0x2b120a, // the red-shifted near-black at a knot's center
+  flow: 0.12, // swirl strength vs the window's short side, seeded ±40%
+  spacing: 13, // base ring spacing in px, modulated ±15% by tone
+  lateWidth: 0.18, // the latewood band's share of the annual cycle
+  fiberAmp: 0.06, // fiber-noise luminance swing (stretched 8:1 along flow)
+  figureAmp: 0.05, // the broad chatoyance bands' swing
+  vignette: 0.28, // darkening toward the window edges
+  rim: 0.18, // the warm highlight along the felt boundary (top-left biased)
 } as const;
 
 /** The cut-in shadow (spec E14): layered darkness just inside the felt's edge. */

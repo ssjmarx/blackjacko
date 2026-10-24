@@ -35,10 +35,12 @@ record rulings in the dev log.
   the only secondary and the buttons follow it. Six buttons: "B Book" alone
   on the left, the five actions on the right. Bankroll rides the chip
   column's floor; table min/max the pit's floor; captions center on the
-  band 3/4 border. Procedural growth-ring wood fills the frame (inverse-knot
-  gap pass, seeded noise tile, cut-in shadow on the felt), seeded from a
-  child stream of the session seed (same seed, same table; the shuffle
-  untouched). The margin is 2.5% per window edge.
+  band 3/4 border. Procedural wood is a flow-field density (E14, rewritten
+  2026-10-23): grain flows along the long axis and swirls around seeded
+  knots, colored per-pixel through an asymmetric annual ramp with fiber,
+  figure, knot cores, and baked light — wall-to-wall coverage is
+  law-tested. The debug overlay (zones, probes, readout) is flag-off: the
+  felt renders as its single shade of green. The margin is 2.5% per edge.
 - **Vector-first assets:** cards come from the English-pattern SVG (wikimedia,
   CC0, Loren Osborn) first — per-property decks arrive later through a `Deck`
   interface. Chips, bet circles, side-bet spots, the pen bar, and the cut card

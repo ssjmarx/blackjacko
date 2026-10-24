@@ -528,3 +528,37 @@ used a low-res fiction; the allocation law fills whatever space exists.
   1600 as 36.
 - Gate: **150/150 tests** (12 files), audit 33 modules, kit law holds
   (12 files), build clean, purity clean.
+
+## Entry #20 — batch 1.17: wood v4, the flow-field density (2026-10-23)
+
+The stroke-based wood still read as plastic. The diagnosis: **flat color
+between features**, stroked hard edges, machine-even spacing, isotropic
+noise, and no light response. The rewrite (ruled from the material menu:
+A+D+C with B folded in) renders the wood **per-pixel as a density field**:
+
+- **The model:** `ψ(p) = flow(p) + Σ Sᵢ·ln(|p − cᵢ|)` — a stream function.
+  Straight grain along the window's long axis; each knot is a log swirl
+  (potential flow), so grain bends around knots and **converges near the
+  center for free**. Level sets of ψ are the grain lines. No families, no
+  merge logic, no seams — one global field.
+- **The ramp:** thin dark latewood (~18% of the cycle, sharp year edge),
+  gradual earlywood spring-back; **fiber noise** stretched 8:1 along flow;
+  **ring-width years** (spacing modulated ±15%); **figure bands**; knot
+  cores red-shifted near-black; **baked light** — vignette toward the
+  window edges and a top-left biased rim highlight along the felt.
+- **Placement** survives as seeded knots + the inverse-knot pass, now
+  **law-tested** (`tests/wood.test.ts`): deterministic per seed, ≥6 seeded,
+  seeded rejection distances hold, and after the pass **no blank 2-cell
+  square remains** (the wall-to-wall guarantee, via exported
+  `largestBlankCells`). First coverage metric (0.83) failed honestly and
+  drove the pass to fill until nothing ≥2 cells remains; the rejection law
+  was re-scoped to seeded knots only (inverse knots legitimately sit in
+  gaps).
+- **The overlay is off:** `DEBUG.layout = false` — zones, probes, and the
+  readout stand down; **the felt renders as its single shade of green**.
+  The overlay code stays behind the flag for future solver work.
+- `kit.tiledNoise` retired for `canvasImage` (procedural textures mount
+  through the kit, lint-clean); rendered at ½ resolution and upscaled —
+  soft, never aliased, ~tens of ms per resize.
+- Gate: **155/155 tests** (13 files), audit, kit law holds, build clean,
+  purity clean.

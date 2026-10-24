@@ -387,7 +387,7 @@ description and registers with the registry; undescribed objects cannot compile.
 - `image(…)` — Create a described image (a card, a chip — anything textured).
 - `roundRect(…)` — Create a described rounded rectangle (the cut card, drawn chips).
 - `graphics(…)` — Create a described graphics canvas — the sanctioned escape hatch for bespoke vector art (the wood rail).
-- `tiledNoise(…)` — Create a seeded noise texture tiled across the rect — resolution-agnostic film grain.
+- `canvasImage(…)` — Mount a pre-rendered canvas (a procedural texture) as a described image.
 - `destroy(…)` — Destroy a kit-created object and drop its registry entries.
 
 ## src/ui/session.ts
@@ -401,17 +401,17 @@ separate child streams, so decoration can never perturb the cards.
 
 ## src/ui/wood.ts
 
-The wood rail — procedural growth-ring wood (spec E13/E14): seeded knots,
-warped ring grains that merge when families meet, and the inverse-knot
-pass knotting whatever blanks remain; the felt insets on top, cut clean.
+The wood rail — a procedural flow-field density (spec E13/E14): seeded
+knots disturb a stream function whose level sets are the grain; every
+pixel colors from an annual ramp plus fiber, figure, and baked light.
 
-- `paintWood(scene: Phaser.Scene, outer: Rect, seed: number)` — Paint full-window growth-ring wood; the caller insets the felt on top.
-- `seedKnots(outer: Rect, rng: ()` — Seed 6-12 knots across the whole window, rejection-sampled so none collide; the felt trims the middle.
-- `makeKnot(id: number, cx: number, cy: number, r: number, rng: ()` — Build one knot's warp profile at a position — shared by seeding and the inverse-knot pass.
-- `paintKnot(g: Phaser.GameObjects.Graphics, k: Knot, rng: ()` — Draw one knot: tight concentric squished ellipses, the darkest strokes on the frame.
-- `strokeSquished(…)` — Stroke a squished circle: 40 sampled points, rotated by angle.
-- `growGrains(…)` — Grow warped rings from every knot; meeting families merge and keep growing until the frame is filled.
-- `largestBlank(…)` — The largest blank square in the occupancy grid, or null when nothing hosts a knot.
-- `fillGaps(…)` — The inverse-knot pass (spec E14): knot the largest blank region, grow it into the gap, repeat until full.
-- `drawGrain(g: Phaser.GameObjects.Graphics, k: Knot, rng: ()` — One warped ring: 40 sampled points around the knot's coherent warp profile.
+- `makeLattice(rng: ()` — The seeded value-noise lattice shared by every texture term.
+- `sampleLattice(l: Lattice, u: number, v: number)` — Smooth bilinear lattice sample at wrapped normalized coordinates.
+- `influence(k: KnotSpot)` — A knot's influence radius — where its swirl stops shaping the field.
+- `seedKnots(outer: Rect, rng: ()` — Seed 6-12 knots window-wide, rejection-sampled so none crowd each other.
+- `placeKnots(outer: Rect, rng: ()` — Seed the knots, then fill the largest blanks until the grain runs wall to wall (spec E14).
+- `largestBlankCells(outer: Rect, spots: KnotSpot[])` — The largest blank square's side, in occupancy cells — the wall-to-wall law's measure.
+- `largestBlank(outer: Rect, spots: KnotSpot[])` — The largest region farther than every knot's influence, or null when coverage holds.
+- `renderWoodCanvas(outer: Rect, safe: Rect, seed: number, scale = 0.5)` — Render the flow-field wood into a canvas at reduced scale — soft, not aliased.
+- `paintWood(…)` — Paint the flow-field wood across the whole window; the caller insets the felt on top.
 - `paintCutIn(scene: Phaser.Scene, safe: Rect, margin: number)` — The felt's cut-in shadow (spec E14): the wood ring casting layered darkness onto the cloth's edge.
