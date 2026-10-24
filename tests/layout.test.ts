@@ -99,9 +99,9 @@ describe("layout: the ratio sweep", () => {
             expect(contains({ x: 0, y: 0, w, h }, r), `${name} off-screen at ${where}`).toBe(true);
           }
 
-          // the card box: one shared size, relational, no floors
+          // the card box: one shared size, filling the band like the buttons do
           const slot = l.lineSlots[0];
-          const expectW = Math.min(slot.w / 1.2, (slot.h * 0.72) / 1.4, (l.dealer.h * 0.95) / 1.4);
+          const expectW = Math.min(slot.w / 1.2, (Math.min(slot.h, l.dealer.h) * 0.96) / 1.4);
           expect(l.metrics.cardW, where).toBeCloseTo(expectW);
           expect(l.metrics.cardH, where).toBeCloseTo(l.metrics.cardW * 1.4);
 
@@ -179,9 +179,9 @@ describe("layout: the named laws", () => {
     expect(d.safe).toEqual({ x: 64, y: 36, w: 1152, h: 648 });
     const bandH = 129.6;
     expect(d.chipTray.h).toBeCloseTo(bandH);
-    expect(d.metrics.cardW).toBeCloseTo(Math.min(1152 / 1.2, (bandH * 0.72) / 1.4, (bandH * 0.95) / 1.4));
-    expect(d.metrics.cardW).toBeCloseTo(66.65, 2);
-    expect(d.metrics.cardH).toBeCloseTo(93.31, 2);
+    expect(d.metrics.cardW).toBeCloseTo(Math.min(1152 / 1.2, (bandH * 0.96) / 1.4));
+    expect(d.metrics.cardW).toBeCloseTo(88.87, 2);
+    expect(d.metrics.cardH).toBeCloseTo(124.42, 2);
     expect(d.controls.w).toBeCloseTo(864);
     expect(d.contextPanel.w).toBeCloseTo(288);
     expect(d.countHud.w).toBeCloseTo(288);
@@ -190,7 +190,7 @@ describe("layout: the named laws", () => {
     expect(d.discard.w).toBeCloseTo(384);
     const p = solveTable(360, 800);
     expect(p.chipTray.h).toBeCloseTo(144);
-    expect(p.metrics.cardW).toBeCloseTo(Math.min(324 / 1.2, (144 * 0.72) / 1.4, (144 * 0.95) / 1.4));
+    expect(p.metrics.cardW).toBeCloseTo(Math.min(324 / 1.2, (144 * 0.96) / 1.4));
   });
 
   it("the margin frames the table: 5% per window edge, insets compose", () => {

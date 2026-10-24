@@ -438,3 +438,33 @@ provenance; the law lives in the spec and the roadmap.
   salt-separated).
 - Gate: **145/145 tests** (12 files), audit 33 modules, kit law holds,
   build clean, purity clean.
+
+---
+
+## Entry #17 — batch 1.14: merged grains, one card size law, the deck stands up (2026-10-23)
+
+- **Grain law v2:** rings halved (base gap 8–12px) and strokes tripled
+  (4.8–8.4px); the gap floor carries the stroke's clearance. **The merge
+  pass:** when two grain families collide, the survivor absorbs the loser —
+  embrace ring at the reach-weighted midpoint enclosing both envelopes,
+  loser's envelopes re-tagged — and keeps growing; families chain-merge
+  until one envelops the window, so the far side of the frame fills by
+  default (the starvation is dead).
+- **One size law on the felt:** the card box adopts the button calc —
+  **96% of band height**, width from the 5:7 aspect, capped only by the
+  slot constraint (`slot.w / 1.2` per hands). `SLOT_CARD_H` and
+  `DEALER_CARD_H` retired; `CARD_FILL = 0.96` rules. Card box at 720p:
+  88.87×124.42 — buttons and cards identical by construction.
+- **Flagged for batch 2:** with 96%-fill cards, a 5-card stacked hand's
+  peak (cardH + 4×0.07 rise ≈ 124% of band) exceeds the player band — the
+  hand renderer will need a pitch/height ruling when stacks render.
+- **The deck stands up:** the 1.12 ceiling-hang read upside-down (a deck
+  hovering with air beneath it). The stack now **plants on the floor of
+  deck extra** — footprint bottom-planted, run growing upward, next card on
+  top, cut card and tail on the floor; dealt sprites still vanish from the
+  top, so the visible top edge descends while the bottom stays planted —
+  exactly a deck being dealt down on a table. The "first card aligned at
+  the top margin" phrasing is superseded (the eyeball outranks the plan).
+  The shoe row was never broken (left-planted, eroding right).
+- Gate: **145/145 tests** (12 files), audit 33 modules, kit law holds,
+  build clean, purity clean.

@@ -76,7 +76,10 @@ export function fitFootprint(
 ): { box: Rect; clamped: boolean } {
   if (axis === "down") {
     if (want.h + run <= extent.h) {
-      return { box: { x: extent.x + (extent.w - want.w) / 2, y: extent.y, w: want.w, h: want.h }, clamped: false };
+      return {
+        box: { x: extent.x + (extent.w - want.w) / 2, y: extent.y + extent.h - want.h, w: want.w, h: want.h },
+        clamped: false,
+      };
     }
     const avail = extent.h - run;
     if (avail > 0) {
@@ -86,7 +89,7 @@ export function fitFootprint(
         w = extent.w;
         h = w * aspect;
       }
-      return { box: { x: extent.x + (extent.w - w) / 2, y: extent.y, w, h }, clamped: false };
+      return { box: { x: extent.x + (extent.w - w) / 2, y: extent.y + extent.h - h, w, h }, clamped: false };
     }
     return { box: fitIn(extent, aspect), clamped: true };
   }
@@ -133,19 +136,20 @@ function buildStack(
   const run = (plan.total - 1) * perCard;
   const fit = fitFootprint(extent, axis, run, deck.aspect, opts.want);
   const fitted = fit.box;
-  const anchor = axis === "down" ? extent.y + fitted.h / 2 : extent.x + fitted.w / 2;
-  const clampMax = axis === "down" ? extent.y + extent.h - fitted.h / 2 : extent.x + extent.w - fitted.w / 2;
-  const placed = placeStripes(plan.total, perCard, anchor, fit.clamped ? clampMax : 1e9);
-  // the cut sprite, 0-indexed from the planted end: bottom for a deck, left for a shoe
+  // the deck plants on the extent floor (grows upward), the shoe plants at the left edge
+  let planted = axis === "down" ? extent.y + extent.h - fitted.h / 2 - run : extent.x + fitted.w / 2;
+  if (axis === "right" && fit.clamped) {
+    planted = placeStripes(plan.total, perCard, planted, extent.x + extent.w - fitted.w / 2).anchor;
+  }
   const cutIdx = axis === "down" ? plan.total - plan.cut : plan.cut - 1;
   const cx = extent.x + extent.w / 2;
   const cy = extent.y + extent.h / 2;
   const out: (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] = [];
-  for (let i = 0; i < placed.sprites; i++) {
-    const fromDealtEnd = axis === "down" ? i : placed.sprites - 1 - i;
+  for (let i = 0; i < plan.total; i++) {
+    const fromDealtEnd = axis === "down" ? i : plan.total - 1 - i;
     const visible = fromDealtEnd >= hidden;
-    const x = axis === "down" ? cx : placed.anchor + i * placed.step;
-    const y = axis === "down" ? placed.anchor + i * placed.step : cy;
+    const x = axis === "down" ? cx : planted + i * perCard;
+    const y = axis === "down" ? planted + i * perCard : cy;
     if (i === cutIdx) {
       const w = axis === "down" ? fitted.w : fitted.h;
       const h = axis === "down" ? fitted.h : fitted.w;

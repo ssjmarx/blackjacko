@@ -85,8 +85,7 @@ const HAND_W = 1.2; // a stacked hand's width vs card width
 const SPOT_H = 0.12; // spot diameter vs slot height
 const SPOT_W = 0.45; // spot diameter vs slot width
 const SPOT_INSET = 0.02; // spot inset vs slot height
-const SLOT_CARD_H = 1 - 2 * (SPOT_H + SPOT_INSET); // the cards' share of a slot
-const DEALER_CARD_H = 0.95; // dealer cards' share of their band height
+const CARD_FILL = 0.96; // cards fill their band like the buttons fill theirs (spec E13)
 
 /** Clamp a value into [lo, hi]. */
 function clamp(v: number, lo: number, hi: number): number {
@@ -169,11 +168,10 @@ export function solveTable(width: number, height: number, opts: TableOptions = {
     slots.push({ x: player.x + (i * player.w) / hands, y: player.y, w: player.w / hands, h: player.h });
   }
 
-  // one shared card box: fit within slot and dealer constraints — no minimums
+  // one shared card box: fill the band like the buttons do, capped by the slot width
   const cardW = Math.min(
     slots[0].w / HAND_W,
-    (slots[0].h * SLOT_CARD_H) / CARD_BOX_ASPECT,
-    (dealer.h * DEALER_CARD_H) / CARD_BOX_ASPECT,
+    (Math.min(slots[0].h, dealer.h) * CARD_FILL) / CARD_BOX_ASPECT,
   );
   const cardH = cardW * CARD_BOX_ASPECT;
   const metrics: TableMetrics = {

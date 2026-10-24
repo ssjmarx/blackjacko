@@ -407,5 +407,5 @@ them, the frame filled; the felt insets on top, cut clean.
 - `seedKnots(outer: Rect, inner: Rect, rng: ()` — Seed 2-4 knots in the visible rail, rejection-sampled so none collide.
 - `paintKnot(g: Phaser.GameObjects.Graphics, k: Knot, rng: ()` — Draw one knot: tight concentric squished ellipses, the darkest strokes on the frame.
 - `strokeSquished(…)` — Stroke a squished circle: 40 sampled points, rotated by angle.
-- `growGrains(…)` — Grow warped ring grains from every knot until the packing blocks them all.
+- `growGrains(…)` — Grow warped rings from every knot; meeting families merge and keep growing until the frame is filled.
 - `drawGrain(g: Phaser.GameObjects.Graphics, k: Knot, rng: ()` — One warped ring: 40 sampled points around the knot's coherent warp profile.

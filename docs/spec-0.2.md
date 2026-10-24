@@ -428,15 +428,16 @@ amends E11/E12):**
 - **The deck's double band:** band 1 is **deck/shoe 1/4 | pit 5/12 |
   discard 1/3**; band 2 is **deck extra 1/4** (the deck stack's vertical
   bleed room, directly under the shoe cell) **| dealer 1/2 | count hud 1/4**.
-- **The stack laws, v3:** card 1 anchors at the **top margin at full card
-  size** (the deck), the run bleeding down into deck extra; the shoe runs
-  **right into the pit**, left-planted. The graphic is **drawn once and
-  sticks in place**: dealt sprites vanish from the dealt end (hidden =
-  floor(dealt/group)), the planted end never moves. The footprint is
-  **card-size first**, yields to the run only on true overflow, and the
-  shift-clamp stays the last resort — stripes never shrink. The cut card
-  still rides the pen mark measured from the planted end (one sprite per
-  `group` cards of pen change) and is exposed exactly when the dealable
+- **The stack laws, v3 (deck re-planted 2026-10-23):** the deck **stands on
+  the floor of deck extra, growing upward** — next card on top, the cut card
+  and its dead tail planted at the bottom (the ceiling-hang read upside-
+  down); the shoe runs **right into the pit**, left-planted. The graphic is
+  **drawn once and sticks in place**: dealt sprites vanish from the dealt
+  end (hidden = floor(dealt/group)), the planted end never moves. The
+  footprint is **card-size first**, yields to the run only on true overflow,
+  and the shift-clamp stays the last resort — stripes never shrink. The cut
+  card still rides the pen mark measured from the planted end (one sprite
+  per `group` cards of pen change) and is exposed exactly when the dealable
   empties.
 - **The dealer bleed:** the dealer row grows in its cell, then may bleed
   right into the count-hud cell on excessive draws (the player isn't making
@@ -451,16 +452,18 @@ amends E11/E12):**
 - **The wood rail:** procedural growth-ring wood fills the whole window —
   2-4 squished knots seeded in the visible rail, warped ring grains growing
   from each (coherent warp phase per family, geometric spacing) under
-  circle-envelope collision packing, drawn only when they touch nothing,
-  until every knot is blocked or envelops the frame; **the felt insets on
-  top**, cut clean — overlap is structurally impossible. Its RNG is a
-  **child stream of the session seed** (`?seed=`), so the same seed draws
-  the same table: visual verification that can never perturb the shuffle
-  stream.
-- **Card sizing** rides the slot law, loosened 2026-10-23: spot reservations
-  slim to 0.12 + 0.02 inset (cards take 0.72 of a hand slot), dealer cards
-  take 0.95 of their band, stack bias 0.07 — the felt keeps its margin and
-  the cards grow past their pre-margin size.
+  circle-envelope collision packing; **rings are few and thick** (half as
+  many, three times the stroke, 2026-10-23), and **meeting families merge**
+  — the survivor embraces both and keeps growing — so the frame fills to
+  its edges. **The felt insets on top**, cut clean — overlap is structurally
+  impossible. Its RNG is a **child stream of the session seed** (`?seed=`),
+  so the same seed draws the same table: visual verification that can never
+  perturb the shuffle stream.
+- **Card sizing** rides the button law (2026-10-23): cards fill **96% of
+  their band** exactly as the buttons fill theirs — one size law on the
+  felt; the slot-reservation constants are retired (spots ride their own
+  0.12 + 0.02 fractions, stack bias 0.07). At 720p the box is 88.9×124.4 —
+  buttons and cards identical.
 
 **E6 — S6 chip catalog superseded (roster ruling 2026-10-22):** the S6 table
 above is replaced by the ruled 12-chip POC roster below. All rarities are

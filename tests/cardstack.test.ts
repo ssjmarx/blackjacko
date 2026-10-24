@@ -93,12 +93,12 @@ describe("stackPlan — the full-shoe accounting, and the erosion law", () => {
 describe("fitFootprint — the card-size-first footprint law", () => {
   const want = { x: 0, y: 0, w: 90, h: 126 };
 
-  it("keeps the full card size when footprint plus run fits the extent", () => {
+  it("keeps the full card size, floor-planted, when footprint plus run fits the extent", () => {
     const f = fitFootprint({ x: 0, y: 0, w: 288, h: 259.2 }, "down", 26, 1.498, want);
     expect(f.clamped).toBe(false);
     expect(f.box.w).toBe(90);
     expect(f.box.h).toBe(126);
-    expect(f.box.y).toBe(0);
+    expect(f.box.y).toBeCloseTo(259.2 - 126);
     expect(f.box.x).toBeCloseTo((288 - 90) / 2);
   });
 
@@ -106,7 +106,7 @@ describe("fitFootprint — the card-size-first footprint law", () => {
     const f = fitFootprint({ x: 0, y: 0, w: 288, h: 150 }, "down", 140, 1.498, want);
     expect(f.clamped).toBe(false);
     expect(f.box.h + 140).toBeLessThanOrEqual(150);
-    expect(f.box.y).toBe(0);
+    expect(f.box.y).toBeCloseTo(150 - f.box.h);
   });
 
   it("a rightward run leaves the back left-planted, vertically centered", () => {

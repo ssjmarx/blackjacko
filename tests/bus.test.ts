@@ -77,7 +77,7 @@ describe("the five-button law table (always visible)", () => {
 
 describe("buttonMetrics — the band-filling card law", () => {
   it("desktop: card-shaped buttons fill the controls band vertically", () => {
-    const m = buttonMetrics(66.65, 93.31, 864, 129.6, 5);
+    const m = buttonMetrics(88.87, 124.42, 864, 129.6, 5);
     expect(m.h).toBeCloseTo(124.416, 2);
     expect(m.h / m.w).toBeCloseTo(1.4);
     expect(m.h).toBeLessThanOrEqual(129.6);
