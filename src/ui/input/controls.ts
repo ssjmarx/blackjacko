@@ -1,7 +1,7 @@
 /**
- * The control bar — five always-visible buttons, one row, right-aligned:
- * D deals/doubles, H hits/takes, S stands/passes, R surrenders/forfeits;
- * context only changes labels and enabled state, never visibility (spec E11).
+ * The control bar — six always-visible buttons (spec E14): the Book alone on
+ * the left, the five actions on the right, every one exactly card-sized by
+ * the solver's one-size law; context changes labels and state, never presence.
  */
 import type { TableLayout } from "../../layout/table.ts";
 import type { Command, CommandKind } from "./bus.ts";
@@ -76,6 +76,9 @@ export const CONTROL_SPECS: Spec[] = [
   },
 ];
 
+/** The Book: the sixth button — always enabled, alone on the panel's left. */
+export const BOOK = { id: "book", label: "Book", key: "B", kind: "book" } as const;
+
 /** A resolved button: its current binding plus legality. */
 export interface ResolvedButton {
   id: string;
@@ -128,38 +131,13 @@ export interface ControlsHandle {
   destroy(): void;
 }
 
-/** The solved button box: exactly the game card when five fit, capped when they don't. */
-export interface ButtonMetrics {
-  w: number;
-  h: number;
-  font: number;
-  gap: number;
-}
-
-/** The button-box law (spec E13): card-shaped 5:7, filling the controls band; width-capped only when five cannot fit. */
-export function buttonMetrics(
-  cardW: number,
-  cardH: number,
-  cellW: number,
-  cellH: number,
-  count: number,
-): ButtonMetrics {
-  const gap = Math.min(cardW * 0.15, cellW * 0.02);
-  const maxW = (cellW - gap * (count - 1)) / count;
-  const maxH = cellH * 0.96;
-  let h = maxH;
-  let w = h * (cardW / cardH);
-  if (w > maxW) {
-    w = maxW;
-    h = w * (cardH / cardW);
-  }
-  return { w, h, font: Math.max(9, h * 0.14), gap };
-}
-
-/** Mount the control bar: five buttons, keyboard map, SR registration. */
+/** Mount the control bar: the Book alone left, the five actions right, keyboard map, SR registration. */
 export function mountControls(bus: CommandBus): ControlsHandle {
   const bar = document.createElement("div");
   bar.id = "bj-controls";
+  const group = document.createElement("div");
+  group.id = "bj-actions";
+  bar.append(group);
   document.body.appendChild(bar);
 
   const buttons = new Map<string, HTMLButtonElement>();
@@ -173,7 +151,7 @@ export function mountControls(bus: CommandBus): ControlsHandle {
     bus.emit(c);
   }
 
-  /** Repaint all five buttons from the law table. */
+  /** Repaint all five action buttons from the law table. */
   function render(): void {
     for (const r of resolveButtons(mode, legal)) {
       const b = buttons.get(r.id);
@@ -200,15 +178,35 @@ export function mountControls(bus: CommandBus): ControlsHandle {
       const r = resolveButtons(mode, legal).find((x) => x.id === spec.id);
       if (r) emit(r);
     });
-    bar.appendChild(b);
+    group.appendChild(b);
     buttons.set(spec.id, b);
     registerObject(`control ${i + 1} of ${CONTROL_SPECS.length}`, "button", "Context action; its label and key follow the table state.");
   }
+
+  // the Book: always enabled, alone on the panel's outer side (spec E14)
+  const book = document.createElement("button");
+  book.className = "bj-btn";
+  book.id = `bj-btn-${BOOK.id}`;
+  book.type = "button";
+  const bookKbd = document.createElement("kbd");
+  const bookSpan = document.createElement("span");
+  bookKbd.textContent = BOOK.key;
+  bookSpan.textContent = BOOK.label;
+  book.append(bookKbd, bookSpan);
+  book.setAttribute("aria-label", `${BOOK.label} — the strategy card (key ${BOOK.key})`);
+  book.addEventListener("click", () => bus.emit({ kind: BOOK.kind }));
+  bar.prepend(book);
+  registerObject("control book", "button", "Book — open the strategy card (key B). It arrives in pt6.");
 
   const onKey = (e: KeyboardEvent): void => {
     if (e.repeat) return;
     const target = e.target as HTMLElement | null;
     if (target?.tagName === "BUTTON" && (e.key === "Enter" || e.key === " ")) return;
+    if (e.key.toLowerCase() === BOOK.key.toLowerCase()) {
+      e.preventDefault();
+      bus.emit({ kind: BOOK.kind });
+      return;
+    }
     const r = resolveButtons(mode, legal).find((x) => x.enabled && x.key.toLowerCase() === e.key.toLowerCase());
     if (!r) return;
     e.preventDefault();
@@ -231,11 +229,11 @@ export function mountControls(bus: CommandBus): ControlsHandle {
         width: `${c.w}px`,
         height: `${c.h}px`,
       });
-      const m = buttonMetrics(l.metrics.cardW, l.metrics.cardH, c.w, c.h, CONTROL_SPECS.length);
-      bar.style.setProperty("--bjz-btn-w", `${m.w}px`);
-      bar.style.setProperty("--bjz-btn-h", `${m.h}px`);
-      bar.style.setProperty("--bjz-btn-font", `${m.font}px`);
-      bar.style.setProperty("--bjz-btn-gap", `${m.gap}px`);
+      // the one-size law (spec E14): the buttons ARE the cards — one solver value
+      bar.style.setProperty("--bjz-btn-w", `${l.metrics.cardW}px`);
+      bar.style.setProperty("--bjz-btn-h", `${l.metrics.cardH}px`);
+      bar.style.setProperty("--bjz-btn-font", `${Math.max(9, l.metrics.cardH * 0.14)}px`);
+      bar.style.setProperty("--bjz-btn-gap", `${l.metrics.buttonGap}px`);
     },
     destroy() {
       window.removeEventListener("keydown", onKey);

@@ -64,13 +64,19 @@
         position: fixed;
         display: flex;
         flex-wrap: nowrap;
-        justify-content: flex-end;
-        gap: var(--bjz-btn-gap, 8px);
+        justify-content: space-between;
         align-items: center;
         z-index: 35;
       }
       #bj-controls.flipped {
-        justify-content: flex-start;
+        flex-direction: row-reverse;
+      }
+      #bj-actions {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: var(--bjz-btn-gap, 8px);
+        align-items: center;
+        min-width: 0;
       }
       .sr-only {
         position: absolute;

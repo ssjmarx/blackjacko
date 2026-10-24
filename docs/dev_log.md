@@ -493,3 +493,38 @@ provenance; the law lives in the spec and the roadmap.
   the middle. The margin drops to **2.5% per edge** (95% felt).
 - Gate: **146/146 tests** (12 files), audit 33 modules, kit law holds,
   build clean, purity clean.
+
+## Entry #19 — batch 1.16: the experiment grid, the one-size law, the Book (2026-10-23)
+
+The human re-sketched the layout as an **experiment** (E14, marked pending
+eyeball) and ruled the **one-size law**: the buttons and the cards share
+exactly the same calculated value, derived from the control panel — the
+limiting factor — as a 5:7 fit inside one button's six-share allocation
+(height fit = 96% of the band; width fit = width/(6 + 5×0.06) with
+self-consistent 6% gaps). My earlier caveat that six card-sized buttons
+"can't fit" at portrait was void: I had pegged buttons to a card law and
+used a low-res fiction; the allocation law fills whatever space exists.
+
+- **The quartered grid:** discard ¼ | pit ½ | shoe ¼ over count hud ¼ |
+  dealer ½ | deck extra ¼; player ¾ beside the chip column ¼ at **double
+  height (2/5)**; the full-width control panel last. The context panel is
+  merged away; the credit anchors to the **player zone's bottom-left**;
+  captions center on the **band 3/4 border** (horiz + vert).
+- **The shoe row reflects** (plants at the window-side edge, grows toward
+  the pit, erodes from the far end); chip stacks gain the upward bleed into
+  deck extra (pt5); the dealer's overflow retargets the count hud cell.
+- **The Book**: sixth button, key **B**, alone on the left, `book` on the
+  bus, announcing its pt6 placeholder. `buttonMetrics` is **deleted** — the
+  buttons read the solver's card box directly (`buttonGap` joins metrics).
+- **Bankroll** lands at the chip column's floor, **table min/max** at the
+  pit's floor (backing plate noted for shoe tables) — static until batch 2.
+- **Wood v3:** the **inverse-knot pass** (occupancy grid → largest blank
+  square → seeded knot → rings to collision, ≤16 fills), the **seeded noise
+  tile** (256² film grain, under the felt), and the **cut-in shadow**
+  (8-step layered falloff inside the felt edge).
+- Test-caught on the way: my countHud mirror assertion was inverted, my
+  "never move" test forgot the player band is now an end cell (it mirrors
+  sideways; dealer + vertical law hold), and a golden miscounted 2.5% of
+  1600 as 36.
+- Gate: **150/150 tests** (12 files), audit 33 modules, kit law holds
+  (12 files), build clean, purity clean.

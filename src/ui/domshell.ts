@@ -33,8 +33,8 @@ export function mountDomShell(): void {
     Object.assign(state.captions.style, {
       position: "fixed",
       left: "50%",
-      transform: "translateX(-50%)",
-      bottom: "14%",
+      top: "50%",
+      transform: "translate(-50%, -50%)",
       maxWidth: `${CAPTIONS.maxWidthPct * 100}%`,
       background: CAPTIONS.background,
       color: CAPTIONS.color,
@@ -61,7 +61,6 @@ function zoneMap(l: TableLayout): Record<string, Rect> {
     dealer: l.dealer,
     player: l.player,
     countHud: l.countHud,
-    context: l.contextPanel,
     controls: l.controls,
     chipTray: l.chipTray,
   };
@@ -86,6 +85,11 @@ export function applyZones(l: TableLayout): void {
     root.setProperty(`--bjz-slot${i + 1}-w`, `${s.w}px`);
     root.setProperty(`--bjz-slot${i + 1}-h`, `${s.h}px`);
   });
+  // the captions center on the player/control-panel border (spec E14)
+  if (state.captions) {
+    state.captions.style.left = `${l.captionPoint.x}px`;
+    state.captions.style.top = `${l.captionPoint.y}px`;
+  }
 }
 
 /** Register a game object's SR description; the kit calls this on creation. */
@@ -176,15 +180,15 @@ export function showLowerThird(text: string, l: TableLayout): void {
     });
     document.body.appendChild(state.lowerThird);
   }
-  // the credit sprouts up from the context panel's bottom-outer corner (spec E11/E13)
-  const p = l.contextPanel;
+  // the credit sprouts up from the player zone's bottom-outer corner (spec E14)
+  const p = l.player;
   const anchorX = l.axisFlip ? p.x + p.w : p.x;
   Object.assign(state.lowerThird.style, {
     left: l.axisFlip ? "auto" : `${anchorX}px`,
     right: l.axisFlip ? `${window.innerWidth - anchorX}px` : "auto",
     bottom: `${window.innerHeight - (p.y + p.h)}px`,
     maxWidth: `${l.axisFlip ? anchorX - l.safe.x : l.safe.x + l.safe.w - anchorX}px`,
-    fontSize: `${Math.max(11, Math.round(p.h * 0.18))}px`,
+    fontSize: `${Math.max(11, Math.min(28, Math.round(p.h * 0.08)))}px`,
   });
   if (state.creditShown) return;
   state.creditShown = true;

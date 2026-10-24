@@ -5,13 +5,13 @@
  */
 import Phaser from "phaser";
 import { solveTable, unionRects, type Rect, type TableLayout } from "../layout/table.ts";
-import { CARD_STACK, DEBUG, FELT } from "../config.ts";
-import { destroy, rect, text } from "../ui/kit.ts";
+import { CARD_STACK, DEBUG, FELT, MARGIN, TONYS, WOOD_NOISE } from "../config.ts";
+import { destroy, rect, text, tiledNoise } from "../ui/kit.ts";
 import { announce, registerObject, showLowerThird } from "../ui/domshell.ts";
 import { englishDeck } from "../ui/decks/english.ts";
 import { cardSprite } from "../ui/cardart.ts";
 import { deckStack, shoeRow } from "../ui/cardstack.ts";
-import { paintWood } from "../ui/wood.ts";
+import { paintCutIn, paintWood } from "../ui/wood.ts";
 import { sessionSeed } from "../ui/session.ts";
 import { CommandBus } from "../ui/input/bus.ts";
 import { mountControls } from "../ui/input/controls.ts";
@@ -28,7 +28,6 @@ const ZONE_COLORS = {
   chipTray: 0xa855f7,
   controls: 0xf59e0b,
   countHud: 0xeab308,
-  contextPanel: 0x06b6d4,
   insuranceSpot: 0xec4899,
   lineSlot: 0xffffff,
   betSpot: 0x22d3ee,
@@ -39,7 +38,10 @@ export class FeltScene extends Phaser.Scene {
   private readout?: Phaser.GameObjects.Text;
   private overlay: { obj: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text; id: string }[] = [];
   private cards: { obj: Phaser.GameObjects.Image | Phaser.GameObjects.Graphics; id: string }[] = [];
+  private readouts: { obj: Phaser.GameObjects.Text; id: string }[] = [];
   private wood?: Phaser.GameObjects.Graphics;
+  private noise?: Phaser.GameObjects.TileSprite;
+  private shadow?: Phaser.GameObjects.Graphics;
   private felt?: Phaser.GameObjects.Rectangle;
   private layout?: TableLayout;
   private deck?: Deck;
@@ -77,6 +79,9 @@ export class FeltScene extends Phaser.Scene {
     this.controls = mountControls(this.bus);
     if (this.layout) this.controls.layout(this.layout);
     this.controls.setMode("idle");
+    this.bus.on((c) => {
+      if (c.kind === "book") announce("The strategy card opens here in pt6 — the basic strategy and index tables.");
+    });
     announce("Welcome to blackjacko. Tony's Backroom: one deck, dealer stands on all 17s, blackjack pays 3 to 2.");
     if (this.deck && this.layout) {
       showLowerThird(this.deck.creditLines().join("\n"), this.layout);
@@ -90,17 +95,53 @@ export class FeltScene extends Phaser.Scene {
     this.layout = solveTable(w, h);
     if (this.wood) destroy(this, this.wood, "wood rail");
     this.wood = paintWood(this, { x: 0, y: 0, w, h }, sessionSeed());
+    if (this.noise) this.noise.destroy();
+    this.noise = tiledNoise(this, { x: 0, y: 0, w, h }, {
+      id: "wood noise",
+      sr: "Decorative wood grain texture.",
+      seed: sessionSeed(),
+      size: WOOD_NOISE.size,
+      alpha: WOOD_NOISE.alpha,
+    });
+    this.noise.setDepth(-11);
     if (this.felt) destroy(this, this.felt, "felt");
     this.felt = rect(this, this.layout.safe, { id: "felt", sr: "The felt table surface.", color: FELT.fill });
-    this.felt.setDepth(-5);
+    this.felt.setDepth(-10);
+    if (this.shadow) destroy(this, this.shadow, "felt cut-in shadow");
+    this.shadow = paintCutIn(this, this.layout.safe, Math.min(w, h) * MARGIN.frac);
     for (const o of this.overlay) destroy(this, o.obj, o.id);
     this.overlay = [];
     for (const c of this.cards) destroy(this, c.obj, c.id);
     this.cards = [];
+    for (const r of this.readouts) destroy(this, r.obj, r.id);
+    this.readouts = [];
     this.paintReadout(w, h);
+    this.paintTableReadouts();
     if (DEBUG.layout) this.paintZones();
     this.controls?.layout(this.layout);
     if (this.deck) this.proveDeck();
+  }
+
+  /** The table's standing readouts: bankroll on the chip column's floor, stakes on the pit's floor (spec E14). */
+  private paintTableReadouts(): void {
+    const l = this.layout;
+    if (!l) return;
+    const bank = text(this, l.bankrollPoint.x, l.bankrollPoint.y, `Bankroll ${TONYS.bankroll}`, {
+      id: "bankroll",
+      sr: `Bankroll ${TONYS.bankroll} units.`,
+      color: FELT.readout,
+      size: 15,
+    });
+    bank.setOrigin(0.5, 1);
+    this.readouts.push({ obj: bank, id: "bankroll" });
+    const stakes = text(this, l.stakesPoint.x, l.stakesPoint.y, `Table ${TONYS.min} – ${TONYS.max}`, {
+      id: "table stakes",
+      sr: `Table minimum ${TONYS.min}, maximum ${TONYS.max}.`,
+      color: FELT.readout,
+      size: 15,
+    });
+    stakes.setOrigin(0.5, 1);
+    this.readouts.push({ obj: stakes, id: "table stakes" });
   }
 
   /** The pt3 proof: A♠ at true card metrics; the deck stack bleeds into deck extra at 75% pen. */
@@ -109,7 +150,11 @@ export class FeltScene extends Phaser.Scene {
     const d = this.deck;
     if (!l || !d) return;
     const cardSize = { w: l.metrics.cardW, h: l.metrics.cardH };
-    const aceBox = { x: l.dealer.x + l.metrics.cardW * 0.2, y: l.dealer.y, ...cardSize };
+    const aceBox = {
+      x: l.dealer.x + (l.dealer.w - cardSize.w) / 2,
+      y: l.dealer.y + (l.dealer.h - cardSize.h) / 2,
+      ...cardSize,
+    };
     const ace = cardSprite(this, d, 0, aceBox, { id: "proof ace of spades", debug: true });
     this.cards.push({ obj: ace, id: "proof ace of spades" });
     const deckExtent = unionRects(l.shoe, l.deckExtra);
@@ -124,10 +169,9 @@ export class FeltScene extends Phaser.Scene {
       perCard: CARD_STACK.deckPx,
     });
     for (const img of stack) this.cards.push({ obj: img, id: "proof deck stack" });
-    // the shoe-form sample runs across the pit and discard cells (its true home, the
-    // shoe cell, hosts the deck stack in this proof; the extents are unit-tested)
-    const rowExtent = unionRects(l.pit, l.discard);
-    const row = shoeRow(this, d, rowExtent, {
+    // the row-form sample runs the pit from its window-side edge (its true plant is the
+    // shoe cell, which hosts the deck stack in this proof; the extents are unit-tested)
+    const row = shoeRow(this, d, l.pit, {
       id: "proof shoe row",
       debug: true,
       cell: l.shoe,
@@ -174,7 +218,6 @@ export class FeltScene extends Phaser.Scene {
     add(l.chipTray, ZONE_COLORS.chipTray, "chipTray", "Your chip tray.");
     add(l.controls, ZONE_COLORS.controls, "controls", "The action bar.");
     add(l.countHud, ZONE_COLORS.countHud, "countHud", "The running and true count.");
-    add(l.contextPanel, ZONE_COLORS.contextPanel, "contextPanel", "Limits, bankroll, the strategy card.");
     for (const [i, s] of l.lineSlots.entries()) {
       add(s, ZONE_COLORS.lineSlot, `slot${i + 1}`, `Player line slot ${i + 1}.`);
     }

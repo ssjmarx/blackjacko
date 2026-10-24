@@ -22,19 +22,23 @@ record rulings in the dev log.
 ## Presentation law (ruled 2026-10-22)
 
 - **Adaptive layout from day 1:** one pure zone solver drives both the canvas and
-  the DOM overlay. One banded grid at every aspect (spec E11/E13, ruled
-  2026-10-22/23): the margin law frames the table (5% of the window per
-  edge); dealer top, player bottom, always — five clean fifths; the back row
-  is deck/shoe 1/4 | pit 5/12 | discard 1/3; deck extra 1/4 | dealer 1/2 |
-  count hud 1/4; player full width; chip tray (band 4); context panel 1/4 |
-  controls 3/4 (band 5). Fully relational: every element sizes from its
-  cell, no pixel minimums; the axis option mirrors the horizontal anchors
-  only. The five action buttons are card-shaped and fill the controls band,
-  and the cards fill their band identically (the `buttonMetrics` law — one
-  size law on the felt), placeholders until the human's vector art
-  lands. Procedural growth-ring wood fills the frame with the felt inset on
-  top, seeded from a child stream of the session seed (same seed, same
-  table; the shuffle untouched). The margin is 2.5% per window edge.
+  the DOM overlay. One quartered grid at every aspect (spec E14, ruled
+  2026-10-23 — the experiment grid): the margin law frames the table (2.5%
+  of the window per edge); dealer top, player bottom, always — band 1:
+  discard 1/4 | pit 1/2 | shoe 1/4; band 2: count hud 1/4 | dealer 1/2 |
+  deck extra 1/4; band 3 (2/5 height): player 3/4 | chip tray 1/4; band 4:
+  the full-width control panel. Fully relational: every element sizes from
+  its cell, no pixel minimums; the axis option mirrors the horizontal
+  anchors only. The one-size law (E14): cards and buttons share exactly the
+  same calculated value — the 5:7 fit inside one button's control-panel
+  allocation, height fit vs width share, whichever binds; the split trim is
+  the only secondary and the buttons follow it. Six buttons: "B Book" alone
+  on the left, the five actions on the right. Bankroll rides the chip
+  column's floor; table min/max the pit's floor; captions center on the
+  band 3/4 border. Procedural growth-ring wood fills the frame (inverse-knot
+  gap pass, seeded noise tile, cut-in shadow on the felt), seeded from a
+  child stream of the session seed (same seed, same table; the shuffle
+  untouched). The margin is 2.5% per window edge.
 - **Vector-first assets:** cards come from the English-pattern SVG (wikimedia,
   CC0, Loren Osborn) first — per-property decks arrive later through a `Deck`
   interface. Chips, bet circles, side-bet spots, the pen bar, and the cut card

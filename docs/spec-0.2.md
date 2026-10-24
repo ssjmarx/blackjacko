@@ -524,3 +524,42 @@ and made unconditional.
 - **Battery methodology:** any chip that changes optimal play gets a bespoke
   chip-aware strategy before its measured EV is trusted — basic-strategy
   measurement can show *lost* EV for genuinely good chips.
+
+**E14 — the experiment grid: quarters, the one-size law, the Book (ruled
+2026-10-23, amends E11/E12/E13; marked EXPERIMENTAL pending eyeball):**
+
+- **The quartered grid:** band 1 is **discard 1/4 | pit 1/2 | shoe 1/4**;
+  band 2 is **count hud 1/4 | dealer 1/2 | deck extra 1/4** (under the
+  shoe); band 3 is **player 3/4 | chip tray 1/4** at **double height (2/5)**;
+  band 4 is the **full-width control panel**. Everything lines up in
+  quarters — the 1/3 and 5/12 cells are superseded. The context panel ceases
+  to exist (merged into the control panel); `lowerThird` is no longer a
+  zone (the credit anchors to the player zone's bottom-left, sprouting up).
+- **The one-size law:** cards and buttons share **exactly the same
+  calculated value** — the 5:7 fit inside one button's control-panel
+  allocation (height fit = 96% of the band; width fit = the six-share with
+  self-consistent 6% gaps; whichever binds). The control panel is the
+  limiting factor by ruling. The only secondary is the ruled split trim
+  (slot / 1.2), and the buttons follow it — the two can never diverge. At
+  1280×720 the box is 93.8×131.3; at 720×1600 portrait, 108.6×152.0.
+- **The six-button panel:** a sixth button, **"B Book"** (the strategy
+  card), sits alone on the panel's left; the five action buttons hold the
+  right. Always enabled, key B, `book` on the bus; the card itself arrives
+  in pt6. The gap between buttons shrinks itself (6% of the shared width)
+  instead of the size ever yielding.
+- **The shoe row reflects:** it plants at the shoe cell's **window-side
+  edge and grows toward the pit** (eroding from the far end; the cut card
+  still measured from the planted end). The vertical deck law is unchanged.
+  Chip stacks (pt5) may **bleed upward into deck extra** from the chip
+  column. The dealer's overflow bleeds into the **count hud cell** (its
+  neighbor in band 2).
+- **Readout placements:** **bankroll centered at the chip column's floor**;
+  **table min/max centered at the pit's floor** (a small backing plate keeps
+  it legible over the row at shoe tables). **Closed captions center on the
+  border between bands 3 and 4** — horizontally and vertically.
+- **The wood's inverse-knot pass:** after the families grow and merge, an
+  occupancy grid finds the **largest blank region**, a knot is seeded at its
+  center, and rings grow until they meet existing circles — repeated until
+  nothing blank is large enough. Plus a **seeded noise tile** (film grain,
+  under the felt) and a **cut-in shadow** (layered darkness just inside the
+  felt's edge) — the material pass against the plastic look.

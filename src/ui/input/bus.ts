@@ -13,7 +13,8 @@ export type Command =
   | { kind: "split" }
   | { kind: "surrender" }
   | { kind: "rescue" }
-  | { kind: "insurance"; take: boolean };
+  | { kind: "insurance"; take: boolean }
+  | { kind: "book" };
 
 export type CommandKind = Command["kind"];
 

@@ -68,6 +68,19 @@ export const WOOD = {
   salt: 0x776f6f64,
 } as const;
 
+/** The noise pass (spec E14): seeded film grain over the wood, under the felt. */
+export const WOOD_NOISE = {
+  size: 256,
+  alpha: 0.05,
+  salt: 0x6e6f6973,
+} as const;
+
+/** The cut-in shadow (spec E14): layered darkness just inside the felt's edge. */
+export const CUT_IN = {
+  steps: 8,
+  alpha: 0.32,
+} as const;
+
 /** The cut card (spec E11): a red rounded square riding the pen mark in the stack graphic. */
 export const CUT_CARD = {
   red: 0xc8102e,
@@ -88,9 +101,11 @@ export const ANIM = {
   flash: 450,
 } as const;
 
-/** Tony's Backroom (spec S9 era 1): the pt4 table's stakes. */
+/** Tony's Backroom (spec S9 era 1): the pt4 table's stakes (max is a pt4 placeholder). */
 export const TONYS = {
   bankroll: 200,
   betUnits: 1,
+  min: 1,
+  max: 25,
 } as const;
 

@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from "vitest";
 import { CommandBus } from "../src/ui/input/bus.ts";
-import { buttonMetrics, resolveButtons } from "../src/ui/input/controls.ts";
+import { BOOK, resolveButtons } from "../src/ui/input/controls.ts";
 
 describe("command bus", () => {
   it("delivers a command to every registered handler", () => {
@@ -75,20 +75,21 @@ describe("the five-button law table (always visible)", () => {
   });
 });
 
-describe("buttonMetrics — the band-filling card law", () => {
-  it("desktop: card-shaped buttons fill the controls band vertically", () => {
-    const m = buttonMetrics(93.81, 131.33, 912, 136.8, 5);
-    expect(m.h).toBeCloseTo(131.328, 2);
-    expect(m.h / m.w).toBeCloseTo(1.4);
-    expect(m.h).toBeLessThanOrEqual(136.8);
-    expect(m.w * 5 + m.gap * 4).toBeLessThanOrEqual(912);
+describe("the book button (spec E14)", () => {
+  it("is a sixth, always-enabled button: key B, alone on the panel's left", () => {
+    expect(BOOK).toEqual({ id: "book", label: "Book", key: "B", kind: "book" });
   });
 
-  it("phone: five capped buttons plus gaps exactly fill the cell, shape held", () => {
-    const m = buttonMetrics(104.23, 145.92, 256.5, 152, 5);
-    expect(m.w).toBeLessThan(104.23);
-    expect(m.h / m.w).toBeCloseTo(1.4);
-    expect(m.w * 5 + m.gap * 4).toBeCloseTo(256.5);
-    expect(m.h).toBeLessThanOrEqual(152);
+  it("the bus carries the book command to every handler", () => {
+    const bus = new CommandBus();
+    const seen: string[] = [];
+    bus.on((c) => seen.push(c.kind));
+    bus.emit({ kind: "book" });
+    expect(seen).toEqual(["book"]);
+  });
+
+  it("the five-button law table is untouched by the book", () => {
+    expect(resolveButtons("idle")).toHaveLength(5);
+    expect(resolveButtons("idle").map((b) => b.key)).toEqual(["D", "H", "S", "P", "R"]);
   });
 });

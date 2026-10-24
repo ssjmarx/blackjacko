@@ -1,7 +1,7 @@
 /**
- * The count-true card visuals (spec E11/E13): a deck hangs top-anchored and
- * bleeds down into deck extra, a shoe runs right into the pit — card-sized
- * first, stuck in place, dealt sprites vanishing from the dealt end.
+ * The count-true card visuals (spec E11/E14): a deck hangs from its shoe cell
+ * and bleeds down into deck extra; a shoe plants at its cell's window-side
+ * edge and runs toward the pit — stuck in place, dealt sprites vanishing.
  */
 import Phaser from "phaser";
 import type { Rect } from "../layout/table.ts";
@@ -44,6 +44,18 @@ export function placeStripes(
   return { sprites, anchor: anchor + shift, step, shift };
 }
 
+/** The mirrored run: stepping in the − direction from the anchor, clamped by a minimum. */
+export function placeStripesLeft(
+  sprites: number,
+  step: number,
+  anchor: number,
+  clampMin: number,
+): StripePlacement {
+  const run = Math.max(0, (sprites - 1) * step);
+  const shift = Math.max(0, clampMin - (anchor - run));
+  return { sprites, anchor: anchor + shift, step, shift };
+}
+
 /** The ruled cut-card law: the sprite containing the pen card goes red — one sprite per `group` cards of pen. */
 export function cutSpriteIndex(pen: number, max: number, group: number): number {
   const position = Math.round((1 - pen) * max) + 1;
@@ -66,10 +78,10 @@ export function dealtFrom(pen: number, max: number, remaining: number): number {
   return Math.max(0, Math.round(pen * max) - 1 - Math.max(0, remaining));
 }
 
-/** The footprint law (spec E13): the first card centers in its cell at card size; the back yields to the run; the clamp is the last resort. */
+/** The footprint law (spec E13/E14): the first card centers in its cell at card size; the back yields to the run; the clamp is the last resort. Horizontal rows plant at the window-side edge and grow toward the pit. */
 export function fitFootprint(
   extent: Rect,
-  axis: "down" | "right",
+  axis: "down" | "right" | "left",
   run: number,
   aspect: number,
   want: Rect,
@@ -96,10 +108,13 @@ export function fitFootprint(
     const box = fitIn(extent, aspect);
     return { box, start: extent.y + extent.h - box.h / 2 - run, clamped: true };
   }
+  const rightward = axis === "right";
+  const farX = rightward ? extent.x : extent.x + extent.w;
   if (want.w + run <= extent.w) {
+    const boxX = rightward ? extent.x : farX - want.w;
     return {
-      box: { x: extent.x, y: extent.y + (extent.h - want.h) / 2, w: want.w, h: want.h },
-      start: extent.x + want.w / 2,
+      box: { x: boxX, y: extent.y + (extent.h - want.h) / 2, w: want.w, h: want.h },
+      start: boxX + want.w / 2,
       clamped: false,
     };
   }
@@ -111,10 +126,12 @@ export function fitFootprint(
       h = extent.h;
       w = h / aspect;
     }
-    return { box: { x: extent.x, y: extent.y + (extent.h - h) / 2, w, h }, start: extent.x + w / 2, clamped: false };
+    const boxX = rightward ? extent.x : farX - w;
+    return { box: { x: boxX, y: extent.y + (extent.h - h) / 2, w, h }, start: boxX + w / 2, clamped: false };
   }
   const box = fitIn(extent, aspect);
-  return { box, start: extent.x + box.w / 2, clamped: true };
+  const boxX = rightward ? extent.x : farX - box.w;
+  return { box: { ...box, x: boxX }, start: boxX + box.w / 2, clamped: true };
 }
 
 /** The options every stack build takes: identity, the anchor cell, the wanted card box, and the shoe state. */
@@ -137,7 +154,7 @@ function buildStack(
   scene: Phaser.Scene,
   deck: Deck,
   extent: Rect,
-  axis: "down" | "right",
+  axis: "down" | "right" | "left",
   perCard: number,
   opts: StackOpts,
 ): (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] {
@@ -153,19 +170,23 @@ function buildStack(
     axis === "down" ? opts.cell.y + opts.cell.h / 2 : undefined,
   );
   const fitted = fit.box;
-  // the deck's first card centers in the shoe cell, the shoe plants at the extent's left edge
+  // the deck's first card centers in the shoe cell; a row plants at its window-side edge
   let planted = fit.start;
   if (axis === "right" && fit.clamped) {
     planted = placeStripes(plan.total, perCard, planted, extent.x + extent.w - fitted.w / 2).anchor;
   }
-  const cutIdx = axis === "down" ? plan.total - plan.cut : plan.cut - 1;
+  if (axis === "left" && fit.clamped) {
+    planted = placeStripesLeft(plan.total, perCard, planted, extent.x + fitted.w / 2).anchor;
+  }
+  const cutIdx = axis === "right" ? plan.cut - 1 : plan.total - plan.cut;
   const cx = extent.x + extent.w / 2;
   const cy = extent.y + extent.h / 2;
   const out: (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] = [];
   for (let i = 0; i < plan.total; i++) {
-    const fromDealtEnd = axis === "down" ? i : plan.total - 1 - i;
+    // the dealt end: the deck sheds from its top, a rightward row from its right, a leftward from its left
+    const fromDealtEnd = axis === "right" ? plan.total - 1 - i : i;
     const visible = fromDealtEnd >= hidden;
-    const x = axis === "down" ? cx : planted + i * perCard;
+    const x = axis === "down" ? cx : axis === "left" ? planted - i * perCard : planted + i * perCard;
     const y = axis === "down" ? planted + i * perCard : cy;
     if (i === cutIdx) {
       const w = axis === "down" ? fitted.w : fitted.h;
@@ -188,7 +209,7 @@ function buildStack(
       b.setDepth(axis === "down" ? 10 + (plan.total - 1 - i) : 10 + i).setVisible(visible);
       b.x = x;
       b.y = y;
-      if (axis === "right") b.setAngle(90);
+      if (axis !== "down") b.setAngle(90);
       out.push(b);
     }
   }
@@ -196,7 +217,7 @@ function buildStack(
   return out;
 }
 
-/** Create the vertical deck stack: card-sized at the top margin, bleeding down, the tail planted at the bottom. */
+/** Create the vertical deck stack: card-sized in its shoe cell, bleeding down, the top card on top. */
 export function deckStack(
   scene: Phaser.Scene,
   deck: Deck,
@@ -206,12 +227,13 @@ export function deckStack(
   return buildStack(scene, deck, extent, "down", opts.perCard, opts);
 }
 
-/** Create the horizontal shoe row: card-sized at the left, running right into the pit, the tail planted. */
+/** Create the horizontal shoe row: planted at the window-side edge, running toward the pit, the tail planted. */
 export function shoeRow(
   scene: Phaser.Scene,
   deck: Deck,
   extent: Rect,
   opts: StackOpts,
+  axis: "right" | "left" = "left",
 ): (Phaser.GameObjects.Image | Phaser.GameObjects.Graphics)[] {
-  return buildStack(scene, deck, extent, "right", opts.perCard, opts);
+  return buildStack(scene, deck, extent, axis, opts.perCard, opts);
 }

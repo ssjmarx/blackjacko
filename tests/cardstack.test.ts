@@ -6,6 +6,7 @@
 import { describe, it, expect } from "vitest";
 import {
   placeStripes,
+  placeStripesLeft,
   cutSpriteIndex,
   stackPlan,
   hiddenSprites,
@@ -38,6 +39,22 @@ describe("placeStripes — the stuck-in-place run", () => {
     expect(b.sprites).toBe(a.sprites);
     expect(b.step).toBe(a.step);
     expect(b.anchor).toBeLessThan(a.anchor);
+  });
+});
+
+describe("placeStripesLeft — the reflected run", () => {
+  it("steps sprites in the − direction from the anchor", () => {
+    const p = placeStripesLeft(26, 1, 500, 0);
+    expect(p.anchor).toBe(500);
+    expect(p.shift).toBe(0);
+    expect(p.anchor - (p.sprites - 1) * p.step).toBe(475);
+  });
+
+  it("clamps a run that would pass the near edge (shifted inward, never shrunk)", () => {
+    const p = placeStripesLeft(104, 2, 200, 100);
+    expect(p.shift).toBe(106);
+    expect(p.anchor).toBe(306);
+    expect(p.anchor - (p.sprites - 1) * p.step).toBe(100);
   });
 });
 
@@ -117,6 +134,22 @@ describe("fitFootprint — the card-size-first footprint law", () => {
     expect(f.box.x).toBe(0);
     expect(f.box.w + 208).toBeLessThanOrEqual(864);
     expect(f.box.h).toBeLessThanOrEqual(129.6);
+  });
+
+  it("a leftward run plants at the window-side (right) edge, growing toward the pit", () => {
+    const f = fitFootprint({ x: 0, y: 0, w: 864, h: 129.6 }, "left", 208, 1.498, want);
+    expect(f.clamped).toBe(false);
+    expect(f.box.x).toBe(864 - 90);
+    expect(f.start).toBe(864 - 45);
+    expect(f.box.w + 208).toBeLessThanOrEqual(864);
+    expect(f.box.h).toBeLessThanOrEqual(129.6);
+  });
+
+  it("the leftward yield keeps the back at the right edge, shrunk by the run", () => {
+    const f = fitFootprint({ x: 0, y: 0, w: 200, h: 129.6 }, "left", 120, 1.498, want);
+    expect(f.clamped).toBe(false);
+    expect(f.box.x + f.box.w).toBeCloseTo(200);
+    expect(f.box.w + 120).toBeLessThanOrEqual(200 + 0.01);
   });
 
   it("an un-fittable run falls back to the clamp (a 416 row in a narrow cell)", () => {

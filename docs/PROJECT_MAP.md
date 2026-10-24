@@ -187,8 +187,8 @@ standard fallbacks (D->H, Ds->S).
 ## src/layout/table.ts
 
 The table layout solver — the single home for every coordinate on screen.
-One banded grid serves every aspect (spec E11/E13): dealer top, player
-bottom, framed by the margin law — every zone a viewport fraction.
+One quartered grid serves every aspect (spec E14): dealer top, player
+bottom, and one calculated card size shared by buttons and every card.
 
 - `clamp(v: number, lo: number, hi: number)` — Clamp a value into [lo, hi].
 - `unionRects(a: Rect, b: Rect)` — The bounding rectangle of two rects — the stack bleed extents live here too.
@@ -211,6 +211,7 @@ zones, the DOM probes, and the size/axis readout, live on every resize.
   - `preload()` — Load the deck's art files before the scene boots.
   - `create()` — Boot the felt: camera background, the readout, and the resize hook.
   - `reflow(w: number, h: number)` — Re-solve the table, repaint the wood rail and every debug zone for the viewport.
+  - `paintTableReadouts()` — The table's standing readouts: bankroll on the chip column's floor, stakes on the pit's floor (spec E14).
   - `proveDeck()` — The pt3 proof: A♠ at true card metrics; the deck stack bleeds into deck extra at 75% pen.
   - `paintReadout(w: number, h: number)` — Update the size/axis readout (flips with the aspect, per goal 1).
   - `paintZones()` — Draw the debug zone overlay: one outlined, labeled rect per zone.
@@ -294,19 +295,20 @@ fit within the solver's card box; registry cleanup rides through the kit.
 
 ## src/ui/cardstack.ts
 
-The count-true card visuals (spec E11/E13): a deck hangs top-anchored and
-bleeds down into deck extra, a shoe runs right into the pit — card-sized
-first, stuck in place, dealt sprites vanishing from the dealt end.
+The count-true card visuals (spec E11/E14): a deck hangs from its shoe cell
+and bleeds down into deck extra; a shoe plants at its cell's window-side
+edge and runs toward the pit — stuck in place, dealt sprites vanishing.
 
 - `placeStripes(…)` — Place a stripe run stepping in the + direction from the anchor; overflow shifts the run inward, never shrinks it.
+- `placeStripesLeft(…)` — The mirrored run: stepping in the − direction from the anchor, clamped by a minimum.
 - `cutSpriteIndex(pen: number, max: number, group: number)` — The ruled cut-card law: the sprite containing the pen card goes red — one sprite per `group` cards of pen.
 - `stackPlan(pen: number, max: number, group: number)` — Plan the full stack: every sprite of the deck, the cut riding the pen mark from the planted end.
 - `hiddenSprites(dealt: number, group: number)` — Sprites fully dealt from the dealt end — the sticks-in-place erosion law.
 - `dealtFrom(pen: number, max: number, remaining: number)` — Cards already dealt, derived from the dealable remaining count.
-- `fitFootprint(…)` — The footprint law (spec E13): the first card centers in its cell at card size; the back yields to the run; the clamp is the last resort.
+- `fitFootprint(…)` — The footprint law (spec E13/E14): the first card centers in its cell at card size; the back yields to the run; the clamp is the last resort. Horizontal rows plant at the window-side edge and grow toward the pit.
 - `buildStack(…)` — Build the stack: the full deck drawn once at fixed positions, dealt sprites hidden from the dealt end.
-- `deckStack(…)` — Create the vertical deck stack: card-sized at the top margin, bleeding down, the tail planted at the bottom.
-- `shoeRow(…)` — Create the horizontal shoe row: card-sized at the left, running right into the pit, the tail planted.
+- `deckStack(…)` — Create the vertical deck stack: card-sized in its shoe cell, bleeding down, the top card on top.
+- `shoeRow(…)` — Create the horizontal shoe row: planted at the window-side edge, running toward the pit, the tail planted.
 
 ## src/ui/decks/deck.ts
 
@@ -355,13 +357,12 @@ the only listener that acts on them. Pure routing, no DOM.
 
 ## src/ui/input/controls.ts
 
-The control bar — five always-visible buttons, one row, right-aligned:
-D deals/doubles, H hits/takes, S stands/passes, R surrenders/forfeits;
-context only changes labels and enabled state, never visibility (spec E11).
+The control bar — six always-visible buttons (spec E14): the Book alone on
+the left, the five actions on the right, every one exactly card-sized by
+the solver's one-size law; context changes labels and state, never presence.
 
 - `resolveButtons(mode: ControlMode, legal: ControlLegality = {})` — Resolve the five buttons for a mode — pure, unit-tested, no DOM.
-- `buttonMetrics(…)` — The button-box law (spec E13): card-shaped 5:7, filling the controls band; width-capped only when five cannot fit.
-- `mountControls(bus: CommandBus)` — Mount the control bar: five buttons, keyboard map, SR registration.
+- `mountControls(bus: CommandBus)` — Mount the control bar: the Book alone left, the five actions right, keyboard map, SR registration.
 
 ## src/ui/input/human.ts
 
@@ -386,6 +387,7 @@ description and registers with the registry; undescribed objects cannot compile.
 - `image(…)` — Create a described image (a card, a chip — anything textured).
 - `roundRect(…)` — Create a described rounded rectangle (the cut card, drawn chips).
 - `graphics(…)` — Create a described graphics canvas — the sanctioned escape hatch for bespoke vector art (the wood rail).
+- `tiledNoise(…)` — Create a seeded noise texture tiled across the rect — resolution-agnostic film grain.
 - `destroy(…)` — Destroy a kit-created object and drop its registry entries.
 
 ## src/ui/session.ts
@@ -399,13 +401,17 @@ separate child streams, so decoration can never perturb the cards.
 
 ## src/ui/wood.ts
 
-The wood rail — procedural growth-ring wood (spec E13): 2-4 squished
-knots, warped ring grains growing from each until the packing blocks
-them, the frame filled; the felt insets on top, cut clean.
+The wood rail — procedural growth-ring wood (spec E13/E14): seeded knots,
+warped ring grains that merge when families meet, and the inverse-knot
+pass knotting whatever blanks remain; the felt insets on top, cut clean.
 
 - `paintWood(scene: Phaser.Scene, outer: Rect, seed: number)` — Paint full-window growth-ring wood; the caller insets the felt on top.
 - `seedKnots(outer: Rect, rng: ()` — Seed 6-12 knots across the whole window, rejection-sampled so none collide; the felt trims the middle.
+- `makeKnot(id: number, cx: number, cy: number, r: number, rng: ()` — Build one knot's warp profile at a position — shared by seeding and the inverse-knot pass.
 - `paintKnot(g: Phaser.GameObjects.Graphics, k: Knot, rng: ()` — Draw one knot: tight concentric squished ellipses, the darkest strokes on the frame.
 - `strokeSquished(…)` — Stroke a squished circle: 40 sampled points, rotated by angle.
 - `growGrains(…)` — Grow warped rings from every knot; meeting families merge and keep growing until the frame is filled.
+- `largestBlank(…)` — The largest blank square in the occupancy grid, or null when nothing hosts a knot.
+- `fillGaps(…)` — The inverse-knot pass (spec E14): knot the largest blank region, grow it into the gap, repeat until full.
 - `drawGrain(g: Phaser.GameObjects.Graphics, k: Knot, rng: ()` — One warped ring: 40 sampled points around the knot's coherent warp profile.
+- `paintCutIn(scene: Phaser.Scene, safe: Rect, margin: number)` — The felt's cut-in shadow (spec E14): the wood ring casting layered darkness onto the cloth's edge.
